@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>Username ile Giriş (Arka planda Auth)</title>
+  <title>Username + Password Giriş (Arka planda Auth)</title>
   <!-- html5-qrcode -->
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
@@ -15,10 +15,11 @@
   </style>
 </head>
 <body>
-  <h1>Username + Password Girişi (Arka planda Firebase Auth)</h1>
+  <h1>Username + Password - Arka planda Firebase Auth</h1>
 
   <!-- LOGIN SECTION -->
   <div id="login-section">
+    <!-- ÖNEMLİ: id="username" ve id="password" -->
     <input type="text" id="username" placeholder="Kullanıcı Adı (örn. mehmet)" />
     <input type="password" id="password" placeholder="Şifre" />
     <button id="btnLogin">Giriş</button>
@@ -55,7 +56,7 @@
     <div id="previousSessions" style="margin-top:20px;"></div>
   </div>
 
-  <!-- Firebase ve Ana JS -->
+  <!-- Firebase ve Ana JS (body kapanışından önce!) -->
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

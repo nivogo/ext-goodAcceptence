@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "nivo-transfer.web.app",
+    "site": "nivo-transfer",
     "public": "public",
     "ignore": [
       "firebase.json",

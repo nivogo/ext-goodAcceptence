@@ -2,33 +2,36 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>Username + Password Giriş (Arka planda Auth)</title>
-  <!-- html5-qrcode -->
+  <title>Firebase QR Projesi</title>
+
+  <!-- html5-qrcode CDN -->
   <script src="https://unpkg.com/html5-qrcode"></script>
+
   <style>
-    body { font-family: Arial, sans-serif; max-width:600px; margin:auto; padding:1rem; }
-    #reader { width:100%; margin:20px 0; }
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 1rem; }
+    #reader { width: 100%; margin: 20px 0; }
     .hidden { display: none; }
-    table { width:100%; border-collapse: collapse; margin-top:1rem; }
-    td,th { border:1px solid #ccc; padding:8px; }
-    #login-section, #logout-section, #qr-section { margin-bottom:1rem; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    td, th { border: 1px solid #ccc; padding: 8px; }
+    #login-section, #qr-section, #logout-section { margin-bottom: 1rem; }
   </style>
 </head>
 <body>
-  <h1>Username + Password - Arka planda Firebase Auth</h1>
+  <h1>Firebase QR Projesi</h1>
 
   <!-- LOGIN SECTION -->
   <div id="login-section">
-    <!-- ÖNEMLİ: id="username" ve id="password" -->
-    <input type="text" id="login-username" placeholder="Kullanıcı Adı (örn. mehmet)" />
-    <input type="password" id="password" placeholder="Şifre" />
+    <div>
+      <input type="email" id="email" placeholder="Email" />
+      <input type="password" id="password" placeholder="Şifre" />
+    </div>
     <button id="btnLogin">Giriş</button>
-    <div id="login-msg" style="color:red;"></div>
+    <button id="btnRegister">Kayıt Ol</button>
+    <div id="msg"></div>
   </div>
 
   <!-- LOGOUT SECTION -->
   <div id="logout-section" class="hidden">
-    <span id="welcome-msg"></span>
     <button id="btnLogout">Çıkış Yap</button>
   </div>
 
@@ -39,7 +42,7 @@
     <p id="sessionInfo"></p>
 
     <div id="reader"></div>
-    <div id="result" style="margin-bottom:1rem;color:#c00;"></div>
+    <div id="result" style="margin-bottom: 1rem; color: #d00;"></div>
 
     <table>
       <thead>
@@ -53,10 +56,12 @@
     </table>
 
     <button id="btnCompleteSession" style="display:none;">Listeyi Gönder</button>
-    <div id="previousSessions" style="margin-top:20px;"></div>
+
+    <div id="previousSessions" style="margin-top: 20px;"></div>
   </div>
 
-  <!-- Firebase ve Ana JS (body kapanışından önce!) -->
+  <!-- Firebase ve Ana JS -->
+  <!-- (type="module") => main.js içinde ES6 import'larını kullanacağız -->
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

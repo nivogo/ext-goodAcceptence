@@ -21,7 +21,7 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-firestore.js";
 
-/** 1) Firebase Config (KENDİ PROJE BİLGİLERİNİZLE GÜNCELLEYİN) **/
+/** 1) Firebase Config -> KENDİ PROJE BİLGİLERİNİZLE DEĞİŞTİRİN **/
 const firebaseConfig = {
   apiKey: "AIzaSyBiWW3DjGHCA-gb6uFZzc0PiWMz5OWiTTs",
   authDomain: "nivo-transfer.firebaseapp.com",
@@ -36,7 +36,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Global Değişkenler
+// 3) Global Değişkenler
 let currentSessionId = null;
 let currentSessionStatus = null;  // "ongoing" | "completed"
 
@@ -58,7 +58,7 @@ window.addEventListener("load", () => {
       startCamera();
     } else {
       // Çıkış yapıldı veya henüz login değil
-      resetUItoLoggedOut();
+      resetUIToLoggedOut();
     }
   });
 });
@@ -69,17 +69,19 @@ window.addEventListener("load", () => {
 function initUI() {
   // Giriş Butonu
   document.getElementById("btnLogin").addEventListener("click", async () => {
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value;
-
+    const usernameInput = document.getElementById("username");
+    const passwordInput = document.getElementById("password");
     const loginMsg = document.getElementById("login-msg");
+
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value;
+
     if (!username || !password) {
       loginMsg.textContent = "Kullanıcı adı veya şifre boş olamaz.";
       return;
     }
 
-    // 1) "mehmet" => "mehmet@myapp.com" gibi mail formatına dönüştür
-    //    Domain tamamen size kalmış, "mehmet@myapp.com" veya "mehmet@whatever.org"
+    // 1) "mehmet" => "mehmet@myapp.com"
     const fakeEmail = `${username}@nivogo.com`;
 
     try {
@@ -109,17 +111,27 @@ function initUI() {
 /********************************************/
 /* Reset UI to Logged Out                   */
 /********************************************/
-function resetUItoLoggedOut() {
+function resetUIToLoggedOut() {
+  // Ekran görünümü
   document.getElementById("login-section").classList.remove("hidden");
   document.getElementById("logout-section").classList.add("hidden");
   document.getElementById("qr-section").classList.add("hidden");
 
+  // Mesajları temizle
   document.getElementById("login-msg").textContent = "";
   document.getElementById("welcome-msg").textContent = "";
   document.getElementById("sessionInfo").textContent = "";
   document.getElementById("result").textContent = "";
-  document.getElementById("productTableBody").innerHTML = "";
   document.getElementById("previousSessions").innerHTML = "";
+  document.getElementById("productTableBody").innerHTML = "";
+
+  // Giriş inputlarını temizle
+  const userField = document.getElementById("username");
+  const passField = document.getElementById("password");
+  if (userField) userField.value = "";
+  if (passField) passField.value = "";
+
+  // Oturum değişkenlerini sıfırla
   currentSessionId = null;
   currentSessionStatus = null;
 }
@@ -157,7 +169,7 @@ async function createNewSession() {
   const now = new Date().toISOString().replace("T"," ").split(".")[0];
   const sessionName = `Liste ${now}`;
 
-  // Firestore'a ekle (user.uid ile eşleştiriyoruz)
+  // Firestore'a ekle
   const ref = await addDoc(collection(db, "scanningSessions"), {
     userUid: user.uid,
     sessionName: sessionName,
@@ -198,7 +210,7 @@ async function handleQrDecoded(decodedText) {
     }
   }
 
-  // Tabloda aynı kod var mı? (basit check)
+  // Tabloda aynı kod var mı?
   const rows = document.querySelectorAll("#productTableBody tr");
   for (const r of rows) {
     if (r.cells[0].textContent === decodedText) {
@@ -307,7 +319,7 @@ async function loadMySessions() {
       currentSessionId = docSnap.id;
       currentSessionStatus = s.status;
       document.getElementById("sessionInfo").textContent =
-        `Seçilen Liste: ${s.sessionName} (ID: ${docSnap.id}, Durum: ${s.status})`;
+        \`Seçilen Liste: \${s.sessionName} (ID: \${docSnap.id}, Durum: \${s.status})\`;
 
       if (s.status === "ongoing") {
         document.getElementById("btnCompleteSession").style.display = "inline-block";

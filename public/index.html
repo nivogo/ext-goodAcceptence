@@ -8,12 +8,33 @@
   <script src="https://unpkg.com/html5-qrcode"></script>
 
   <style>
-    body { font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 1rem; }
-    #reader { width: 100%; margin: 20px 0; }
-    .hidden { display: none; }
-    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-    td, th { border: 1px solid #ccc; padding: 8px; }
-    #login-section, #qr-section, #logout-section { margin-bottom: 1rem; }
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: auto;
+      padding: 1rem;
+    }
+    #reader {
+      width: 100%;
+      margin: 20px 0;
+    }
+    .hidden {
+      display: none;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    td, th {
+      border: 1px solid #ccc;
+      padding: 8px;
+    }
+    #login-section,
+    #qr-section,
+    #logout-section {
+      margin-bottom: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -41,12 +62,19 @@
     <button id="btnLoadSessions">Önceki Listelerim</button>
     <p id="sessionInfo"></p>
 
+    <!-- QR kamera alanı -->
     <div id="reader"></div>
+
     <div id="result" style="margin-bottom: 1rem; color: #d00;"></div>
 
+    <!-- EKLENDİ: Toplam adet gösterme alanı -->
+    <h4 id="totalCount">Toplam Adet: 0</h4>
+
+    <!-- Tablomuz (artık sıra numarası sütunu ekliyoruz) -->
     <table>
       <thead>
         <tr>
+          <th>#</th>         <!-- Sıra Numarası için -->
           <th>QR Kodu</th>
           <th>Durum</th>
           <th>İşlem</th>
@@ -57,6 +85,7 @@
 
     <button id="btnCompleteSession" style="display:none;">Listeyi Gönder</button>
 
+    <!-- Önceki listeleri göstermek için -->
     <div id="previousSessions" style="margin-top: 20px;"></div>
   </div>
 

@@ -27,7 +27,7 @@ import {
 
 // Firebase Config
 const firebaseConfig = {
-  apiKey: "AIzaSyBiWW3DjGH...TTs",
+  apiKey: "AIzaSyBiWW3DjGHCA-gb6uFZzc0PiWMz5OWiTTs",
   authDomain: "nivo-transfer.firebaseapp.com",
   projectId: "nivo-transfer",
   storageBucket: "nivo-transfer.appspot.com",

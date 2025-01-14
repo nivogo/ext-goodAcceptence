@@ -1,8 +1,7 @@
 /**************************************************/
-/*  main.js                                       */
+/*  main.js  (Firebase + QR + SheetJS Export)     */
 /**************************************************/
 
-// 1) Firebase SDK import (ES6 Modules)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
 import { 
   getAuth, 
@@ -23,47 +22,40 @@ import {
   query, 
   where, 
   orderBy, 
-  serverTimestamp
+  serverTimestamp 
 } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-firestore.js";
 
-
-// 2) Firebase Config -> BURAYI KENDİ PROJENİZE GÖRE DÜZENLEYİN
+// Firebase Config
 const firebaseConfig = {
-  apiKey: "AIzaSyBiWW3DjGHCA-gb6uFZzc0PiWMz5OWiTTs",
+  apiKey: "AIzaSyBiWW3DjGH...TTs",
   authDomain: "nivo-transfer.firebaseapp.com",
   projectId: "nivo-transfer",
-  storageBucket: "nivo-transfer.appspot.com", // Örnek
+  storageBucket: "nivo-transfer.appspot.com",
   messagingSenderId: "1053874989257",
-  appId: "1:1053874989257:web:xxxxxx"        // Örnek
+  appId: "1:1053874989257:web:xxxxxx"
 };
 
-// 3) Uygulamayı başlat
+// Initialize
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// 4) Global değişkenler
+// Global
 let currentSessionId = null;
-let currentSessionStatus = null; // 'ongoing' veya 'completed'
-let storeName = "Mağaza";         // İsteğe göre Firestore'dan çekilebilir
+let currentSessionStatus = null; // 'ongoing' | 'completed'
+let storeName = "Mağaza";
 
-// --- YENİ: QR okutma işlemi bitmeden tekrar okutmayı engellemek için flag
-let isScanningInProgress = false;  // false: yeni QR taranabilir, true: bekleniyor
-
-// 5) Sayfa yüklendiğinde olaylar
+// Basic onLoad
 window.addEventListener("load", () => {
   initUI();
 
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      // Kullanıcı giriş yapmış
       document.getElementById("login-section").classList.add("hidden");
       document.getElementById("logout-section").classList.remove("hidden");
       document.getElementById("qr-section").classList.remove("hidden");
-
       startCamera();
     } else {
-      // Kullanıcı çıkış yapmış
       document.getElementById("login-section").classList.remove("hidden");
       document.getElementById("logout-section").classList.add("hidden");
       document.getElementById("qr-section").classList.add("hidden");
@@ -72,10 +64,9 @@ window.addEventListener("load", () => {
 });
 
 /**************************************************/
-/* UI INIT: Login/Register/Logout vb.             */
+/* initUI: butonlar                               */
 /**************************************************/
 function initUI() {
-  // Giriş yap
   document.getElementById("btnLogin").addEventListener("click", async () => {
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
@@ -88,7 +79,6 @@ function initUI() {
     }
   });
 
-  // Kayıt ol
   document.getElementById("btnRegister").addEventListener("click", async () => {
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
@@ -105,23 +95,20 @@ function initUI() {
     }
   });
 
-  // Çıkış
   document.getElementById("btnLogout").addEventListener("click", async () => {
     await signOut(auth);
   });
 
-  // Yeni liste başlat
   document.getElementById("btnCreateSession").addEventListener("click", createNewSession);
-
-  // Listeyi gönder (tamamla)
   document.getElementById("btnCompleteSession").addEventListener("click", completeSession);
-
-  // Önceki listelerim
   document.getElementById("btnLoadSessions").addEventListener("click", loadMySessions);
+
+  // YENİ: Rapor Al (XLSX) butonu
+  document.getElementById("btnExportXlsx").addEventListener("click", exportXlsx);
 }
 
 /**************************************************/
-/* Kamera Başlat (html5-qrcode)                   */
+/* Kamera Başlat                                  */
 /**************************************************/
 function startCamera() {
   const reader = new Html5Qrcode("reader");
@@ -133,10 +120,7 @@ function startCamera() {
           cameraId,
           { fps: 10, qrbox: 250 },
           (decodedText) => handleQrDecoded(decodedText),
-          (error) => {
-            // console.warn(error);
-            // Hata vermesin, sadece satır satır QR okuyamazsa log
-          }
+          (error) => {}
         );
       }
     })
@@ -144,7 +128,7 @@ function startCamera() {
 }
 
 /**************************************************/
-/* Yeni Liste (Oturum) Oluştur                    */
+/* Yeni Liste                                     */
 /**************************************************/
 async function createNewSession() {
   const user = auth.currentUser;
@@ -153,9 +137,8 @@ async function createNewSession() {
     return;
   }
   const now = new Date().toISOString().split(".")[0].replace("T", " ");
-  const sessionName = storeName + " " + now; // "Mağaza 2025-01-13 12:34:56"
+  const sessionName = storeName + " " + now;
 
-  // Firestore'a ekle
   const ref = await addDoc(collection(db, "scanningSessions"), {
     userUid: user.uid,
     sessionName: sessionName,
@@ -168,85 +151,58 @@ async function createNewSession() {
 
   document.getElementById("sessionInfo").textContent =
     `Yeni Liste: ${sessionName} (ID: ${currentSessionId})`;
-  
-  // tabloları temizleyelim
+
   document.getElementById("productTableBody").innerHTML = "";
   document.getElementById("btnCompleteSession").style.display = "inline-block";
-
-  // Toplam adet reset
-  document.getElementById("totalCount").textContent = "Toplam Adet: 0";
-
   document.getElementById("result").textContent = "Yeni liste oluşturuldu.";
 }
 
 /**************************************************/
 /* QR Kod Okundu                                  */
 /**************************************************/
-// -- YENİ: isScanningInProgress ile engelleme
 async function handleQrDecoded(decodedText) {
-  // Eğer zaten bir ekleme işlemi sürüyorsa, yeni taramayı yok sayalım
-  if (isScanningInProgress) {
-    return;
-  }
-  // isScanningInProgress'i true yapıyoruz
-  isScanningInProgress = true;
-
   if (!currentSessionId) {
     document.getElementById("result").textContent = "Önce liste başlatın!";
-    isScanningInProgress = false; // tekrar açıyoruz
     return;
   }
   if (currentSessionStatus === "completed") {
     document.getElementById("result").textContent = "Bu liste tamamlandı.";
-    isScanningInProgress = false;
     return;
   }
 
-  // NVG kontrolü
+  // NVG kontrol
   const lower = decodedText.toLowerCase();
   if (!lower.startsWith("nvg")) {
     const confirmMsg = `Kod: ${decodedText}\nNVG ile başlamıyor. Eklemek istiyor musunuz?`;
     if (!confirm(confirmMsg)) {
       document.getElementById("result").textContent = "Eklenmedi (NVG dışı).";
-      isScanningInProgress = false;
       return;
     }
   }
 
-  // Aynı kodu tabloda arayalım (basit kontrol).
+  // tabloda aynı kod var mı?
   const rows = document.querySelectorAll("#productTableBody tr");
   for (const r of rows) {
-    if (r.cells[1].textContent === decodedText) {
-      // Not: kodu 2. sütunda saklıyoruz (1. sütun -> sıra no, 2. sütun -> kod)
+    if (r.cells[0].textContent === decodedText) {
       document.getElementById("result").textContent = "Bu QR kod zaten listede!";
-      isScanningInProgress = false;
       return;
     }
   }
 
-  // Firestore'a ekle (alt koleksiyon "scannedItems")
-  try {
-    const scannedRef = collection(db, "scanningSessions", currentSessionId, "scannedItems");
-    await addDoc(scannedRef, {
-      qrCode: decodedText,
-      status: "İlk Okutma Yapıldı",
-      scannedAt: serverTimestamp()
-    });
+  // Firestore'a ekle
+  const scannedRef = collection(db, "scanningSessions", currentSessionId, "scannedItems");
+  await addDoc(scannedRef, {
+    qrCode: decodedText,
+    status: "İlk Okutma Yapıldı",
+    scannedAt: serverTimestamp()
+  });
 
-    document.getElementById("result").textContent = `Eklendi: ${decodedText}`;
-    // Tabloyu yeniden yükle
-    await loadSessionItems(currentSessionId);
-  } catch (err) {
-    console.error(err);
-    document.getElementById("result").textContent = "Veritabanına yazılamadı!";
-  } finally {
-    // Ekleme işi bitti, tekrar taramaya izin ver
-    isScanningInProgress = false;
-  }
+  document.getElementById("result").textContent = `Eklendi: ${decodedText}`;
+  loadSessionItems(currentSessionId);
 }
 
 /**************************************************/
-/* Liste Tamamla (status='completed')            */
+/* Liste Tamamla                                  */
 /**************************************************/
 async function completeSession() {
   if (!currentSessionId) return;
@@ -262,13 +218,12 @@ async function completeSession() {
 }
 
 /**************************************************/
-/* Kendi Oturumlarımı Yükle (Kullanıcıya Ait)     */
+/* Oturumları Yükle                               */
 /**************************************************/
-// Kullanıcı daha önce oluşturduğu listeleri görsün
 async function loadMySessions() {
   const user = auth.currentUser;
   if (!user) {
-    document.getElementById("result").textContent = "Giriş yapmadınız!";
+    document.getElementById("result").textContent = "Önce giriş yapmalısınız!";
     return;
   }
 
@@ -307,63 +262,39 @@ async function loadMySessions() {
     });
     div.appendChild(linkDiv);
   });
-
-  document.getElementById("result").textContent = 
-    `Önceki listeler (${snap.size} adet) yüklendi.`;
 }
 
 /**************************************************/
-/* Belirli Bir Oturumun QR Kodlarını Yükle        */
+/* Oturumun QR Kodlarını Yükle                    */
 /**************************************************/
-// Listede okutulan QR kodlar için sıra no + toplam adet
 async function loadSessionItems(sessionId) {
   const tableBody = document.getElementById("productTableBody");
   tableBody.innerHTML = "";
 
   const scannedRef = collection(db, "scanningSessions", sessionId, "scannedItems");
-  // scannedAt'e göre sıralayalım (isteğe bağlı)
-  const q = query(scannedRef, orderBy("scannedAt", "asc"));
-  const itemsSnap = await getDocs(q);
+  const itemsSnap = await getDocs(scannedRef);
 
-  // -- Dizi halinde ele alalım ki sıra numarası hesaplayalım
-  const items = [];
   itemsSnap.forEach((dSnap) => {
-    items.push({
-      id: dSnap.id,
-      ...dSnap.data()
-    });
-  });
-
-  // -- Toplam adet
-  const totalCount = items.length;
-  document.getElementById("totalCount").textContent = `Toplam Adet: ${totalCount}`;
-
-  // -- Sıra numarası ekleyerek tabloya dolduralım
-  items.forEach((item, index) => {
+    const item = dSnap.data();
     const tr = document.createElement("tr");
 
-    // 1. sütun -> Sıra No
-    const tdIndex = document.createElement("td");
-    tdIndex.textContent = (index + 1);  // 1'den başlasın
-    tr.appendChild(tdIndex);
-
-    // 2. sütun -> QR Kodu
+    // QR kod
     const tdQr = document.createElement("td");
     tdQr.textContent = item.qrCode;
     tr.appendChild(tdQr);
 
-    // 3. sütun -> Durum
+    // Durum
     const tdSt = document.createElement("td");
     tdSt.textContent = item.status;
     tr.appendChild(tdSt);
 
-    // 4. sütun -> İşlem (Sil)
+    // İşlem
     const tdAct = document.createElement("td");
     if (currentSessionStatus === "ongoing" && item.status === "İlk Okutma Yapıldı") {
       const btnDel = document.createElement("button");
       btnDel.textContent = "Sil";
       btnDel.addEventListener("click", async () => {
-        await updateDoc(doc(db, "scanningSessions", sessionId, "scannedItems", item.id), {
+        await updateDoc(doc(db, "scanningSessions", sessionId, "scannedItems", dSnap.id), {
           status: "Silindi"
         });
         loadSessionItems(sessionId);
@@ -374,4 +305,65 @@ async function loadSessionItems(sessionId) {
 
     tableBody.appendChild(tr);
   });
+}
+
+/**************************************************/
+/* RAPOR AL (XLSX) - SheetJS                      */
+/**************************************************/
+async function exportXlsx() {
+  // Tüm scanningSessions verisini çekelim (isteğe göre filtreleyebilirsiniz)
+  const sessionsSnap = await getDocs(collection(db, "scanningSessions"));
+
+  // Bu dizi, Excel satırlarını tutacak (her alt item bir satır)
+  let rows = [];
+  // Başlık: { qrCode, durum, okutmaTarihi, userId, listeId }
+
+  for (const sessionDoc of sessionsSnap.docs) {
+    const sessionData = sessionDoc.data();
+    const sessionId = sessionDoc.id;
+    const userId = sessionData.userUid || "";
+
+    // Alt koleksiyon
+    const itemsSnap = await getDocs(
+      collection(db, "scanningSessions", sessionId, "scannedItems")
+    );
+
+    itemsSnap.forEach((itemDoc) => {
+      const item = itemDoc.data();
+      const qrCode = item.qrCode || "";
+      const durum = item.status || "";
+      let okutmaTarihi = "";
+      if (item.scannedAt) {
+        const ts = item.scannedAt.toDate();
+        okutmaTarihi = formatDate(ts);  // aşağıda ufak fonksiyon
+      }
+
+      rows.push({
+        "QR Kod": qrCode,
+        "Durum": durum,
+        "Okutma Tarihi": okutmaTarihi,
+        "User ID": userId,
+        "Liste ID": sessionId
+      });
+    });
+  }
+
+  // SheetJS ile Workbook/Worksheet
+  // window.XLSX, sheetjs cdn yüklendiğinde global XLSX objesi olur
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Rapor");
+
+  // Dosyayı indir
+  XLSX.writeFile(wb, "rapor.xlsx");
+}
+
+function formatDate(dateObj) {
+  const yyyy = dateObj.getFullYear();
+  const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
+  const dd = String(dateObj.getDate()).padStart(2, "0");
+  const HH = String(dateObj.getHours()).padStart(2, "0");
+  const MM = String(dateObj.getMinutes()).padStart(2, "0");
+  const SS = String(dateObj.getSeconds()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd} ${HH}:${MM}:${SS}`;
 }

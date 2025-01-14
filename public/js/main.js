@@ -258,7 +258,7 @@ function handleQrDecoded(decodedText) {
     document.getElementById("result").textContent = `Eklendi: ${decodedText}`;
     loadSessionItems(currentSessionId);
 
-  }, 1000);
+  }, 10000);
 }
 
 async function completeSession() {

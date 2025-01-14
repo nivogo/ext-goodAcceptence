@@ -2,10 +2,13 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>Firebase QR Projesi</title>
+  <title>Firebase QR Projesi (SheetJS XLSX)</title>
 
   <!-- html5-qrcode CDN -->
   <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <!-- SheetJS CDN (tam sürüm) -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
 
   <style>
     body {
@@ -30,15 +33,13 @@
       border: 1px solid #ccc;
       padding: 8px;
     }
-    #login-section,
-    #qr-section,
-    #logout-section {
+    #login-section, #qr-section, #logout-section {
       margin-bottom: 1rem;
     }
   </style>
 </head>
 <body>
-  <h1>Firebase QR Projesi</h1>
+  <h1>Firebase QR Projesi - SheetJS ile Excel</h1>
 
   <!-- LOGIN SECTION -->
   <div id="login-section">
@@ -60,21 +61,16 @@
   <div id="qr-section" class="hidden">
     <button id="btnCreateSession">Yeni Liste Başlat</button>
     <button id="btnLoadSessions">Önceki Listelerim</button>
+    <!-- YENİ: Rapor Al (XLSX) butonu -->
+    <button id="btnExportXlsx">Rapor Al (XLSX)</button>
+
     <p id="sessionInfo"></p>
-
-    <!-- QR kamera alanı -->
     <div id="reader"></div>
-
     <div id="result" style="margin-bottom: 1rem; color: #d00;"></div>
 
-    <!-- EKLENDİ: Toplam adet gösterme alanı -->
-    <h4 id="totalCount">Toplam Adet: 0</h4>
-
-    <!-- Tablomuz (artık sıra numarası sütunu ekliyoruz) -->
     <table>
       <thead>
         <tr>
-          <th>#</th>         <!-- Sıra Numarası için -->
           <th>QR Kodu</th>
           <th>Durum</th>
           <th>İşlem</th>
@@ -84,13 +80,10 @@
     </table>
 
     <button id="btnCompleteSession" style="display:none;">Listeyi Gönder</button>
-
-    <!-- Önceki listeleri göstermek için -->
     <div id="previousSessions" style="margin-top: 20px;"></div>
   </div>
 
-  <!-- Firebase ve Ana JS -->
-  <!-- (type="module") => main.js içinde ES6 import'larını kullanacağız -->
+  <!-- main.js (type="module") -->
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

@@ -23,17 +23,18 @@ import {
   query, 
   where, 
   orderBy, 
-  serverTimestamp 
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-firestore.js";
+
 
 // 2) Firebase Config -> BURAYI KENDİ PROJENİZE GÖRE DÜZENLEYİN
 const firebaseConfig = {
-    apiKey: "AIzaSyBiWW3DjGHCA-gb6uFZzc0PiWMz5OWiTTs",
-    authDomain: "nivo-transfer.firebaseapp.com",
-    projectId: "nivo-transfer",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "1053874989257",
-    appId: "APP_ID"
+  apiKey: "AIzaSyBiWW3DjGHCA-gb6uFZzc0PiWMz5OWiTTs",
+  authDomain: "nivo-transfer.firebaseapp.com",
+  projectId: "nivo-transfer",
+  storageBucket: "nivo-transfer.appspot.com", // Örnek
+  messagingSenderId: "1053874989257",
+  appId: "1:1053874989257:web:xxxxxx"        // Örnek
 };
 
 // 3) Uygulamayı başlat
@@ -45,6 +46,9 @@ const db = getFirestore(app);
 let currentSessionId = null;
 let currentSessionStatus = null; // 'ongoing' veya 'completed'
 let storeName = "Mağaza";         // İsteğe göre Firestore'dan çekilebilir
+
+// --- YENİ: QR okutma işlemi bitmeden tekrar okutmayı engellemek için flag
+let isScanningInProgress = false;  // false: yeni QR taranabilir, true: bekleniyor
 
 // 5) Sayfa yüklendiğinde olaylar
 window.addEventListener("load", () => {
@@ -58,7 +62,6 @@ window.addEventListener("load", () => {
       document.getElementById("qr-section").classList.remove("hidden");
 
       startCamera();
-      // (Opsiyonel) Burada user profili (storeName) Firestore'dan çekilebilir
     } else {
       // Kullanıcı çıkış yapmış
       document.getElementById("login-section").classList.remove("hidden");
@@ -93,7 +96,6 @@ function initUI() {
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       msgDiv.textContent = "Kayıt başarılı!";
-      // İsteğe bağlı: /users/<uid> doc oluşturarak storeName vs. ekleyebilirsiniz
       await setDoc(doc(db, "users", cred.user.uid), {
         storeName: "DenemeMagaza",
         createdAt: serverTimestamp()
@@ -131,7 +133,10 @@ function startCamera() {
           cameraId,
           { fps: 10, qrbox: 250 },
           (decodedText) => handleQrDecoded(decodedText),
-          (error) => console.warn(error)
+          (error) => {
+            // console.warn(error);
+            // Hata vermesin, sadece satır satır QR okuyamazsa log
+          }
         );
       }
     })
@@ -144,7 +149,7 @@ function startCamera() {
 async function createNewSession() {
   const user = auth.currentUser;
   if (!user) {
-    document.getElementById("result").textContent = "Giriş yapmadınız!";
+    document.getElementById("result").textContent = "Önce giriş yapmalısınız!";
     return;
   }
   const now = new Date().toISOString().split(".")[0].replace("T", " ");
@@ -167,18 +172,33 @@ async function createNewSession() {
   // tabloları temizleyelim
   document.getElementById("productTableBody").innerHTML = "";
   document.getElementById("btnCompleteSession").style.display = "inline-block";
+
+  // Toplam adet reset
+  document.getElementById("totalCount").textContent = "Toplam Adet: 0";
+
+  document.getElementById("result").textContent = "Yeni liste oluşturuldu.";
 }
 
 /**************************************************/
 /* QR Kod Okundu                                  */
 /**************************************************/
+// -- YENİ: isScanningInProgress ile engelleme
 async function handleQrDecoded(decodedText) {
+  // Eğer zaten bir ekleme işlemi sürüyorsa, yeni taramayı yok sayalım
+  if (isScanningInProgress) {
+    return;
+  }
+  // isScanningInProgress'i true yapıyoruz
+  isScanningInProgress = true;
+
   if (!currentSessionId) {
     document.getElementById("result").textContent = "Önce liste başlatın!";
+    isScanningInProgress = false; // tekrar açıyoruz
     return;
   }
   if (currentSessionStatus === "completed") {
     document.getElementById("result").textContent = "Bu liste tamamlandı.";
+    isScanningInProgress = false;
     return;
   }
 
@@ -188,6 +208,7 @@ async function handleQrDecoded(decodedText) {
     const confirmMsg = `Kod: ${decodedText}\nNVG ile başlamıyor. Eklemek istiyor musunuz?`;
     if (!confirm(confirmMsg)) {
       document.getElementById("result").textContent = "Eklenmedi (NVG dışı).";
+      isScanningInProgress = false;
       return;
     }
   }
@@ -195,22 +216,33 @@ async function handleQrDecoded(decodedText) {
   // Aynı kodu tabloda arayalım (basit kontrol).
   const rows = document.querySelectorAll("#productTableBody tr");
   for (const r of rows) {
-    if (r.cells[0].textContent === decodedText) {
+    if (r.cells[1].textContent === decodedText) {
+      // Not: kodu 2. sütunda saklıyoruz (1. sütun -> sıra no, 2. sütun -> kod)
       document.getElementById("result").textContent = "Bu QR kod zaten listede!";
+      isScanningInProgress = false;
       return;
     }
   }
 
   // Firestore'a ekle (alt koleksiyon "scannedItems")
-  const scannedRef = collection(db, "scanningSessions", currentSessionId, "scannedItems");
-  await addDoc(scannedRef, {
-    qrCode: decodedText,
-    status: "İlk Okutma Yapıldı",
-    scannedAt: serverTimestamp()
-  });
+  try {
+    const scannedRef = collection(db, "scanningSessions", currentSessionId, "scannedItems");
+    await addDoc(scannedRef, {
+      qrCode: decodedText,
+      status: "İlk Okutma Yapıldı",
+      scannedAt: serverTimestamp()
+    });
 
-  document.getElementById("result").textContent = `Eklendi: ${decodedText}`;
-  loadSessionItems(currentSessionId);
+    document.getElementById("result").textContent = `Eklendi: ${decodedText}`;
+    // Tabloyu yeniden yükle
+    await loadSessionItems(currentSessionId);
+  } catch (err) {
+    console.error(err);
+    document.getElementById("result").textContent = "Veritabanına yazılamadı!";
+  } finally {
+    // Ekleme işi bitti, tekrar taramaya izin ver
+    isScanningInProgress = false;
+  }
 }
 
 /**************************************************/
@@ -226,18 +258,19 @@ async function completeSession() {
   document.getElementById("btnCompleteSession").style.display = "none";
   document.getElementById("result").textContent = "Liste tamamlandı!";
 
-  // (İsteğe bağlı) alt koleksiyon status='İlk Okutma Yapıldı' -> 'liste kaydedildi'
-  // Tek tek update edilebilir, ya da bulut fonksiyonu ile toplu update yapabilirsiniz.
-
   loadSessionItems(currentSessionId);
 }
 
 /**************************************************/
 /* Kendi Oturumlarımı Yükle (Kullanıcıya Ait)     */
 /**************************************************/
+// Kullanıcı daha önce oluşturduğu listeleri görsün
 async function loadMySessions() {
   const user = auth.currentUser;
-  if (!user) return;
+  if (!user) {
+    document.getElementById("result").textContent = "Giriş yapmadınız!";
+    return;
+  }
 
   const q = query(
     collection(db, "scanningSessions"),
@@ -252,6 +285,7 @@ async function loadMySessions() {
   snap.forEach((docSnap) => {
     const s = docSnap.data();
     const linkDiv = document.createElement("div");
+    linkDiv.style.margin = "4px 0";
     linkDiv.innerHTML = `
       <a href="#" style="color:blue;text-decoration:underline;">
         ${docSnap.id} - ${s.sessionName} (Durum: ${s.status})
@@ -273,39 +307,63 @@ async function loadMySessions() {
     });
     div.appendChild(linkDiv);
   });
+
+  document.getElementById("result").textContent = 
+    `Önceki listeler (${snap.size} adet) yüklendi.`;
 }
 
 /**************************************************/
 /* Belirli Bir Oturumun QR Kodlarını Yükle        */
 /**************************************************/
+// Listede okutulan QR kodlar için sıra no + toplam adet
 async function loadSessionItems(sessionId) {
   const tableBody = document.getElementById("productTableBody");
   tableBody.innerHTML = "";
 
   const scannedRef = collection(db, "scanningSessions", sessionId, "scannedItems");
-  const itemsSnap = await getDocs(scannedRef);
+  // scannedAt'e göre sıralayalım (isteğe bağlı)
+  const q = query(scannedRef, orderBy("scannedAt", "asc"));
+  const itemsSnap = await getDocs(q);
+
+  // -- Dizi halinde ele alalım ki sıra numarası hesaplayalım
+  const items = [];
   itemsSnap.forEach((dSnap) => {
-    const item = dSnap.data();
+    items.push({
+      id: dSnap.id,
+      ...dSnap.data()
+    });
+  });
+
+  // -- Toplam adet
+  const totalCount = items.length;
+  document.getElementById("totalCount").textContent = `Toplam Adet: ${totalCount}`;
+
+  // -- Sıra numarası ekleyerek tabloya dolduralım
+  items.forEach((item, index) => {
     const tr = document.createElement("tr");
 
-    // QR kod
+    // 1. sütun -> Sıra No
+    const tdIndex = document.createElement("td");
+    tdIndex.textContent = (index + 1);  // 1'den başlasın
+    tr.appendChild(tdIndex);
+
+    // 2. sütun -> QR Kodu
     const tdQr = document.createElement("td");
     tdQr.textContent = item.qrCode;
     tr.appendChild(tdQr);
 
-    // Durum
+    // 3. sütun -> Durum
     const tdSt = document.createElement("td");
     tdSt.textContent = item.status;
     tr.appendChild(tdSt);
 
-    // İşlem
+    // 4. sütun -> İşlem (Sil)
     const tdAct = document.createElement("td");
     if (currentSessionStatus === "ongoing" && item.status === "İlk Okutma Yapıldı") {
       const btnDel = document.createElement("button");
       btnDel.textContent = "Sil";
       btnDel.addEventListener("click", async () => {
-        // "Silindi" olarak güncelle
-        await updateDoc(doc(db, "scanningSessions", sessionId, "scannedItems", dSnap.id), {
+        await updateDoc(doc(db, "scanningSessions", sessionId, "scannedItems", item.id), {
           status: "Silindi"
         });
         loadSessionItems(sessionId);

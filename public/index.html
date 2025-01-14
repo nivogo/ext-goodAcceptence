@@ -2,12 +2,12 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>Firebase QR Projesi (SheetJS XLSX)</title>
+  <title>Firebase QR Projesi - Gelişmiş</title>
 
   <!-- html5-qrcode CDN -->
   <script src="https://unpkg.com/html5-qrcode"></script>
 
-  <!-- SheetJS CDN (tam sürüm) -->
+  <!-- SheetJS (XLSX) CDN -->
   <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
 
   <style>
@@ -39,7 +39,7 @@
   </style>
 </head>
 <body>
-  <h1>Firebase QR Projesi - SheetJS ile Excel</h1>
+  <h1>Firebase QR Projesi - Gelişmiş</h1>
 
   <!-- LOGIN SECTION -->
   <div id="login-section">
@@ -61,16 +61,20 @@
   <div id="qr-section" class="hidden">
     <button id="btnCreateSession">Yeni Liste Başlat</button>
     <button id="btnLoadSessions">Önceki Listelerim</button>
-    <!-- YENİ: Rapor Al (XLSX) butonu -->
-    <button id="btnExportXlsx">Rapor Al (XLSX)</button>
+    <!-- Rapor butonu başlangıçta gizli (display:none). main.js içinde UID kontrolüyle gösterilecek. -->
+    <button id="btnExportXlsx" style="display:none;">Rapor Al (XLSX)</button>
 
     <p id="sessionInfo"></p>
     <div id="reader"></div>
     <div id="result" style="margin-bottom: 1rem; color: #d00;"></div>
 
+    <!-- Toplam Adet Bilgisi -->
+    <h4 id="totalCount">Toplam Adet: 0</h4>
+
     <table>
       <thead>
         <tr>
+          <th>#</th>         <!-- Sıra numarası sütunu -->
           <th>QR Kodu</th>
           <th>Durum</th>
           <th>İşlem</th>

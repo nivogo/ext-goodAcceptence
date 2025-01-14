@@ -1,13 +1,18 @@
-/****************************************/
-/* main.js                              */
-/****************************************/
+/********************************************/
+/* main.js                                  */
+/********************************************/
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
+import { 
+  getAuth, 
+  signInWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/9.17.2/firebase-auth.js";
 import {
   getFirestore,
-  doc,
-  getDoc,
   collection,
   addDoc,
+  doc,
   updateDoc,
   getDocs,
   query,
@@ -16,9 +21,7 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-firestore.js";
 
-/** 
- * 1) Firebase Config (KENDİ PROJE BİLGİLERİNİZLE GÜNCELLEYİN)
- */
+/** 1) Firebase Config (KENDİ PROJE BİLGİLERİNİZLE GÜNCELLEYİN) **/
 const firebaseConfig = {
   apiKey: "AIzaSyBiWW3DjGHCA-gb6uFZzc0PiWMz5OWiTTs",
   authDomain: "nivo-transfer.firebaseapp.com",
@@ -28,115 +31,102 @@ const firebaseConfig = {
   appId: "APP_ID"
 };
 
-// 2) Firebase'i Başlat
+// 2) Uygulamayı Başlat
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 const db = getFirestore(app);
 
-// 3) Global Değişkenler
+// Global Değişkenler
 let currentSessionId = null;
-let currentSessionStatus = null; // 'ongoing' | 'completed'
+let currentSessionStatus = null;  // "ongoing" | "completed"
 
-// 4) Sayfa Yüklenince
-window.addEventListener("load", function() {
+/********************************************/
+/* Sayfa Yüklenince                          */
+/********************************************/
+window.addEventListener("load", () => {
   initUI();
-  checkLoginStateOnLoad();
-});
 
-/****************************************/
-/* Giriş/Çıkış Fonksiyonları            */
-/****************************************/
-function initUI() {
-  // Giriş Butonu
-  document.getElementById("btnLogin").addEventListener("click", async () => {
-    const username = document.getElementById("login-username").value.trim();
-    const password = document.getElementById("login-password").value;
-    const loginMsg = document.getElementById("login-msg");
-
-    if (!username || !password) {
-      loginMsg.textContent = "Kullanıcı adı ve şifre giriniz.";
-      return;
-    }
-
-    // Firestore'da doc(db, "users", username) => user belgesi
-    const userDocRef = doc(db, "users", username);
-    const userSnap = await getDoc(userDocRef);
-    if (!userSnap.exists()) {
-      loginMsg.textContent = "Kullanıcı bulunamadı.";
-      return;
-    }
-
-    const userData = userSnap.data();
-    // NOT: Gerçekte password'u hash'li tutmalısınız! Burada basitçe eşleştiriyoruz.
-    if (userData.password === password) {
+  // Auth durumu değiştikçe (login/logout)
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
       // Giriş başarılı
-      localStorage.setItem("username", username);
-      loginMsg.textContent = "";
       document.getElementById("login-section").classList.add("hidden");
       document.getElementById("logout-section").classList.remove("hidden");
       document.getElementById("qr-section").classList.remove("hidden");
+      document.getElementById("welcome-msg").textContent = `Hoşgeldiniz, UID: ${user.uid}`;
 
-      document.getElementById("welcome-msg").textContent = `Hoşgeldin, ${username}`;
-
-      // Kamerayı başlat (QR Okuma)
       startCamera();
     } else {
-      // Şifre hatalı
-      loginMsg.textContent = "Şifre hatalı.";
+      // Çıkış yapıldı veya henüz login değil
+      resetUItoLoggedOut();
+    }
+  });
+});
+
+/********************************************/
+/* UI - Login, Logout, Butonlar             */
+/********************************************/
+function initUI() {
+  // Giriş Butonu
+  document.getElementById("btnLogin").addEventListener("click", async () => {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
+
+    const loginMsg = document.getElementById("login-msg");
+    if (!username || !password) {
+      loginMsg.textContent = "Kullanıcı adı veya şifre boş olamaz.";
+      return;
+    }
+
+    // 1) "mehmet" => "mehmet@myapp.com" gibi mail formatına dönüştür
+    //    Domain tamamen size kalmış, "mehmet@myapp.com" veya "mehmet@whatever.org"
+    const fakeEmail = `${username}@nivogo.com`;
+
+    try {
+      // 2) Firebase Auth'ta "email + password"
+      await signInWithEmailAndPassword(auth, fakeEmail, password);
+      loginMsg.textContent = "";
+    } catch (err) {
+      loginMsg.textContent = "Giriş başarısız: " + err.message;
     }
   });
 
   // Çıkış Butonu
-  document.getElementById("btnLogout").addEventListener("click", () => {
-    localStorage.clear();
-    resetUIToLoggedOut();
+  document.getElementById("btnLogout").addEventListener("click", async () => {
+    await signOut(auth);
   });
 
   // Yeni Liste
   document.getElementById("btnCreateSession").addEventListener("click", createNewSession);
-  
-  // Listeyi Gönder (Tamamla)
+
+  // Listeyi Gönder
   document.getElementById("btnCompleteSession").addEventListener("click", completeSession);
 
   // Önceki Listeler
   document.getElementById("btnLoadSessions").addEventListener("click", loadMySessions);
 }
 
-function resetUIToLoggedOut() {
+/********************************************/
+/* Reset UI to Logged Out                   */
+/********************************************/
+function resetUItoLoggedOut() {
   document.getElementById("login-section").classList.remove("hidden");
   document.getElementById("logout-section").classList.add("hidden");
   document.getElementById("qr-section").classList.add("hidden");
+
   document.getElementById("login-msg").textContent = "";
-  document.getElementById("login-username").value = "";
-  document.getElementById("login-password").value = "";
+  document.getElementById("welcome-msg").textContent = "";
   document.getElementById("sessionInfo").textContent = "";
+  document.getElementById("result").textContent = "";
   document.getElementById("productTableBody").innerHTML = "";
   document.getElementById("previousSessions").innerHTML = "";
-  document.getElementById("welcome-msg").textContent = "";
-  document.getElementById("result").textContent = "";
   currentSessionId = null;
   currentSessionStatus = null;
 }
 
-/****************************************/
-/* Sayfa Yüklendiğinde Login Kontrolü   */
-/****************************************/
-function checkLoginStateOnLoad() {
-  const username = localStorage.getItem("username");
-  if (username) {
-    // Oturum açık görünüyor
-    document.getElementById("login-section").classList.add("hidden");
-    document.getElementById("logout-section").classList.remove("hidden");
-    document.getElementById("qr-section").classList.remove("hidden");
-    document.getElementById("welcome-msg").textContent = `Hoşgeldin, ${username}`;
-    startCamera();
-  } else {
-    resetUIToLoggedOut();
-  }
-}
-
-/****************************************/
-/* Kamera (QR Okuma)                    */
-/****************************************/
+/********************************************/
+/* QR Okuma Kamerası                        */
+/********************************************/
 function startCamera() {
   const reader = new Html5Qrcode("reader");
   Html5Qrcode.getCameras()
@@ -145,7 +135,7 @@ function startCamera() {
         let cameraId = cameras[0].id;
         reader.start(
           cameraId,
-          { fps: 10, qrbox: 250 },
+          { fps:10, qrbox:250 },
           (decodedText) => handleQrDecoded(decodedText),
           (error) => console.warn(error)
         );
@@ -154,22 +144,22 @@ function startCamera() {
     .catch((err) => console.error("Kamera hatası:", err));
 }
 
-/****************************************/
-/* Yeni Liste Başlat (scanningSessions) */
-/****************************************/
+/********************************************/
+/* Yeni Liste (scanningSessions)           */
+/********************************************/
 async function createNewSession() {
-  const username = localStorage.getItem("username");
-  if (!username) {
+  const user = auth.currentUser;
+  if (!user) {
     document.getElementById("result").textContent = "Önce giriş yapmalısınız!";
     return;
   }
 
-  const now = new Date().toISOString().replace("T", " ").split(".")[0];
-  const sessionName = `Mağaza ${now}`; // veya storeName + now
+  const now = new Date().toISOString().replace("T"," ").split(".")[0];
+  const sessionName = `Liste ${now}`;
 
-  // Firestore'a ekle
+  // Firestore'a ekle (user.uid ile eşleştiriyoruz)
   const ref = await addDoc(collection(db, "scanningSessions"), {
-    username: username,
+    userUid: user.uid,
     sessionName: sessionName,
     status: "ongoing",
     createdAt: serverTimestamp()
@@ -179,16 +169,15 @@ async function createNewSession() {
   currentSessionStatus = "ongoing";
 
   document.getElementById("sessionInfo").textContent =
-    `Yeni Liste: ${sessionName} (ID: ${currentSessionId})`;
-
+    `Yeni Liste: ${sessionName} (ID: ${ref.id})`;
   document.getElementById("productTableBody").innerHTML = "";
   document.getElementById("btnCompleteSession").style.display = "inline-block";
   document.getElementById("result").textContent = "";
 }
 
-/****************************************/
-/* QR Kod Okundu                        */
-/****************************************/
+/********************************************/
+/* QR Kod Okundu                            */
+/********************************************/
 async function handleQrDecoded(decodedText) {
   if (!currentSessionId) {
     document.getElementById("result").textContent = "Önce liste başlatın!";
@@ -209,16 +198,16 @@ async function handleQrDecoded(decodedText) {
     }
   }
 
-  // Aynı kod tabloda var mı? (Basit check)
+  // Tabloda aynı kod var mı? (basit check)
   const rows = document.querySelectorAll("#productTableBody tr");
   for (const r of rows) {
     if (r.cells[0].textContent === decodedText) {
-      document.getElementById("result").textContent = "Bu QR kod zaten listede!";
+      document.getElementById("result").textContent = "Bu QR zaten listede!";
       return;
     }
   }
 
-  // Firestore'a ekle (alt koleksiyon scannedItems)
+  // Firestore'a ekle (alt koleksiyon)
   const scannedRef = collection(db, "scanningSessions", currentSessionId, "scannedItems");
   await addDoc(scannedRef, {
     qrCode: decodedText,
@@ -230,9 +219,9 @@ async function handleQrDecoded(decodedText) {
   loadSessionItems(currentSessionId);
 }
 
-/****************************************/
-/* Liste Tamamla (status='completed')   */
-/****************************************/
+/********************************************/
+/* Liste Tamamla (status='completed')       */
+/********************************************/
 async function completeSession() {
   if (!currentSessionId) return;
 
@@ -242,38 +231,33 @@ async function completeSession() {
   currentSessionStatus = "completed";
   document.getElementById("btnCompleteSession").style.display = "none";
   document.getElementById("result").textContent = "Liste tamamlandı!";
-
-  // (İsteğe bağlı) alt koleksiyonda "İlk Okutma Yapıldı" -> "liste kaydedildi" güncellenebilir
   loadSessionItems(currentSessionId);
 }
 
-/****************************************/
-/* Listeyi Yükle (sessionId -> items)   */
-/****************************************/
+/********************************************/
+/* Belirli Bir Session'ın Kodlarını Yükle   */
+/********************************************/
 async function loadSessionItems(sessionId) {
   const tableBody = document.getElementById("productTableBody");
   tableBody.innerHTML = "";
 
   const scannedRef = collection(db, "scanningSessions", sessionId, "scannedItems");
-  const itemsSnap = await getDocs(scannedRef);
-  itemsSnap.forEach((docSnap) => {
+  const snap = await getDocs(scannedRef);
+  snap.forEach((docSnap) => {
     const item = docSnap.data();
+
     const tr = document.createElement("tr");
 
-    // QR kod
     const tdQr = document.createElement("td");
     tdQr.textContent = item.qrCode;
     tr.appendChild(tdQr);
 
-    // Durum
     const tdSt = document.createElement("td");
     tdSt.textContent = item.status;
     tr.appendChild(tdSt);
 
-    // İşlem (Sil)
     const tdAct = document.createElement("td");
     if (currentSessionStatus === "ongoing" && item.status === "İlk Okutma Yapıldı") {
-      // Basit "Sil" => Durumu "Silindi" yapma
       const btnDel = document.createElement("button");
       btnDel.textContent = "Sil";
       btnDel.addEventListener("click", async () => {
@@ -290,18 +274,19 @@ async function loadSessionItems(sessionId) {
   });
 }
 
-/****************************************/
-/* Önceki Listeler (scanningSessions)   */
-/****************************************/
+/********************************************/
+/* Önceki Listeler                          */
+/********************************************/
 async function loadMySessions() {
-  const username = localStorage.getItem("username");
-  if (!username) {
-    document.getElementById("result").textContent = "Giriş yapmalısınız!";
+  const user = auth.currentUser;
+  if (!user) {
+    document.getElementById("result").textContent = "Önce giriş yapmalısınız!";
     return;
   }
+
   const q = query(
     collection(db, "scanningSessions"),
-    where("username", "==", username),
+    where("userUid", "==", user.uid),
     orderBy("createdAt", "desc")
   );
   const snap = await getDocs(q);

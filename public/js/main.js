@@ -69,7 +69,7 @@ window.addEventListener("load", () => {
 function initUI() {
   // Giriş Butonu
   document.getElementById("btnLogin").addEventListener("click", async () => {
-    const usernameInput = document.getElementById("username");
+    const usernameInput = document.getElementById("login-username");
     const passwordInput = document.getElementById("password");
     const loginMsg = document.getElementById("login-msg");
 

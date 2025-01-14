@@ -2,11 +2,9 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>Firebase QR Projesi</title>
-
+  <title>Firestore Username Login</title>
   <!-- html5-qrcode CDN -->
   <script src="https://unpkg.com/html5-qrcode"></script>
-
   <style>
     body { font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 1rem; }
     #reader { width: 100%; margin: 20px 0; }
@@ -17,21 +15,21 @@
   </style>
 </head>
 <body>
-  <h1>Firebase QR Projesi</h1>
+  <h1>Firestore Username Giriş Sistemi</h1>
 
   <!-- LOGIN SECTION -->
   <div id="login-section">
     <div>
-      <input type="email" id="email" placeholder="Email" />
-      <input type="password" id="password" placeholder="Şifre" />
+      <input type="text" id="login-username" placeholder="Kullanıcı Adı" />
+      <input type="password" id="login-password" placeholder="Şifre" />
     </div>
     <button id="btnLogin">Giriş</button>
-    <button id="btnRegister">Kayıt Ol</button>
-    <div id="msg"></div>
+    <div id="login-msg" style="color:red;"></div>
   </div>
 
   <!-- LOGOUT SECTION -->
   <div id="logout-section" class="hidden">
+    <span id="welcome-msg"></span>
     <button id="btnLogout">Çıkış Yap</button>
   </div>
 
@@ -42,7 +40,7 @@
     <p id="sessionInfo"></p>
 
     <div id="reader"></div>
-    <div id="result" style="margin-bottom: 1rem; color: #d00;"></div>
+    <div id="result" style="margin-bottom:1rem;color:#c00;"></div>
 
     <table>
       <thead>
@@ -57,11 +55,10 @@
 
     <button id="btnCompleteSession" style="display:none;">Listeyi Gönder</button>
 
-    <div id="previousSessions" style="margin-top: 20px;"></div>
+    <div id="previousSessions" style="margin-top:20px;"></div>
   </div>
 
-  <!-- Firebase ve Ana JS -->
-  <!-- (type="module") => main.js içinde ES6 import'larını kullanacağız -->
+  <!-- Firebase ve JS kodları -->
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

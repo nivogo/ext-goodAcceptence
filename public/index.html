@@ -2,27 +2,25 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>Firestore Username Login</title>
-  <!-- html5-qrcode CDN -->
+  <title>Username ile Giriş (Arka planda Auth)</title>
+  <!-- html5-qrcode -->
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 1rem; }
-    #reader { width: 100%; margin: 20px 0; }
+    body { font-family: Arial, sans-serif; max-width:600px; margin:auto; padding:1rem; }
+    #reader { width:100%; margin:20px 0; }
     .hidden { display: none; }
-    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-    td, th { border: 1px solid #ccc; padding: 8px; }
-    #login-section, #qr-section, #logout-section { margin-bottom: 1rem; }
+    table { width:100%; border-collapse: collapse; margin-top:1rem; }
+    td,th { border:1px solid #ccc; padding:8px; }
+    #login-section, #logout-section, #qr-section { margin-bottom:1rem; }
   </style>
 </head>
 <body>
-  <h1>Firestore Username Giriş Sistemi</h1>
+  <h1>Username + Password Girişi (Arka planda Firebase Auth)</h1>
 
   <!-- LOGIN SECTION -->
   <div id="login-section">
-    <div>
-      <input type="text" id="login-username" placeholder="Kullanıcı Adı" />
-      <input type="password" id="login-password" placeholder="Şifre" />
-    </div>
+    <input type="text" id="username" placeholder="Kullanıcı Adı (örn. mehmet)" />
+    <input type="password" id="password" placeholder="Şifre" />
     <button id="btnLogin">Giriş</button>
     <div id="login-msg" style="color:red;"></div>
   </div>
@@ -54,11 +52,10 @@
     </table>
 
     <button id="btnCompleteSession" style="display:none;">Listeyi Gönder</button>
-
     <div id="previousSessions" style="margin-top:20px;"></div>
   </div>
 
-  <!-- Firebase ve JS kodları -->
+  <!-- Firebase ve Ana JS -->
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

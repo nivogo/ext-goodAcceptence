@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) Repo'yu klonla
+      # 1) Depo'yu klonla
       - name: Check out
         uses: actions/checkout@v3
 
@@ -20,19 +20,24 @@ jobs:
         with:
           node-version: 18
 
-      # 3) Firebase CLI kur
+      # 3) GCP Auth (Service Account üzerinden)
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          # Bu SECRET'ı GitHub Repo > Settings > Secrets > Actions'a eklemiştiniz
+
+      # 4) Firebase CLI kur
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
-      # 4) Functions bağımlılıklarını kur
+      # 5) Functions bağımlılıklarını kur
       - name: Install functions dependencies
         run: |
           cd functions
           npm install
-        # "npm run build" vb. varsa ekleyebilirsiniz
+        # "npm run build" vb. varsa burada ekleyebilirsiniz
 
-      # 5) Deploy only functions
+      # 6) Deploy only functions (Artık FIREBASE_TOKEN'a gerek yok)
       - name: Firebase Deploy (Functions Only)
         run: firebase deploy --only functions
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

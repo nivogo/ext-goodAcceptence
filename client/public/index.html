@@ -1,1 +1,94 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ön Kabul / Mal Kabul Projesi</title>
 
+  <!-- html5-qrcode (koli/ürün okutma) -->
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <!-- SheetJS (rapor) -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 700px; margin: auto; padding: 1rem; }
+    .hidden { display: none; }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    td, th { border: 1px solid #ccc; padding: 8px; }
+  </style>
+</head>
+<body>
+  <h1>Depo ve Mağaza Kabul Sistemi</h1>
+
+  <!-- LOGIN SECTION -->
+  <div id="login-section">
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Şifre" />
+    <button id="btnLogin">Giriş</button>
+    <button id="btnRegister">Kayıt Ol</button>
+    <div id="loginMsg"></div>
+  </div>
+
+  <!-- HOME SECTION -->
+  <div id="home-section" class="hidden">
+    <button id="btnOnKabul">Ön Kabul</button>
+    <button id="btnMalKabul">Mal Kabul</button>
+    <!-- Rapor butonu sadece belirli UID'de gözüksün -->
+    <button id="btnRapor" style="display:none;">Rapor İndir</button>
+    <button id="btnLogout">Çıkış</button>
+  </div>
+
+  <!-- ÖN KABUL EKRANI -->
+  <div id="onKabul-section" class="hidden">
+    <h2>Ön Kabul Ekranı</h2>
+    <p>Toplam Koli Adedi: <span id="onKabulKoliCount">0</span></p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Sıra No</th>
+          <th>Koli (****)</th>
+          <th>Gönderici</th>
+          <th>Alıcı</th>
+          <th>Sevk Tarihi</th>
+          <th>Sevk No</th>
+          <th>Ürün Adedi (****)</th>
+          <th>Durum</th>
+        </tr>
+      </thead>
+      <tbody id="onKabulTableBody"></tbody>
+    </table>
+
+    <input type="text" id="onKabulKoliInput" placeholder="Koli No Gir" />
+    <button id="onKabulKoliOkutBtn">OKUT</button>
+    <button id="btnOnKabulGeri">Geri</button>
+  </div>
+
+  <!-- MAL KABUL EKRANI -->
+  <div id="malKabul-section" class="hidden">
+    <h2>Mal Kabul Ekranı</h2>
+    <p>Toplam Koli Adedi: <span id="malKabulKoliCount">0</span></p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Sıra No</th>
+          <th>Koli Numarası</th>
+          <th>Durum</th>
+        </tr>
+      </thead>
+      <tbody id="malKabulTableBody"></tbody>
+    </table>
+
+    <!-- Tekil ürün sayfası da benzer şekilde açılabilir. -->
+    <button id="btnMalKabulGeri">Geri</button>
+  </div>
+
+  <!-- JS Dosyaları (Sıra: config -> auth -> onKabul -> malKabul -> report -> main) -->
+  <script type="module" src="js/firebaseConfig.js"></script>
+  <script type="module" src="js/auth.js"></script>
+  <script type="module" src="js/onKabul.js"></script>
+  <script type="module" src="js/malKabul.js"></script>
+  <script type="module" src="js/report.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

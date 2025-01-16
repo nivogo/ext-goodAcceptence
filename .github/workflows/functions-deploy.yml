@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) Depo'yu klonla
+      # 1) Repo'yu klonla
       - name: Check out
         uses: actions/checkout@v3
 
@@ -25,7 +25,6 @@ jobs:
         uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
-          # Bu SECRET'ı GitHub Repo > Settings > Secrets > Actions'a eklemiştiniz
 
       # 4) Firebase CLI kur
       - name: Install Firebase CLI

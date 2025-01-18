@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: 18
 
-      # 3) GCP Auth (Service Account üzerinden)
+      # 3) GCP Auth (Service Account)
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v1
         with:
@@ -35,20 +35,19 @@ jobs:
         run: |
           cd functions
           npm install
-        # "npm run build" vb. burada eklenebilir
 
-      # 6) Firebase config ve Deploy aynı stepte (alternatif çözüm)
-      #    veya ayrı adımda da yapabilirsiniz, ancak env içinde kimlik bilgilerini korumak gerek.
+      # 6) Config + Deploy
       - name: Config and Deploy
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
         run: |
-          # a) Firebase Config Ayarlarını Yapılandırma
-          firebase functions:config:set sql.user="${{ secrets.SQL_USER }}" \
-                                        sql.password="${{ secrets.SQL_PASSWORD }}" \
-                                        sql.server="${{ secrets.SQL_SERVER }}" \
-                                        sql.port="${{ secrets.SQL_PORT }}" \
-                                        sql.database="${{ secrets.SQL_DATABASE }}"
+          echo "A) Firebase Config Ayarlarini Yapiyoruz"
+          firebase functions:config:set \
+            sql.user="${{ secrets.SQL_USER }}" \
+            sql.password="${{ secrets.SQL_PASSWORD }}" \
+            sql.server="${{ secrets.SQL_SERVER }}" \
+            sql.port="${{ secrets.SQL_PORT }}" \
+            sql.database="${{ secrets.SQL_DATABASE }}"
 
-          # b) Deploy only functions
-          firebase deploy --only functions
+          echo "B) Deploy only functions"
+          firebase --debug deploy --only functions

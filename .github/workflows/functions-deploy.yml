@@ -35,20 +35,20 @@ jobs:
         run: |
           cd functions
           npm install
-        # "npm run build" vb. varsa burada ekleyebilirsiniz
+        # "npm run build" vb. burada eklenebilir
 
-        # 6) Firebase Config Ayarlarını Yapılandırma
-      - name: Set Firebase Config
+      # 6) Firebase config ve Deploy aynı stepte (alternatif çözüm)
+      #    veya ayrı adımda da yapabilirsiniz, ancak env içinde kimlik bilgilerini korumak gerek.
+      - name: Config and Deploy
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
         run: |
+          # a) Firebase Config Ayarlarını Yapılandırma
           firebase functions:config:set sql.user="${{ secrets.SQL_USER }}" \
                                         sql.password="${{ secrets.SQL_PASSWORD }}" \
                                         sql.server="${{ secrets.SQL_SERVER }}" \
                                         sql.port="${{ secrets.SQL_PORT }}" \
                                         sql.database="${{ secrets.SQL_DATABASE }}"
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
 
-
-      # 7) Deploy only functions (Artık FIREBASE_TOKEN'a gerek yok)
-      - name: Firebase Deploy (Functions Only)
-        run: firebase deploy --only functions
+          # b) Deploy only functions
+          firebase deploy --only functions

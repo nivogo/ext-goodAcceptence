@@ -9,7 +9,7 @@ const db = admin.firestore();
 // 1) Manuel olarak SQL bilgilerini kodda gömüyoruz (ÖRNEK)
 const sqlConfig = {
   user: "sa",
-  password: "Be1bt.com",
+  password: "be1bt.com",
   server: "37.75.12.58",
   port: 199,
   database: "NivogoTest2",

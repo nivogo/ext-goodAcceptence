@@ -10,8 +10,8 @@ const db = admin.firestore();
 const sqlConfig = {
   user: "selin",
   password: "Nadiafay12",
-  server: "195.42.132.122",
-  port: 1221,
+  server: "37.75.12.57",
+  port: 1433,
   database: "NIVOGO",
   options: {
     encrypt: false,             // sunucunuz SSL kullanıyorsa true

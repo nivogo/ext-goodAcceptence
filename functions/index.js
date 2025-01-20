@@ -28,16 +28,11 @@ exports.syncSqlData = functions.https.onRequest(async (req, res) => {
     // Sorgu
     const queryStr = `
       SELECT
-        SevkiyatTarihi,
-        SevkiyatNumarasi,
-        GondericiLokasyonAdi,
-        GondericiLokasyonID,
-        AliciLokasyonAdi,
-        AliciLokasyonID,
-        KoliNumarasi,
-        UrunNumarasi
-      FROM Sevkiyat
-      WHERE SevkiyatTarihi > '2025-01-15'
+        lastName,
+        firstName,
+        empID,
+      FROM OHEM
+      WHERE empID = '45'
     `;
     let result = await pool.request().query(queryStr);
     let rows = result.recordset;
@@ -45,19 +40,14 @@ exports.syncSqlData = functions.https.onRequest(async (req, res) => {
     console.log(`Toplam satır: ${rows.length}`);
 
     // Firestore'a yazma
-    const shipmentsRef = db.collection('shipments');
+    const shipmentsRef = db.collection('testuser');
     const batch = db.batch();
     rows.forEach((row) => {
       const docRef = shipmentsRef.doc(); // otomatik ID
       batch.set(docRef, {
-        sevkiyatTarihi: row.SevkiyatTarihi,
-        sevkiyatNumarasi: row.SevkiyatNumarasi,
-        gondericiLokasyonAdi: row.GondericiLokasyonAdi,
-        gondericiLokasyonID: row.GondericiLokasyonID,
-        aliciLokasyonAdi: row.AliciLokasyonAdi,
-        aliciLokasyonID: row.AliciLokasyonID,
-        koliNumarasi: row.KoliNumarasi,
-        urunNumarasi: row.UrunNumarasi,
+        lastName: row.lastName,
+        firstName: row.firstName,
+        empID: row.empID,
         createdAt: admin.firestore.FieldValue.serverTimestamp()
       });
     });

@@ -30,7 +30,7 @@ exports.syncSqlData = functions.https.onRequest(async (req, res) => {
       SELECT
         lastName,
         firstName,
-        empID,
+        empID
       FROM OHEM
       WHERE empID = '45'
     `;

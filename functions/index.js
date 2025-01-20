@@ -8,15 +8,15 @@ const db = admin.firestore();
 
 // 1) Manuel olarak SQL bilgilerini kodda gömüyoruz (ÖRNEK)
 const sqlConfig = {
-  user: "sa",
-  password: "Be1bt.com",
-  server: "37.75.12.58",
+  user: "selin",
+  password: "Nadiafay12",
+  server: "195.42.132.122",
   port: 1433,
-  database: "NivogoTest2",
+  database: "NIVOGO",
   options: {
     encrypt: false,             // sunucunuz SSL kullanıyorsa true
     trustServerCertificate: true
-  }
+
 };
 
 // 2) HTTP tetiklemeli fonksiyon (manuel tetiklemek için)

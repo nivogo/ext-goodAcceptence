@@ -15,7 +15,7 @@ const sqlConfig = {
   database: "NIVOGO",
   options: {
     encrypt: false,             // sunucunuz SSL kullanıyorsa true
-    trustServerCertificate: true
+    trustServerCertificate: true }
 
 };
 

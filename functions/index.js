@@ -11,7 +11,7 @@ const sqlConfig = {
   user: "sa",
   password: "Be1bt.com",
   server: "37.75.12.58",
-  port: 199,
+  port: 1433,
   database: "NivogoTest2",
   options: {
     encrypt: false,             // sunucunuz SSL kullanıyorsa true

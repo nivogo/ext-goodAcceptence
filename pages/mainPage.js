@@ -4,7 +4,7 @@ import { signOut } from "firebase/auth";
 import { auth } from "../firebase/firebaseConfig";
 import { useEffect, useState } from "react";
 
-export default function Dashboard() {
+export default function mainPage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
 

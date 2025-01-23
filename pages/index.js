@@ -14,7 +14,7 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       // Giriş başarılı olursa dashboard'a yönlendir
-      router.push("/mainpage");
+      router.push("/mainPage");
     } catch (error) {
       console.error("Login Error:", error);
       alert("Giriş başarısız. Lütfen bilgilerinizi kontrol edin.");

@@ -16,15 +16,13 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      - name: List files in root
-        run: ls -la
-
-      - name: Use Node.js 18
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
+          cache: 'npm'
 
-      # 1) Firebase Config Değerlerini Ortama Aktar
+      # Firebase Config Değerlerini Ortama Aktar
       - name: Set environment variables
         run: |
           echo "NEXT_PUBLIC_FIREBASE_API_KEY=${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}" >> $GITHUB_ENV
@@ -35,21 +33,23 @@ jobs:
           echo "NEXT_PUBLIC_FIREBASE_APP_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}" >> $GITHUB_ENV
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build Next.js
         run: npm run build
 
-      # 2) Service Account kurulumu (GCP Auth için)
+      # Service Account kurulumu (GCP Auth için)
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
 
       - name: Install Firebase CLI
-        run: npm install -g firebase-tools
+        uses: w9jds/firebase-action@v1.5.0
+        with:
+          args: tools
 
-      # 3) Firebase Deploy
+      # Firebase Deploy
       - name: Firebase Deploy
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:

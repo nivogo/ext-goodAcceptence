@@ -2,33 +2,19 @@
 import { useRouter } from "next/router";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase/firebaseConfig";
-import { useEffect, useState } from "react";
-import { getUserData } from "../lib/firestore";
-import BackButton from "../components/BackButton"; // BackButton bileşenini ekleyin
+import { useAuth } from "../_app"; // Auth Hook'u kullanıyoruz
+import BackButton from "../components/BackButton";
 
 export default function MainPage() {
   const router = useRouter();
-  const [user, setUser] = useState(null);
-  const [userData, setUserData] = useState(null); 
-  const [loading, setLoading] = useState(true); // Loading state ekleyin
+  const { user, userData } = useAuth();
 
+  // Kullanıcı yoksa (giriş yapılmamışsa) giriş sayfasına yönlendir
   useEffect(() => {
-    // Kullanıcı bilgilerini alıyoruz
-    const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
-      if (firebaseUser) {
-        setUser(firebaseUser);
-        const data = await getUserData(firebaseUser.uid);
-        setUserData(data);
-        setLoading(false);
-      } else {
-        // Eğer kullanıcı yoksa giriş sayfasına yönlendir
-        setLoading(false);
-        router.push("/");
-      }
-    });
-
-    return () => unsubscribe();
-  }, [router]);
+    if (!user && !loading) {
+      router.push("/");
+    }
+  }, [user, router]);
 
   const handleSignOut = async () => {
     try {
@@ -40,17 +26,13 @@ export default function MainPage() {
     }
   };
 
-  if (loading) {
-    return <p>Yükleniyor...</p>; // Kullanıcı bilgisi gelmeden yükleniyor göstergesi
-  }
-
   if (!user || !userData) {
-    return null; // Kullanıcı yoksa hiçbir şey gösterme (giriş sayfasına yönlendiriliyor)
+    return <p>Yükleniyor...</p>;
   }
 
   return (
     <div style={{ margin: "2rem" }}>
-      <BackButton /> {/* Geri butonunu ekleyin */}
+      <BackButton />
       <h1>Hoş Geldiniz, {userData.name}</h1>
       <p>Mağaza: {userData.storeName} (Store ID: {userData.storeId})</p>
       <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>

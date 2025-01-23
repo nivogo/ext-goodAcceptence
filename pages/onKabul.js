@@ -1,6 +1,6 @@
 // pages/onKabul.js
 import { useRouter } from "next/router";
-import { useState, useEffect } from "react";
+import { useState, useEffect } from "react"; // useState ve useEffect import edildi
 import { useAuth } from "../context/AuthContext";
 import { getShipmentsByStoreId, updateOnKabulFields } from "../lib/firestore";
 import BackButton from "../components/BackButton";

@@ -3,14 +3,15 @@ import { useEffect, useState } from "react";
 import { auth } from "../firebase/firebaseConfig";
 import { useRouter } from "next/router";
 import { getUserData, getShipmentsByStoreId, updateOnKabulFields } from "../lib/firestore";
-import BackButton from "../components/BackButton"; // BackButton bileşenini ekleyin
+import BackButton from "../components/BackButton";
 
 export default function OnKabulPage() {
   const router = useRouter();
   const [user, setUser] = useState(null);            // Firebase Auth kullanıcısı
-  const [userData, setUserData] = useState(null);    // users koleksiyonundaki veriler (storeId, username vb.)
+  const [userData, setUserData] = useState(null);    // users koleksiyonundaki veriler (storeId, name vb.)
   const [shipments, setShipments] = useState([]);    // shipment_data verileri
   const [boxInput, setBoxInput] = useState("");      // Koli numarası arama input'u
+  const [loading, setLoading] = useState(true);      // Loading state
 
   useEffect(() => {
     // Authentication durumunu dinle
@@ -26,8 +27,10 @@ export default function OnKabulPage() {
           const shipmentsList = await getShipmentsByStoreId(data.storeId);
           setShipments(shipmentsList);
         }
+        setLoading(false);
       } else {
         // Giriş yoksa login sayfasına yönlendir
+        setLoading(false);
         router.push("/");
       }
     });
@@ -60,7 +63,7 @@ export default function OnKabulPage() {
         // Her eşleşen dokümanda ön kabul alanlarını güncelle
         await Promise.all(
           matchingDocs.map((docItem) =>
-            updateOnKabulFields(docItem.id, userData.username)
+            updateOnKabulFields(docItem.id, userData.name) // username yerine name kullanılıyor
           )
         );
 
@@ -71,10 +74,7 @@ export default function OnKabulPage() {
             return {
               ...item,
               onKabulDurumu: "Okutma Başarılı",
-              onKabulYapanKisi: userData.username,
-              // onKabulSaati'ni Firestore'dan çekerken serverTimestamp() 
-              // tam değerine bir sonraki sorguda ulaşabilirsiniz.
-              // Geçici olarak yerel state'e Date.now() koyabiliriz veya yenileyebiliriz.
+              onKabulYapanKisi: userData.name, // username yerine name kullanılıyor
               onKabulSaati: new Date().toISOString(),
             };
           }
@@ -93,15 +93,18 @@ export default function OnKabulPage() {
     }
   };
 
-  if (!user || !userData) {
+  if (loading) {
     return <p>Yükleniyor...</p>;
+  }
+
+  if (!user || !userData) {
+    return null; // veya bir loading göstergesi
   }
 
   return (
     <div style={{ margin: "2rem" }}>
       <BackButton /> {/* Geri butonunu ekleyin */}
-      <h1>Ön Kabul Sayfası</h1>
-
+      <h1>Hoş Geldiniz, {userData.name}</h1>
       <p>Mağaza: {userData.storeName} (Store ID: {userData.storeId})</p>
 
       {/* Koli Arama Input */}

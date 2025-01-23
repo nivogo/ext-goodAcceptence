@@ -1,7 +1,7 @@
 // pages/onKabul.js
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
-import { useAuth } from "../_app"; // Auth Hook'u kullanıyoruz
+import { useAuth } from "../context/AuthContext"; // Güncellenmiş import
 import { getShipmentsByStoreId, updateOnKabulFields } from "../lib/firestore";
 import BackButton from "../components/BackButton";
 

@@ -1,28 +1,24 @@
 // pages/onKabul.js
-import { useRouter } from "next/router";
-import { useState, useEffect } from "react"; // useState ve useEffect import edildi
-import { useAuth } from "../context/AuthContext";
-import { getShipmentsByStoreId, updateOnKabulFields } from "../lib/firestore";
-import BackButton from "../components/BackButton";
-import styles from "../styles/OnKabul.module.css";
+
+// ... (diğer importlar)
+import { getAllShipments } from "../lib/firestore"; // Yeni bir fonksiyon eklemek için
 
 export default function OnKabulPage() {
-  const router = useRouter();
-  const { user, userData } = useAuth();
-  const [shipments, setShipments] = useState([]);
-  const [boxInput, setBoxInput] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState(null);
+  // ... (mevcut kod)
 
-  // Veri çekme fonksiyonu
+  // Yeni State: Tüm kolileri tutmak için
+  const [allShipments, setAllShipments] = useState([]);
+
+  // Veri çekme fonksiyonu güncellendi
   const fetchShipments = async () => {
     if (user && userData && userData.storeId) {
       setRefreshing(true);
       setError(null);
       try {
         const shipmentsList = await getShipmentsByStoreId(userData.storeId);
+        const allShipmentsList = await getAllShipments(); // Tüm kolileri al
         setShipments(shipmentsList);
+        setAllShipments(allShipmentsList);
       } catch (err) {
         console.error("Veri Çekme Hatası:", err);
         setError("Veriler alınırken bir hata oluştu.");
@@ -32,141 +28,32 @@ export default function OnKabulPage() {
     }
   };
 
-  useEffect(() => {
-    if (user && userData) {
-      fetchShipments();
-    } else {
-      setLoading(false);
-      router.push("/");
-    }
-  }, [user, userData, router]);
-
-  const formatDate = (date) => {
-    if (!date) return "-";
-    if (date.toDate) {
-      return date.toDate().toLocaleString();
-    }
-    const parsedDate = new Date(date);
-    return isNaN(parsedDate) ? "-" : parsedDate.toLocaleString();
-  };
-
-  const handleBoxSubmit = async (e) => {
-    e.preventDefault();
-    if (!boxInput) return;
-
-    try {
-      const matchingDocs = shipments.filter((doc) => doc.box === boxInput);
-
-      if (matchingDocs.length > 0) {
-        await Promise.all(
-          matchingDocs.map((docItem) =>
-            updateOnKabulFields(docItem.id, userData.name)
-          )
-        );
-
-        const updatedShipments = shipments.map((item) => {
-          if (item.box === boxInput) {
-            return {
-              ...item,
-              onKabulDurumu: "Okutma Başarılı",
-              onKabulYapanKisi: userData.name,
-              onKabulSaati: new Date().toISOString(),
-            };
-          }
-          return item;
-        });
-        setShipments(updatedShipments);
-
-        alert("Koli numarası başarıyla okutuldu!");
-      } else {
-        alert("Girilen koli numarası, bu mağaza için mevcut değil.");
-      }
-      setBoxInput("");
-    } catch (error) {
-      console.error("Ön Kabul Güncelleme Hatası:", error);
-      alert("Ön kabul işlemi sırasında bir hata oluştu.");
-    }
-  };
-
-  if (loading) {
-    return (
-      <div style={{ padding: "2rem", textAlign: "center" }}>
-        <p>Yükleniyor...</p>
-      </div>
-    );
-  }
-
-  if (!user || !userData) {
-    return null;
-  }
-
+  // Koli numarası girilene kadar "****" göster
   return (
     <div className={styles.container}>
-      <BackButton />
-      <h1>Hoş Geldiniz, {userData.name}</h1>
-      <p>
-        Mağaza: {userData.storeName} (Store ID: {userData.storeId})
-      </p>
-
-      {/* Yenile Butonu */}
-      <button
-        onClick={fetchShipments}
-        className={styles.refreshButton}
-        disabled={refreshing}
-      >
-        {refreshing ? "Yükleniyor..." : "Yenile"}
-      </button>
-
-      {/* Hata Mesajı */}
-      {error && <p className={styles.error}>{error}</p>}
-
-      {/* Koli Arama Input */}
-      <form onSubmit={handleBoxSubmit} style={{ marginBottom: "1rem", marginTop: "1rem" }}>
-        <input
-          type="text"
-          placeholder="Koli numarası giriniz"
-          value={boxInput}
-          onChange={(e) => setBoxInput(e.target.value)}
-          required
-          className={styles.input}
-        />
-        <button type="submit" className={styles.submitButton}>
-          Onayla
-        </button>
-      </form>
-
-      {/* Toplam Koli Sayısı */}
-      <p>Toplam Koli Adedi: {shipments.length}</p>
+      {/* ... (mevcut kod) */}
 
       {/* Liste Tablosu */}
       <table className={styles.table}>
         <thead>
           <tr>
-            <th className={styles.th}>Sıra No</th>
-            <th className={styles.th}>Gönderici Lokasyon Adı</th>
-            <th className={styles.th}>Alıcı Lokasyon Adı</th>
+            {/* ... (mevcut başlıklar) */}
             <th className={styles.th}>Koli Numarası</th>
-            <th className={styles.th}>Sevk Tarihi</th>
-            <th className={styles.th}>Sevkiyat Numarası</th>
             <th className={styles.th}>Ürün Adedi</th>
-            <th className={styles.th}>Ön Kabul Durumu</th>
-            <th className={styles.th}>Ön Kabul Yapan Kişi</th>
-            <th className={styles.th}>Ön Kabul Saati</th>
+            {/* ... (diğer başlıklar) */}
           </tr>
         </thead>
         <tbody>
           {shipments.map((item, index) => (
             <tr key={item.id}>
-              <td className={styles.td}>{index + 1}</td>
-              <td className={styles.td}>{item.from_location}</td>
-              <td className={styles.td}>{item.to_location}</td>
-              <td className={styles.td}>{item.box}</td>
-              <td className={styles.td}>{item.shipment_date}</td>
-              <td className={styles.td}>{item.shipment_no}</td>
-              <td className={styles.td}>{item.quantityof_order}</td>
-              <td className={styles.td}>{item.onKabulDurumu || "-"}</td>
-              <td className={styles.td}>{item.onKabulYapanKisi || "-"}</td>
-              <td className={styles.td}>{formatDate(item.onKabulSaati)}</td>
+              {/* ... (mevcut hücreler) */}
+              <td className={styles.td}>
+                {item.isApproved ? item.box : "****"}
+              </td>
+              <td className={styles.td}>
+                {item.isApproved ? item.quantityof_order : "****"}
+              </td>
+              {/* ... (diğer hücreler) */}
             </tr>
           ))}
         </tbody>
@@ -174,3 +61,26 @@ export default function OnKabulPage() {
     </div>
   );
 }
+
+// lib/firestore.js'de yeni fonksiyon eklenmeli
+
+// lib/firestore.js
+
+// ... (mevcut importlar)
+import { collection, getDocs } from "firebase/firestore";
+
+// Tüm kolileri çekme fonksiyonu
+export const getAllShipments = async () => {
+  try {
+    const q = collection(db, "shipment_data");
+    const querySnapshot = await getDocs(q);
+    const shipments = [];
+    querySnapshot.forEach((doc) => {
+      shipments.push({ id: doc.id, ...doc.data() });
+    });
+    return shipments;
+  } catch (error) {
+    console.error("getAllShipments Hatası:", error);
+    return [];
+  }
+};

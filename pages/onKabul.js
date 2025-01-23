@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { getShipmentsByStoreId, updateOnKabulFields } from "../lib/firestore";
 import BackButton from "../components/BackButton";
+import styles from "../styles/OnKabul.module.css";
 
 export default function OnKabulPage() {
   const router = useRouter();
@@ -100,7 +101,7 @@ export default function OnKabulPage() {
   }
 
   return (
-    <div style={containerStyle}>
+    <div className={styles.container}>
       <BackButton />
       <h1>Hoş Geldiniz, {userData.name}</h1>
       <p>
@@ -110,29 +111,26 @@ export default function OnKabulPage() {
       {/* Yenile Butonu */}
       <button
         onClick={fetchShipments}
-        style={refreshButtonStyle}
+        className={styles.refreshButton}
         disabled={refreshing}
       >
         {refreshing ? "Yükleniyor..." : "Yenile"}
       </button>
 
       {/* Hata Mesajı */}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p className={styles.error}>{error}</p>}
 
       {/* Koli Arama Input */}
-      <form
-        onSubmit={handleBoxSubmit}
-        style={{ marginBottom: "1rem", marginTop: "1rem" }}
-      >
+      <form onSubmit={handleBoxSubmit} style={{ marginBottom: "1rem", marginTop: "1rem" }}>
         <input
           type="text"
           placeholder="Koli numarası giriniz"
           value={boxInput}
           onChange={(e) => setBoxInput(e.target.value)}
           required
-          style={inputStyle}
+          className={styles.input}
         />
-        <button type="submit" style={submitButtonStyle}>
+        <button type="submit" className={styles.submitButton}>
           Onayla
         </button>
       </form>
@@ -141,34 +139,34 @@ export default function OnKabulPage() {
       <p>Toplam Koli Adedi: {shipments.length}</p>
 
       {/* Liste Tablosu */}
-      <table style={tableStyle}>
+      <table className={styles.table}>
         <thead>
           <tr>
-            <th>Sıra No</th>
-            <th>Gönderici Lokasyon Adı</th>
-            <th>Alıcı Lokasyon Adı</th>
-            <th>Koli Numarası</th>
-            <th>Sevk Tarihi</th>
-            <th>Sevkiyat Numarası</th>
-            <th>Ürün Adedi</th>
-            <th>Ön Kabul Durumu</th>
-            <th>Ön Kabul Yapan Kişi</th>
-            <th>Ön Kabul Saati</th>
+            <th className={styles.th}>Sıra No</th>
+            <th className={styles.th}>Gönderici Lokasyon Adı</th>
+            <th className={styles.th}>Alıcı Lokasyon Adı</th>
+            <th className={styles.th}>Koli Numarası</th>
+            <th className={styles.th}>Sevk Tarihi</th>
+            <th className={styles.th}>Sevkiyat Numarası</th>
+            <th className={styles.th}>Ürün Adedi</th>
+            <th className={styles.th}>Ön Kabul Durumu</th>
+            <th className={styles.th}>Ön Kabul Yapan Kişi</th>
+            <th className={styles.th}>Ön Kabul Saati</th>
           </tr>
         </thead>
         <tbody>
           {shipments.map((item, index) => (
             <tr key={item.id}>
-              <td>{index + 1}</td>
-              <td>{item.from_location}</td>
-              <td>{item.to_location}</td>
-              <td>{item.box}</td>
-              <td>{item.shipment_date}</td>
-              <td>{item.shipment_no}</td>
-              <td>{item.quantityof_order}</td>
-              <td>{item.onKabulDurumu || "-"}</td>
-              <td>{item.onKabulYapanKisi || "-"}</td>
-              <td>{formatDate(item.onKabulSaati)}</td>
+              <td className={styles.td}>{index + 1}</td>
+              <td className={styles.td}>{item.from_location}</td>
+              <td className={styles.td}>{item.to_location}</td>
+              <td className={styles.td}>{item.box}</td>
+              <td className={styles.td}>{item.shipment_date}</td>
+              <td className={styles.td}>{item.shipment_no}</td>
+              <td className={styles.td}>{item.quantityof_order}</td>
+              <td className={styles.td}>{item.onKabulDurumu || "-"}</td>
+              <td className={styles.td}>{item.onKabulYapanKisi || "-"}</td>
+              <td className={styles.td}>{formatDate(item.onKabulSaati)}</td>
             </tr>
           ))}
         </tbody>
@@ -176,68 +174,3 @@ export default function OnKabulPage() {
     </div>
   );
 }
-
-const containerStyle = {
-  margin: "2rem",
-};
-
-const refreshButtonStyle = {
-  padding: "0.5rem 1rem",
-  margin: "1rem 0",
-  backgroundColor: "#28a745",
-  color: "#fff",
-  border: "none",
-  borderRadius: "5px",
-  cursor: "pointer",
-};
-
-const inputStyle = {
-  padding: "0.5rem",
-  marginRight: "1rem",
-  border: "1px solid #ccc",
-  borderRadius: "4px",
-  width: "200px",
-};
-
-const submitButtonStyle = {
-  padding: "0.5rem 1rem",
-  backgroundColor: "#007bff",
-  color: "#fff",
-  border: "none",
-  borderRadius: "4px",
-  cursor: "pointer",
-};
-
-const tableStyle = {
-  width: "100%",
-  borderCollapse: "collapse",
-  marginTop: "1rem",
-};
-
-tableStyle.th = {
-  border: "1px solid #ddd",
-  padding: "8px",
-  backgroundColor: "#f2f2f2",
-};
-
-tableStyle.td = {
-  border: "1px solid #ddd",
-  padding: "8px",
-};
-
-export const tableStyle = {
-  width: "100%",
-  borderCollapse: "collapse",
-  marginTop: "1rem",
-};
-
-export const thStyle = {
-  border: "1px solid #ddd",
-  padding: "8px",
-  backgroundColor: "#f2f2f2",
-};
-
-export const tdStyle = {
-  border: "1px solid #ddd",
-  padding: "8px",
-};

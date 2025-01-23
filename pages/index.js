@@ -88,3 +88,9 @@ const buttonStyle = {
   borderRadius: "4px",
   cursor: "pointer",
 };
+
+const linkStyle = {
+  color: "#0070f3",
+  textDecoration: "underline",
+  cursor: "pointer",
+};

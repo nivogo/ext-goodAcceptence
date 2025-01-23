@@ -63,7 +63,7 @@ export default function OnKabulPage() {
         // Her eşleşen dokümanda ön kabul alanlarını güncelle
         await Promise.all(
           matchingDocs.map((docItem) =>
-            updateOnKabulFields(docItem.id, userData.name) // username yerine name kullanılıyor
+            updateOnKabulFields(docItem.id, userData.name) // userData.username yerine userData.name
           )
         );
 
@@ -74,7 +74,7 @@ export default function OnKabulPage() {
             return {
               ...item,
               onKabulDurumu: "Okutma Başarılı",
-              onKabulYapanKisi: userData.name, // username yerine name kullanılıyor
+              onKabulYapanKisi: userData.name, // userData.username yerine userData.name
               onKabulSaati: new Date().toISOString(),
             };
           }

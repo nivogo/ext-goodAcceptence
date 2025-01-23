@@ -33,8 +33,8 @@ export default function mainPage() {
 
   return (
     <div style={{ margin: "2rem" }}>
-      <h1>Hoş Geldiniz, {userData.name}</h1>
-      <p>Mağaza: {userData.storeName} (Store ID: {userData.storeId})</p>
+      <h1>Hoş Geldiniz, {userData?.name || "Kullanıcı"}</h1>
+      <p>Mağaza: {userData?.storeName || "Mağaza" } Store ID: {userData?.storeId || "Mağaza ID" }</p>
       <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
         <button onClick={() => router.push("/onKabul")}>Ön Kabul</button>
         <button onClick={() => router.push("/malKabul")}>Mal Kabul</button>

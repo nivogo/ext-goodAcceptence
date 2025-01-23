@@ -3,15 +3,18 @@ import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase/firebaseConfig";
 import { useRouter } from "next/router";
+import BackButton from "../components/BackButton"; // BackButton bileşenini import et
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState(""); // email yerine username kullanıyoruz
   const [password, setPassword] = useState("");
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
+      // Kullanıcı adına "@nivogo.com" ekleyin
+      const email = `${username}@nivogo.com`;
       await signInWithEmailAndPassword(auth, email, password);
       // Giriş başarılı olursa dashboard'a yönlendir
       router.push("/mainPage");
@@ -23,13 +26,14 @@ export default function LoginPage() {
 
   return (
     <div style={{ margin: "2rem" }}>
+      <BackButton /> {/* Geri butonunu ekleyin */}
       <h1>Giriş Yap</h1>
       <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", width: "300px" }}>
         <input
-          type="email"
-          placeholder="E-posta"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          type="text"
+          placeholder="Kullanıcı Adı" // Placeholder'ı güncelledik
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           required
           style={{ marginBottom: "1rem" }}
         />

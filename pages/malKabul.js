@@ -1,6 +1,6 @@
 // pages/malKabul.js
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useState } from "react"; // useEffect ve useState import edildi
 import { useAuth } from "../context/AuthContext";
 import { getMalKabulData, updateMalKabulFields } from "../lib/firestore";
 import BackButton from "../components/BackButton";

@@ -4,7 +4,7 @@ import { signOut } from "firebase/auth";
 import { auth } from "../firebase/firebaseConfig";
 import { useAuth } from "../context/AuthContext";
 import BackButton from "../components/BackButton";
-import { useEffect } from "react";
+import styles from "../styles/MainPage.module.css";
 
 export default function MainPage() {
   const router = useRouter();
@@ -35,52 +35,24 @@ export default function MainPage() {
   }
 
   return (
-    <div style={containerStyle}>
+    <div className={styles.container}>
       <BackButton />
       <h1>Hoş Geldiniz, {userData.name}</h1>
       <p>Mağaza: {userData.storeName} (Store ID: {userData.storeId})</p>
-      <div style={buttonContainerStyle}>
-        <button onClick={() => router.push("/onKabul")} style={navButtonStyle}>
+      <div className={styles.buttonContainer}>
+        <button onClick={() => router.push("/onKabul")} className={styles.navButton}>
           Ön Kabul
         </button>
-        <button onClick={() => router.push("/malKabul")} style={navButtonStyle}>
+        <button onClick={() => router.push("/malKabul")} className={styles.navButton}>
           Mal Kabul
         </button>
-        <button onClick={() => router.push("/rapor")} style={navButtonStyle}>
+        <button onClick={() => router.push("/rapor")} className={styles.navButton}>
           Rapor
         </button>
-        <button onClick={handleSignOut} style={signOutButtonStyle}>
+        <button onClick={handleSignOut} className={styles.signOutButton}>
           Çıkış Yap
         </button>
       </div>
     </div>
   );
 }
-
-const containerStyle = {
-  margin: "2rem",
-  textAlign: "center",
-};
-
-const buttonContainerStyle = {
-  display: "flex",
-  justifyContent: "center",
-  gap: "1rem",
-  marginTop: "1rem",
-  flexWrap: "wrap",
-};
-
-const navButtonStyle = {
-  padding: "0.75rem 1.5rem",
-  backgroundColor: "#0070f3",
-  color: "#fff",
-  border: "none",
-  borderRadius: "5px",
-  cursor: "pointer",
-  fontSize: "1rem",
-};
-
-const signOutButtonStyle = {
-  ...navButtonStyle,
-  backgroundColor: "#dc3545",
-};

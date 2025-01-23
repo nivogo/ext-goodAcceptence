@@ -9,7 +9,7 @@ export default function OnKabulPage() {
   const [user, setUser] = useState(null);            // Firebase Auth kullanıcısı
   const [userData, setUserData] = useState(null);    // users koleksiyonundaki veriler (storeId, username vb.)
   const [shipments, setShipments] = useState([]);    // shipment_data verileri
-  const [boxInput, setBoxInput] = useState("");       // Koli numarası arama input'u
+  const [boxInput, setBoxInput] = useState("");      // Koli numarası arama input'u
 
   useEffect(() => {
     // Authentication durumunu dinle
@@ -33,6 +33,18 @@ export default function OnKabulPage() {
 
     return () => unsubscribe();
   }, [router]);
+
+  // Tarih formatlama fonksiyonu
+  const formatDate = (date) => {
+    if (!date) return "-";
+    // Eğer date bir Firestore Timestamp ise
+    if (date.toDate) {
+      return date.toDate().toLocaleString();
+    }
+    // Eğer date bir string ise
+    const parsedDate = new Date(date);
+    return isNaN(parsedDate) ? "-" : parsedDate.toLocaleString();
+  };
 
   // Koli numarasını enter ile arayıp/güncelleme işlemi
   const handleBoxSubmit = async (e) => {
@@ -134,9 +146,7 @@ export default function OnKabulPage() {
               <td>{item.onKabulDurumu || "-"}</td>
               <td>{item.onKabulYapanKisi || "-"}</td>
               <td>
-                {item.onKabulSaati
-                  ? new Date(item.onKabulSaati).toLocaleString()
-                  : "-"}
+                {formatDate(item.onKabulSaati)}
               </td>
             </tr>
           ))}

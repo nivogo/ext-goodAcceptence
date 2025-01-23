@@ -16,11 +16,11 @@ const Rapor = () => {
 
   // Veri çekme fonksiyonu
   const fetchRaporData = async () => {
-    if (user && userData && userData.storeId) {
+    if (user && userData && userData.PAAD_ID) {
       setRefreshing(true);
       setError(null);
       try {
-        const data = await getRaporData(userData.storeId);
+        const data = await getRaporData(userData.PAAD_ID);
         setRaporData(data);
       } catch (err) {
         console.error("Rapor Veri Çekme Hatası:", err);
@@ -57,7 +57,7 @@ const Rapor = () => {
       <BackButton />
       <h1>Rapor Sayfası</h1>
       <p>
-        Mağaza: {userData.storeName} (Store ID: {userData.storeId})
+        Mağaza: {userData.storeName} (PAAD ID: {userData.PAAD_ID})
       </p>
 
       {/* Yenile Butonu */}

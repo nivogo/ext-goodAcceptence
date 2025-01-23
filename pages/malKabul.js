@@ -16,11 +16,11 @@ const MalKabul = () => {
 
   // Veri çekme fonksiyonu
   const fetchMalKabulData = async () => {
-    if (user && userData && userData.storeId) {
+    if (user && userData && userData.PAAD_ID) {
       setRefreshing(true);
       setError(null);
       try {
-        const data = await getMalKabulData(userData.storeId);
+        const data = await getMalKabulData(userData.PAAD_ID);
         setMalKabulData(data);
       } catch (err) {
         console.error("Mal Kabul Veri Çekme Hatası:", err);
@@ -68,7 +68,7 @@ const MalKabul = () => {
       <BackButton />
       <h1>Mal Kabul Sayfası</h1>
       <p>
-        Mağaza: {userData.storeName} (Store ID: {userData.storeId})
+        Mağaza: {userData.storeName} (PAAD ID: {userData.PAAD_ID})
       </p>
 
       {/* Yenile Butonu */}

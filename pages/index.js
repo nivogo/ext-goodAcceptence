@@ -3,7 +3,6 @@ import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase/firebaseConfig";
 import { useRouter } from "next/router";
-import BackButton from "../components/BackButton"; // BackButton bileşenini import et
 
 export default function LoginPage() {
   const router = useRouter();
@@ -26,7 +25,6 @@ export default function LoginPage() {
 
   return (
     <div style={{ margin: "2rem" }}>
-      <BackButton /> {/* Geri butonunu ekleyin */}
       <h1>Giriş Yap</h1>
       <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", width: "300px" }}>
         <input

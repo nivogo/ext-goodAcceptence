@@ -3,7 +3,6 @@ import { useEffect, useState, createContext, useContext } from "react";
 import { auth, db } from "../firebase/firebaseConfig";
 import { getUserData } from "../lib/firestore";
 import { onAuthStateChanged } from "firebase/auth";
-import "../styles/globals.css";
 
 const AuthContext = createContext(null);
 

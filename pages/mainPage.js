@@ -2,16 +2,16 @@
 import { useRouter } from "next/router";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase/firebaseConfig";
-import { useAuth } from "../_app"; // Auth Hook'u kullanıyoruz
+import { useAuth } from "../context/AuthContext"; // Güncellenmiş import
 import BackButton from "../components/BackButton";
+import { useEffect } from "react";
 
 export default function MainPage() {
   const router = useRouter();
   const { user, userData } = useAuth();
 
-  // Kullanıcı yoksa (giriş yapılmamışsa) giriş sayfasına yönlendir
   useEffect(() => {
-    if (!user && !loading) {
+    if (!user) {
       router.push("/");
     }
   }, [user, router]);

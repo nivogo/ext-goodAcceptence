@@ -1,5 +1,6 @@
 // pages/mainPage.js
 import { useRouter } from "next/router";
+import { useEffect } from "react"; // useEffect import edildi
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase/firebaseConfig";
 import { useAuth } from "../context/AuthContext";

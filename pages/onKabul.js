@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { auth } from "../firebase/firebaseConfig";
 import { useRouter } from "next/router";
 import { getUserData, getShipmentsByStoreId, updateOnKabulFields } from "../lib/firestore";
+import BackButton from "../components/BackButton"; // BackButton bileşenini ekleyin
 
 export default function OnKabulPage() {
   const router = useRouter();
@@ -98,6 +99,7 @@ export default function OnKabulPage() {
 
   return (
     <div style={{ margin: "2rem" }}>
+      <BackButton /> {/* Geri butonunu ekleyin */}
       <h1>Ön Kabul Sayfası</h1>
 
       <p>Mağaza: {userData.storeName} (Store ID: {userData.storeId})</p>

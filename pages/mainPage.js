@@ -37,7 +37,6 @@ export default function MainPage() {
 
   return (
     <div className={styles.container}>
-      <BackButton />
       <h1>Hoş Geldiniz, {userData.name}</h1>
       <p>Mağaza: {userData.storeName} (PAAD ID: {userData.PAAD_ID})</p>
       <div className={styles.buttonContainer}>

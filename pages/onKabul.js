@@ -115,7 +115,7 @@ export default function OnKabulPage() {
         // Başka mağazalarda olup olmadığını kontrol et
         const otherShipments = await getShipmentByBox(boxInput);
         if (otherShipments.length > 0) {
-          // Hatalı mazakası olduğundan ilk bulduğu mağazayı kullanarak uyarı ver
+          // Hatalı mağazayı belirlemek için ilk bulduğu mağazayı kullan
           const targetStore = otherShipments[0].storeName || "bilinmeyen";
 
           // Tüm bulduğu kolileri işaretle
@@ -236,15 +236,9 @@ export default function OnKabulPage() {
                   ? item.quantityof_order
                   : "****"}
               </td>
-              <td className={styles.td}>
-                {item.onKabulDurumu || "-"}
-              </td>
-              <td className={styles.td}>
-                {item.onKabulYapanKisi || "-"}
-              </td>
-              <td className={styles.td}>
-                {formatDate(item.onKabulSaati)}
-              </td>
+              <td className={styles.td}>{item.onKabulDurumu || "-"}</td>
+              <td className={styles.td}>{item.onKabulYapanKisi || "-"}</td>
+              <td className={styles.td}>{formatDate(item.onKabulSaati)}</td>
             </tr>
           ))}
         </tbody>

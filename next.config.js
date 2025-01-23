@@ -1,4 +1,5 @@
 // next.config.js
 module.exports = {
-  output: 'export',
+  // output: 'export', // Bu satırı kaldırdık
+  reactStrictMode: true,
 };

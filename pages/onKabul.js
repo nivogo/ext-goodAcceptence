@@ -1,7 +1,7 @@
 // pages/onKabul.js
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext"; // Güncellenmiş import
+import { useAuth } from "../context/AuthContext";
 import { getShipmentsByStoreId, updateOnKabulFields } from "../lib/firestore";
 import BackButton from "../components/BackButton";
 
@@ -11,16 +11,27 @@ export default function OnKabulPage() {
   const [shipments, setShipments] = useState([]);
   const [boxInput, setBoxInput] = useState("");
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchShipments = async () => {
-      if (user && userData && userData.storeId) {
+  // Veri çekme fonksiyonu
+  const fetchShipments = async () => {
+    if (user && userData && userData.storeId) {
+      setRefreshing(true);
+      setError(null);
+      try {
         const shipmentsList = await getShipmentsByStoreId(userData.storeId);
         setShipments(shipmentsList);
+      } catch (err) {
+        console.error("Veri Çekme Hatası:", err);
+        setError("Veriler alınırken bir hata oluştu.");
       }
+      setRefreshing(false);
       setLoading(false);
-    };
+    }
+  };
 
+  useEffect(() => {
     if (user && userData) {
       fetchShipments();
     } else {
@@ -77,7 +88,11 @@ export default function OnKabulPage() {
   };
 
   if (loading) {
-    return <p>Yükleniyor...</p>;
+    return (
+      <div style={{ padding: "2rem", textAlign: "center" }}>
+        <p>Yükleniyor...</p>
+      </div>
+    );
   }
 
   if (!user || !userData) {
@@ -85,25 +100,48 @@ export default function OnKabulPage() {
   }
 
   return (
-    <div style={{ margin: "2rem" }}>
+    <div style={containerStyle}>
       <BackButton />
       <h1>Hoş Geldiniz, {userData.name}</h1>
-      <p>Mağaza: {userData.storeName} (Store ID: {userData.storeId})</p>
+      <p>
+        Mağaza: {userData.storeName} (Store ID: {userData.storeId})
+      </p>
 
-      <form onSubmit={handleBoxSubmit} style={{ marginBottom: "1rem" }}>
+      {/* Yenile Butonu */}
+      <button
+        onClick={fetchShipments}
+        style={refreshButtonStyle}
+        disabled={refreshing}
+      >
+        {refreshing ? "Yükleniyor..." : "Yenile"}
+      </button>
+
+      {/* Hata Mesajı */}
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      {/* Koli Arama Input */}
+      <form
+        onSubmit={handleBoxSubmit}
+        style={{ marginBottom: "1rem", marginTop: "1rem" }}
+      >
         <input
           type="text"
           placeholder="Koli numarası giriniz"
           value={boxInput}
           onChange={(e) => setBoxInput(e.target.value)}
-          style={{ marginRight: "1rem" }}
+          required
+          style={inputStyle}
         />
-        <button type="submit">Onayla</button>
+        <button type="submit" style={submitButtonStyle}>
+          Onayla
+        </button>
       </form>
 
+      {/* Toplam Koli Sayısı */}
       <p>Toplam Koli Adedi: {shipments.length}</p>
 
-      <table border="1" cellPadding="5" cellSpacing="0">
+      {/* Liste Tablosu */}
+      <table style={tableStyle}>
         <thead>
           <tr>
             <th>Sıra No</th>
@@ -138,3 +176,68 @@ export default function OnKabulPage() {
     </div>
   );
 }
+
+const containerStyle = {
+  margin: "2rem",
+};
+
+const refreshButtonStyle = {
+  padding: "0.5rem 1rem",
+  margin: "1rem 0",
+  backgroundColor: "#28a745",
+  color: "#fff",
+  border: "none",
+  borderRadius: "5px",
+  cursor: "pointer",
+};
+
+const inputStyle = {
+  padding: "0.5rem",
+  marginRight: "1rem",
+  border: "1px solid #ccc",
+  borderRadius: "4px",
+  width: "200px",
+};
+
+const submitButtonStyle = {
+  padding: "0.5rem 1rem",
+  backgroundColor: "#007bff",
+  color: "#fff",
+  border: "none",
+  borderRadius: "4px",
+  cursor: "pointer",
+};
+
+const tableStyle = {
+  width: "100%",
+  borderCollapse: "collapse",
+  marginTop: "1rem",
+};
+
+tableStyle.th = {
+  border: "1px solid #ddd",
+  padding: "8px",
+  backgroundColor: "#f2f2f2",
+};
+
+tableStyle.td = {
+  border: "1px solid #ddd",
+  padding: "8px",
+};
+
+export const tableStyle = {
+  width: "100%",
+  borderCollapse: "collapse",
+  marginTop: "1rem",
+};
+
+export const thStyle = {
+  border: "1px solid #ddd",
+  padding: "8px",
+  backgroundColor: "#f2f2f2",
+};
+
+export const tdStyle = {
+  border: "1px solid #ddd",
+  padding: "8px",
+};

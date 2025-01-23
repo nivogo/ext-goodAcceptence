@@ -1,7 +1,7 @@
 // pages/malKabul.js
 import { useRouter } from "next/router";
 import { useEffect } from "react";
-import { useAuth } from "../_app"; // Auth Hook'u kullanıyoruz
+import { useAuth } from "../context/AuthContext"; // Güncellenmiş import
 import BackButton from "../components/BackButton";
 
 const MalKabul = () => {
@@ -9,7 +9,7 @@ const MalKabul = () => {
   const { user, userData } = useAuth();
 
   useEffect(() => {
-    if (!user && !loading) {
+    if (!user) {
       router.push("/");
     }
   }, [user, router]);

@@ -45,9 +45,7 @@ jobs:
           credentials_json: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
 
       - name: Install Firebase CLI
-        uses: w9jds/firebase-action@v1.5.0
-        with:
-          args: tools
+        run: npm install -g firebase-tools
 
       # Firebase Deploy
       - name: Firebase Deploy

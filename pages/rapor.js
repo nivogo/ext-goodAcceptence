@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { getRaporData } from "../lib/firestore";
 import BackButton from "../components/BackButton";
+import styles from "../styles/Rapor.module.css";
 
 const Rapor = () => {
   const router = useRouter();
@@ -52,7 +53,7 @@ const Rapor = () => {
   }
 
   return (
-    <div style={containerStyle}>
+    <div className={styles.container}>
       <BackButton />
       <h1>Rapor Sayfası</h1>
       <p>
@@ -62,75 +63,38 @@ const Rapor = () => {
       {/* Yenile Butonu */}
       <button
         onClick={fetchRaporData}
-        style={refreshButtonStyle}
+        className={styles.refreshButton}
         disabled={refreshing}
       >
         {refreshing ? "Yükleniyor..." : "Yenile"}
       </button>
 
       {/* Hata Mesajı */}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p className={styles.error}>{error}</p>}
 
       {/* Rapor Tablosu */}
-      <table style={tableStyle}>
+      <table className={styles.table}>
         <thead>
           <tr>
-            <th>Sıra No</th>
-            <th>Rapor Başlığı</th>
-            <th>Detay</th>
-            <th>Tarih</th>
+            <th className={styles.th}>Sıra No</th>
+            <th className={styles.th}>Rapor Başlığı</th>
+            <th className={styles.th}>Detay</th>
+            <th className={styles.th}>Tarih</th>
           </tr>
         </thead>
         <tbody>
           {raporData.map((item, index) => (
             <tr key={item.id}>
-              <td>{index + 1}</td>
-              <td>{item.rapor_basligi}</td>
-              <td>{item.detay}</td>
-              <td>{item.tarih}</td>
+              <td className={styles.td}>{index + 1}</td>
+              <td className={styles.td}>{item.rapor_basligi}</td>
+              <td className={styles.td}>{item.detay}</td>
+              <td className={styles.td}>{item.tarih}</td>
             </tr>
           ))}
         </tbody>
       </table>
     </div>
   );
-};
-
-const containerStyle = {
-  padding: "2rem",
-};
-
-const refreshButtonStyle = {
-  padding: "0.5rem 1rem",
-  margin: "1rem 0",
-  backgroundColor: "#17a2b8",
-  color: "#fff",
-  border: "none",
-  borderRadius: "5px",
-  cursor: "pointer",
-};
-
-const tableStyle = {
-  width: "100%",
-  borderCollapse: "collapse",
-  marginTop: "1rem",
-};
-
-export const tableStyle = {
-  width: "100%",
-  borderCollapse: "collapse",
-  marginTop: "1rem",
-};
-
-export const thStyle = {
-  border: "1px solid #ddd",
-  padding: "8px",
-  backgroundColor: "#f2f2f2",
-};
-
-export const tdStyle = {
-  border: "1px solid #ddd",
-  padding: "8px",
 };
 
 export default Rapor;

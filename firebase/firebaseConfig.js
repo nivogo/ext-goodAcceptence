@@ -1,6 +1,6 @@
 // firebase/firebaseConfig.js
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 // Örnek environment değişkenleri (Next.js için NEXT_PUBLIC_ prefix'leri kullanıyoruz)
@@ -16,6 +16,21 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
+// Initialize Firebase Authentication
+const auth = getAuth(app);
+
+// Set Auth Persistence to 'local' to keep the user logged in until they sign out
+setPersistence(auth, browserLocalPersistence)
+  .then(() => {
+    // Persistence ayarı başarıyla yapıldı
+    console.log("Auth persistence set to local.");
+  })
+  .catch((error) => {
+    console.error("Auth Persistence Ayarlama Hatası:", error);
+  });
+
+// Initialize Firestore
+const db = getFirestore(app);
+
 // Export Auth ve Firestore referansları
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+export { auth, db };

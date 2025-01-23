@@ -39,7 +39,7 @@ export default function MainPage() {
     <div className={styles.container}>
       <BackButton />
       <h1>Hoş Geldiniz, {userData.name}</h1>
-      <p>Mağaza: {userData.storeName} (Store ID: {userData.storeId})</p>
+      <p>Mağaza: {userData.storeName} (PAAD ID: {userData.PAAD_ID})</p>
       <div className={styles.buttonContainer}>
         <button onClick={() => router.push("/onKabul")} className={styles.navButton}>
           Ön Kabul

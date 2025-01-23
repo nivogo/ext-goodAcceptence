@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import {
-  getShipmentsByStoreId,
+  getShipmentsByPAADID,
   getAllShipments,
   getShipmentByBox,
   updateOnKabulFields,
@@ -24,11 +24,11 @@ export default function OnKabulPage() {
 
   // Veri çekme fonksiyonu
   const fetchShipments = async () => {
-    if (user && userData && userData.storeId) {
+    if (user && userData && userData.PAAD_ID) {
       setRefreshing(true);
       setError(null);
       try {
-        const shipmentsList = await getShipmentsByStoreId(userData.storeId);
+        const shipmentsList = await getShipmentsByPAADID(userData.PAAD_ID);
         const allShipmentsList = await getAllShipments();
         // "Okutma Başarılı" olmayanları filtrele
         const filteredShipments = shipmentsList
@@ -167,7 +167,7 @@ export default function OnKabulPage() {
       <BackButton />
       <h1>Hoş Geldiniz, {userData.name}</h1>
       <p>
-        Mağaza: {userData.storeName} (Store ID: {userData.storeId})
+        Mağaza: {userData.storeName} (PAAD ID: {userData.PAAD_ID})
       </p>
 
       {/* Yenile Butonu */}
@@ -233,7 +233,7 @@ export default function OnKabulPage() {
               <td className={styles.td}>{item.shipment_no || "-"}</td>
               <td className={styles.td}>
                 {item.onKabulDurumu === "Okutma Başarılı"
-                  ? item.quantityof_order
+                  ? item.quantityof_product
                   : "****"}
               </td>
               <td className={styles.td}>{item.onKabulDurumu || "-"}</td>

@@ -3,10 +3,12 @@ import { useRouter } from "next/router";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase/firebaseConfig";
 import { useEffect, useState } from "react";
+import { getUserData } from "../lib/firestore";
 
 export default function mainPage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
+  const [userData, setUserData] = useState(null); 
 
   useEffect(() => {
     // Kullanıcı bilgilerini alıyoruz
@@ -31,7 +33,8 @@ export default function mainPage() {
 
   return (
     <div style={{ margin: "2rem" }}>
-      <h1>Hoş Geldiniz, {user.email}</h1>
+      <h1>Hoş Geldiniz, {userData.name}</h1>
+      <p>Mağaza: {userData.storeName} (Store ID: {userData.storeId})</p>
       <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
         <button onClick={() => router.push("/onKabul")}>Ön Kabul</button>
         <button onClick={() => router.push("/malKabul")}>Mal Kabul</button>

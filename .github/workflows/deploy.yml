@@ -33,7 +33,7 @@ jobs:
           echo "NEXT_PUBLIC_FIREBASE_APP_ID=${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}" >> $GITHUB_ENV
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build Next.js
         run: npm run build

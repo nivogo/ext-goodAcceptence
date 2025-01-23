@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { getMalKabulData, updateMalKabulFields } from "../lib/firestore";
 import BackButton from "../components/BackButton";
+import styles from "../styles/MalKabul.module.css";
 
 const MalKabul = () => {
   const router = useRouter();
@@ -63,7 +64,7 @@ const MalKabul = () => {
   }
 
   return (
-    <div style={containerStyle}>
+    <div className={styles.container}>
       <BackButton />
       <h1>Mal Kabul Sayfası</h1>
       <p>
@@ -73,37 +74,37 @@ const MalKabul = () => {
       {/* Yenile Butonu */}
       <button
         onClick={fetchMalKabulData}
-        style={refreshButtonStyle}
+        className={styles.refreshButton}
         disabled={refreshing}
       >
         {refreshing ? "Yükleniyor..." : "Yenile"}
       </button>
 
       {/* Hata Mesajı */}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p className={styles.error}>{error}</p>}
 
       {/* Veri Tablosu */}
-      <table style={tableStyle}>
+      <table className={styles.table}>
         <thead>
           <tr>
-            <th>Sıra No</th>
-            <th>Ürün Adı</th>
-            <th>Miktar</th>
-            <th>Durum</th>
-            <th>Güncelle</th>
+            <th className={styles.th}>Sıra No</th>
+            <th className={styles.th}>Ürün Adı</th>
+            <th className={styles.th}>Miktar</th>
+            <th className={styles.th}>Durum</th>
+            <th className={styles.th}>Güncelle</th>
           </tr>
         </thead>
         <tbody>
           {malKabulData.map((item, index) => (
             <tr key={item.id}>
-              <td>{index + 1}</td>
-              <td>{item.urun_adi}</td>
-              <td>{item.miktar}</td>
-              <td>{item.malKabulDurumu || "-"}</td>
-              <td>
+              <td className={styles.td}>{index + 1}</td>
+              <td className={styles.td}>{item.urun_adi}</td>
+              <td className={styles.td}>{item.miktar}</td>
+              <td className={styles.td}>{item.malKabulDurumu || "-"}</td>
+              <td className={styles.td}>
                 <button
                   onClick={() => handleUpdate(item.id)}
-                  style={updateButtonStyle}
+                  className={styles.updateButton}
                 >
                   Güncelle
                 </button>
@@ -114,52 +115,6 @@ const MalKabul = () => {
       </table>
     </div>
   );
-};
-
-const containerStyle = {
-  padding: "2rem",
-};
-
-const refreshButtonStyle = {
-  padding: "0.5rem 1rem",
-  margin: "1rem 0",
-  backgroundColor: "#007bff",
-  color: "#fff",
-  border: "none",
-  borderRadius: "5px",
-  cursor: "pointer",
-};
-
-const updateButtonStyle = {
-  padding: "0.3rem 0.6rem",
-  backgroundColor: "#ffc107",
-  color: "#000",
-  border: "none",
-  borderRadius: "3px",
-  cursor: "pointer",
-};
-
-const tableStyle = {
-  width: "100%",
-  borderCollapse: "collapse",
-  marginTop: "1rem",
-};
-
-export const tableStyle = {
-  width: "100%",
-  borderCollapse: "collapse",
-  marginTop: "1rem",
-};
-
-export const thStyle = {
-  border: "1px solid #ddd",
-  padding: "8px",
-  backgroundColor: "#f2f2f2",
-};
-
-export const tdStyle = {
-  border: "1px solid #ddd",
-  padding: "8px",
 };
 
 export default MalKabul;

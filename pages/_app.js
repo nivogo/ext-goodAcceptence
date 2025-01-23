@@ -1,11 +1,13 @@
 // pages/_app.js
 import { useEffect, useState, createContext, useContext } from "react";
-import { auth, db } from "../firebase/firebaseConfig";
+import { auth } from "../firebase/firebaseConfig";
 import { getUserData } from "../lib/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
+// Auth Context Oluşturma
 const AuthContext = createContext(null);
 
+// Auth Context'i Kullanmak İçin Hook
 export const useAuth = () => useContext(AuthContext);
 
 function MyApp({ Component, pageProps }) {

@@ -19,6 +19,34 @@
   background-color: #138496;
 }
 
+.excelButton {
+  padding: 0.5rem 1rem;
+  margin: 1rem 0;
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.excelButton:hover {
+  background-color: #218838;
+}
+
+.searchContainer {
+  margin: 1rem 0;
+  text-align: center;
+}
+
+.searchInput {
+  padding: 0.5rem;
+  width: 300px;
+  max-width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;
@@ -29,6 +57,7 @@
 .td {
   border: 1px solid #ddd;
   padding: 8px;
+  text-align: center;
 }
 
 .th {
@@ -37,4 +66,23 @@
 
 .error {
   color: red;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+/* Responsive Tasarım */
+@media (max-width: 768px) {
+  .searchInput {
+    width: 100%;
+  }
+
+  .table {
+    font-size: 0.9rem;
+  }
+
+  .excelButton,
+  .refreshButton {
+    width: 100%;
+    margin: 0.5rem 0;
+  }
 }

@@ -69,7 +69,7 @@ const MalKabulDetay = () => {
 
       const shipment = matchedShipments[0];
 
-      if (shipment["Mal Kabul Durumu"] === "Onaylandı") {
+      if (shipment["malKabulDurumu"] === "Onaylandı") {
         alert("Bu gönderi zaten Mal Kabul edilmiştir.");
         setUpdating(false);
         return;
@@ -85,9 +85,9 @@ const MalKabulDetay = () => {
           s.id === shipment.id
             ? {
                 ...s,
-                "Mal Kabul Durumu": "Onaylandı",
-                "Mal Kabul Yapan Kişi": userData.name,
-                "Mal Kabul Saati": new Date(),
+                "malKabulDurumu": "Onaylandı",
+                "malKabulYapanKisi": userData.name,
+                "malKabulSaati": new Date(),
               }
             : s
         )
@@ -122,7 +122,7 @@ const MalKabulDetay = () => {
    */
   const maskQRCode = (qr, shipment) => {
     // Eğer Mal Kabul Durumu "Onaylandı" ise QR kodunu göster, değilse maskeli göster
-    return shipment["Mal Kabul Durumu"] === "Onaylandı" ? qr : "****";
+    return shipment["malKabulDurumu"] === "Onaylandı" ? qr : "****";
   };
 
   if (loading) {
@@ -178,14 +178,14 @@ const MalKabulDetay = () => {
               <td className={styles.td}>{index + 1}</td>
               <td className={styles.td}>{maskQRCode(shipment.QR, shipment)}</td>
               <td className={styles.td}>
-                {shipment["Mal Kabul Durumu"] || "-"}
+                {shipment["malKabulDurumu"] || "-"}
               </td>
               <td className={styles.td}>
-                {shipment["Mal Kabul Yapan Kişi"] || "-"}
+                {shipment["malKabulYapanKisi"] || "-"}
               </td>
               <td className={styles.td}>
-                {shipment["Mal Kabul Saati"]
-                  ? formatDate(shipment["Mal Kabul Saati"])
+                {shipment["malKabulSaati"]
+                  ? formatDate(shipment["malKabulSaati"])
                   : "-"}
               </td>
             </tr>

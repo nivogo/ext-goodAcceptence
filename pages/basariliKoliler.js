@@ -2,7 +2,7 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { getBoxesWithOnKabulDurumu } from "../lib/firestore"; // Yeni fonksiyon import edildi
+import { getBoxesForBasariliKoliler } from "../lib/firestore"; // Yeni fonksiyon import edildi
 import BackButton from "../components/BackButton";
 import styles from "../styles/BasariliKoliler.module.css";
 
@@ -19,7 +19,7 @@ const BasariliKoliler = () => {
       setRefreshing(true);
       setError(null);
       try {
-        const fetchedBoxes = await getBoxesWithOnKabulDurumu(userData.PAAD_ID);
+        const fetchedBoxes = await getBoxesForBasariliKoliler(userData.PAAD_ID);
         // Koli numarasına göre gruplandır
         const grouped = {};
         fetchedBoxes.forEach((shipment) => {

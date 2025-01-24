@@ -26,7 +26,10 @@ const BasariliKoliler = () => {
           if (!grouped[shipment.box]) {
             grouped[shipment.box] = {
               box: shipment.box,
+              shipment_no: shipment.shipment_no || "-", // Sevk Numarası
+              shipment_date: shipment.shipment_date || "-", // Sevk Tarihi
               quantity: shipment.quantityof_product,
+              to_location: shipment.to_location || "-", // Alıcı Lokasyon
               onKabulDurumu: shipment.onKabulDurumu,
               onKabulYapanKisi: shipment.onKabulYapanKisi,
               onKabulSaati: shipment.onKabulSaati,
@@ -106,8 +109,12 @@ const BasariliKoliler = () => {
         <thead>
           <tr>
             <th className={styles.th}>Sıra No</th>
+            <th className={styles.th}>Sevk Numarası</th>
+            <th className={styles.th}>Sevk Tarihi</th>
             <th className={styles.th}>Koli Numarası</th>
             <th className={styles.th}>Ürün Adedi</th>
+            <th className={styles.th}>Alıcı Lokasyon</th>
+            <th className={styles.th}>Ön Kabul Durumu</th>
             <th className={styles.th}>Ön Kabul Yapan Kişi</th>
             <th className={styles.th}>Ön Kabul Saati</th>
           </tr>
@@ -116,10 +123,16 @@ const BasariliKoliler = () => {
           {successfulBoxes.map((box, index) => (
             <tr key={box.box}>
               <td className={styles.td}>{index + 1}</td>
+              <td className={styles.td}>{box.shipment_no}</td>
+              <td className={styles.td}>{formatDate(box.shipment_date)}</td>
               <td className={styles.td}>{box.box}</td>
               <td className={styles.td}>{box.quantity}</td>
+              <td className={styles.td}>{box.to_location}</td>
+              <td className={styles.td}>{box.onKabulDurumu || "-"}</td>
               <td className={styles.td}>{box.onKabulYapanKisi || "-"}</td>
-              <td className={styles.td}>{formatDate(box.onKabulSaati)}</td>
+              <td className={styles.td}>
+                {formatDate(box.onKabulSaati)}
+              </td>
             </tr>
           ))}
         </tbody>

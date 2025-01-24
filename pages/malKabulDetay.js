@@ -74,6 +74,9 @@ const MalKabulDetay = () => {
     setUpdating(false);
   };
 
+  /**
+   * Tarih formatlama fonksiyonu
+   */
   const formatDate = (date) => {
     if (!date) return "-";
     if (date.toDate) {
@@ -81,6 +84,17 @@ const MalKabulDetay = () => {
     }
     const parsedDate = new Date(date);
     return isNaN(parsedDate) ? "-" : parsedDate.toLocaleString();
+  };
+
+  /**
+   * QR Kodunu Maskeleme Fonksiyonu
+   * @param {string} qr - QR kodu değeri
+   * @param {object} shipment - Gönderi objesi
+   * @returns {string} - Maskelenmiş veya gerçek QR kodu
+   */
+  const maskQRCode = (qr, shipment) => {
+    // Eğer Mal Kabul Durumu "Onaylandı" ise QR kodunu göster, değilse maskeli göster
+    return shipment["Mal Kabul Durumu"] === "Onaylandı" ? qr : "****";
   };
 
   if (loading) {
@@ -120,7 +134,9 @@ const MalKabulDetay = () => {
           {shipments.map((shipment, index) => (
             <tr key={shipment.id}>
               <td className={styles.td}>{index + 1}</td>
-              <td className={styles.td}>{shipment.QR || "-"}</td>
+              <td className={styles.td}>
+                {maskQRCode(shipment.QR, shipment)}
+              </td>
               <td className={styles.td}>
                 {shipment["Mal Kabul Durumu"] || "-"}
               </td>

@@ -104,7 +104,15 @@ export default function OnKabulPage() {
 
       if (matchingDocs.length > 0) {
         const box = matchingDocs[0];
-        if (box.onKabulDurumu === "Okutma Başarılı") {
+
+        // Koliye ait tüm gönderileri çek
+        const boxShipments = await getShipmentByBox(boxInput);
+        // Eğer herhangi bir gönderi "Okutma Başarılı" ise
+        const alreadyApproved = boxShipments.some(
+          (shipment) => shipment.onKabulDurumu === "Okutma Başarılı"
+        );
+
+        if (alreadyApproved) {
           alert("Bu koli daha önce okutulmuştur.");
           return;
         }

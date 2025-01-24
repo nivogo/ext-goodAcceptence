@@ -7,6 +7,37 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+.qrForm {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 1rem 0;
+  flex-wrap: wrap;
+}
+
+.qrInput {
+  padding: 0.5rem;
+  margin-right: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 250px;
+  max-width: 100%;
+}
+
+.qrSubmitButton {
+  padding: 0.5rem 1rem;
+  background-color: #ffc107;
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.qrSubmitButton:hover {
+  background-color: #e0a800;
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;
@@ -30,27 +61,24 @@
   margin-top: 1rem;
 }
 
-.updateButton {
-  padding: 0.3rem 0.6rem;
-  background-color: #ffc107;
-  color: #000;
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.updateButton:hover {
-  background-color: #e0a800;
-}
-
 /* Responsive Tasarım */
 @media (max-width: 768px) {
-  .table {
-    font-size: 0.9rem;
+  .qrForm {
+    flex-direction: column;
+    align-items: stretch;
   }
 
-  .updateButton {
-    padding: 0.2rem 0.5rem;
+  .qrInput {
+    margin-right: 0;
+    margin-bottom: 1rem;
+    width: 100%;
+  }
+
+  .qrSubmitButton {
+    width: 100%;
+  }
+
+  .table {
+    font-size: 0.9rem;
   }
 }

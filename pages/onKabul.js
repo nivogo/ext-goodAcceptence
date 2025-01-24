@@ -22,9 +22,6 @@ export default function OnKabulPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
 
-  // Koli numarasına göre gruplandırılmış gönderileri saklamak için state
-  const [groupedShipments, setGroupedShipments] = useState([]);
-
   // Veri çekme fonksiyonu
   const fetchShipments = async () => {
     if (user && userData && userData.PAAD_ID) {
@@ -97,39 +94,36 @@ export default function OnKabulPage() {
     e.preventDefault();
     if (!boxInput) return;
 
+    setLoading(true); // Yükleniyor durumunu göstermek için
     try {
-      const matchingDocs = groupedShipments.filter(
-        (doc) => doc.box === boxInput
-      );
+      // 1. Veritabanından doğrudan girilen koliye ait tüm gönderileri çek
+      const boxShipments = await getShipmentByBox(boxInput);
 
-      if (matchingDocs.length > 0) {
-        const box = matchingDocs[0];
-
-        // Koliye ait tüm gönderileri çek
-        const boxShipments = await getShipmentByBox(boxInput);
-        // Eğer herhangi bir gönderi "Okutma Başarılı" ise
+      if (boxShipments.length > 0) {
+        // 2. Eğer herhangi bir gönderi "Okutma Başarılı" ise
         const alreadyApproved = boxShipments.some(
           (shipment) => shipment.onKabulDurumu === "Okutma Başarılı"
         );
 
         if (alreadyApproved) {
           alert("Bu koli daha önce okutulmuştur.");
+          setLoading(false);
           return;
         }
 
-        // Onayla ve güncelle
+        // 3. Eğer "Okutma Başarılı" değilse, tüm gönderilerin durumunu güncelle
         await Promise.all(
-          box.shipmentIds.map((docId) =>
-            updateOnKabulFields(docId, userData.name)
+          boxShipments.map((shipment) =>
+            updateOnKabulFields(shipment.id, userData.name)
           )
         );
 
-        // Güncellenmiş verileri yansıt
-        fetchShipments();
+        // 4. Güncellenmiş verileri tekrar çekerek arayüzü güncelle
+        await fetchShipments();
 
         alert("Koli numarası başarıyla okutuldu!");
       } else {
-        // Başka mağazalarda olup olmadığını kontrol et
+        // Koli numarasıyla eşleşen gönderi yoksa, başka mağazalarda olup olmadığını kontrol et
         const otherShipments = await getShipmentByBox(boxInput);
         if (otherShipments.length > 0) {
           // Hatalı mağazayı belirlemek için ilk bulduğu mağazayı kullan
@@ -154,6 +148,7 @@ export default function OnKabulPage() {
             alert(
               "Böyle bir koli sevkiyat listelerinde bulunamadı. Lütfen Satış Operasyon ile iletişime geçin."
             );
+            setLoading(false);
             return;
           }
 
@@ -168,6 +163,7 @@ export default function OnKabulPage() {
       console.error("Ön Kabul Güncelleme Hatası:", error);
       alert("Ön kabul işlemi sırasında bir hata oluştu.");
     }
+    setLoading(false); // Yükleniyor durumunu kaldırmak için
   };
 
   if (loading) {
@@ -220,8 +216,8 @@ export default function OnKabulPage() {
           required
           className={styles.input}
         />
-        <button type="submit" className={styles.submitButton}>
-          Onayla
+        <button type="submit" className={styles.submitButton} disabled={loading}>
+          {loading ? "İşlem Yapılıyor..." : "Onayla"}
         </button>
       </form>
 

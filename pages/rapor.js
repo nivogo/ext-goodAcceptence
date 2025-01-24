@@ -27,7 +27,7 @@ const Rapor = () => {
       setRefreshing(true);
       setError(null);
       try {
-        const topShipments = await getTop100Shipments();
+        const topShipments = await gettAllShipments();
         setShipments(topShipments);
         const allShipmentsData = await getAllShipments();
         setAllShipments(allShipmentsData);

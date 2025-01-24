@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import {
   getAllShipments,
-  searchShipmentsByQR,
+  getTop100Shipments, // Doğru fonksiyon import edildi
 } from "../lib/firestore";
 import BackButton from "../components/BackButton";
 import styles from "../styles/Rapor.module.css";
@@ -26,10 +26,9 @@ const Rapor = () => {
       setRefreshing(true);
       setError(null);
       try {
-        const topShipments = await getAllShipments();
-        setShipments(topShipments);
-        const allShipmentsData = await getAllShipments();
+        const allShipmentsData = await getAllShipments(); // Tüm gönderileri çekiyoruz
         setAllShipments(allShipmentsData);
+        setShipments(allShipmentsData); // İlk başta tüm gönderileri gösteriyoruz
       } catch (err) {
         console.error("Rapor Veri Çekme Hatası:", err);
         setError("Veriler alınırken bir hata oluştu.");
@@ -49,29 +48,29 @@ const Rapor = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, userData, router]);
 
-  // QR Arama Fonksiyonu
+  // Arama Fonksiyonu: Client-Side Filtreleme
   useEffect(() => {
-    const performSearch = async () => {
-      if (searchInput.length >= 5) {
-        setRefreshing(true);
-        setError(null);
-        try {
-          const searchResults = await searchShipmentsByQR(searchInput);
-          setShipments(searchResults);
-        } catch (err) {
-          console.error("QR Arama Hatası:", err);
-          setError("QR araması yapılırken bir hata oluştu.");
-        }
-        setRefreshing(false);
-      } else if (searchInput.length === 0) {
-        // Arama temizlendiğinde tekrar top 100 getir
-        fetchShipments();
+    const performSearch = () => {
+      if (searchInput.trim() === "") {
+        setShipments(allShipments); // Arama boşsa tüm gönderileri göster
+      } else {
+        const lowercasedInput = searchInput.toLowerCase();
+        const filtered = allShipments.filter((shipment) =>
+          Object.values(shipment).some((value) =>
+            value
+              ? value
+                  .toString()
+                  .toLowerCase()
+                  .includes(lowercasedInput)
+              : false
+          )
+        );
+        setShipments(filtered);
       }
     };
 
     performSearch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchInput]);
+  }, [searchInput, allShipments]);
 
   // Excel İndirme Fonksiyonu
   const handleDownloadExcel = () => {
@@ -156,7 +155,7 @@ const Rapor = () => {
       <div className={styles.searchContainer}>
         <input
           type="text"
-          placeholder="QR kodu ile ara (en az 5 karakter)"
+          placeholder="Herhangi bir alanla ara (ör. abc)"
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           className={styles.searchInput}

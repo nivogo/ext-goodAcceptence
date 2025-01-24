@@ -50,10 +50,13 @@ export default function OnKabulPage() {
           if (!grouped[shipment.box]) {
             grouped[shipment.box] = {
               box: shipment.box,
+              shipment_no: shipment.shipment_no || "-", // Sevk Numarası
+              shipment_date: shipment.shipment_date || "-", // Sevk Tarihi
               quantity: shipment.quantityof_product,
               onKabulDurumu: shipment.onKabulDurumu,
               onKabulYapanKisi: shipment.onKabulYapanKisi,
               onKabulSaati: shipment.onKabulSaati,
+              from_location: shipment.from_location || "-", // Gönderici Lokasyon Adı
               isApproved: shipment.isApproved,
               shipmentIds: [shipment.id], // Aynı koliye ait tüm doküman ID'leri
             };
@@ -248,24 +251,22 @@ export default function OnKabulPage() {
         <thead>
           <tr>
             <th className={styles.th}>Sıra No</th>
+            <th className={styles.th}>Sevk Numarası</th>
+            <th className={styles.th}>Sevk Tarihi</th>
             <th className={styles.th}>Koli Numarası</th>
             <th className={styles.th}>Ürün Adedi</th>
-            <th className={styles.th}>Ön Kabul Durumu</th>
-            <th className={styles.th}>Ön Kabul Yapan Kişi</th>
-            <th className={styles.th}>Ön Kabul Saati</th>
+            <th className={styles.th}>Gönderici Lokasyon Adı</th>
           </tr>
         </thead>
         <tbody>
           {groupedShipments.map((box, index) => (
             <tr key={box.box}>
               <td className={styles.td}>{index + 1}</td>
-              <td className={styles.td}>{box.box}</td>
-              <td className={styles.td}>{box.quantity}</td>
-              <td className={styles.td}>{box.onKabulDurumu || "-"}</td>
-              <td className={styles.td}>{box.onKabulYapanKisi || "-"}</td>
-              <td className={styles.td}>
-                {formatDate(box.onKabulSaati)}
-              </td>
+              <td className={styles.td}>{box.shipment_no}</td>
+              <td className={styles.td}>{formatDate(box.shipment_date)}</td>
+              <td className={styles.td}>****</td> {/* Koli Numarası Maskeli */}
+              <td className={styles.td}>****</td> {/* Ürün Adedi Maskeli */}
+              <td className={styles.td}>{box.from_location}</td>
             </tr>
           ))}
         </tbody>

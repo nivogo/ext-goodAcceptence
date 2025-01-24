@@ -28,7 +28,7 @@ const BasariliKoliler = () => {
               box: shipment.box,
               shipment_no: shipment.shipment_no || "-", // Sevk Numarası
               shipment_date: shipment.shipment_date || "-", // Sevk Tarihi
-              quantity: shipment.quantityof_product,
+              quantity: shipment.quantityof_product, // Sadece ilk shipment'tan alınır
               to_location: shipment.to_location || "-", // Alıcı Lokasyon
               onKabulDurumu: shipment.onKabulDurumu,
               onKabulYapanKisi: shipment.onKabulYapanKisi,
@@ -36,8 +36,10 @@ const BasariliKoliler = () => {
               shipmentIds: [shipment.id],
             };
           } else {
-            grouped[shipment.box].quantity += shipment.quantityof_product;
+            // Quantity'i toplamayın, sadece shipment IDs'ini ekleyin
             grouped[shipment.box].shipmentIds.push(shipment.id);
+            // İsteğe bağlı: Diğer alanların tutarlılığını kontrol edin
+            // Örneğin, tüm shipment'lar aynı to_location'a sahip mi?
           }
         });
         setBoxes(Object.values(grouped));

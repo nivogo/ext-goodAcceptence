@@ -2,27 +2,27 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { getSuccessfulBoxes } from "../lib/firestore";
+import { getBoxesWithOnKabulDurumu } from "../lib/firestore"; // Yeni fonksiyon import edildi
 import BackButton from "../components/BackButton";
 import styles from "../styles/BasariliKoliler.module.css";
 
 const BasariliKoliler = () => {
   const router = useRouter();
   const { user, userData } = useAuth();
-  const [successfulBoxes, setSuccessfulBoxes] = useState([]);
+  const [boxes, setBoxes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchSuccessfulBoxes = async () => {
+  const fetchBoxes = async () => {
     if (user && userData && userData.PAAD_ID) {
       setRefreshing(true);
       setError(null);
       try {
-        const boxes = await getSuccessfulBoxes(userData.PAAD_ID);
+        const fetchedBoxes = await getBoxesWithOnKabulDurumu(userData.PAAD_ID);
         // Koli numarasına göre gruplandır
         const grouped = {};
-        boxes.forEach((shipment) => {
+        fetchedBoxes.forEach((shipment) => {
           if (!grouped[shipment.box]) {
             grouped[shipment.box] = {
               box: shipment.box,
@@ -40,7 +40,7 @@ const BasariliKoliler = () => {
             grouped[shipment.box].shipmentIds.push(shipment.id);
           }
         });
-        setSuccessfulBoxes(Object.values(grouped));
+        setBoxes(Object.values(grouped));
       } catch (err) {
         console.error("Başarılı Koliler Veri Çekme Hatası:", err);
         setError("Başarılı koliler alınırken bir hata oluştu.");
@@ -52,7 +52,7 @@ const BasariliKoliler = () => {
 
   useEffect(() => {
     if (user && userData) {
-      fetchSuccessfulBoxes();
+      fetchBoxes();
     } else {
       setLoading(false);
       router.push("/");
@@ -91,7 +91,7 @@ const BasariliKoliler = () => {
 
       {/* Yenile Butonu */}
       <button
-        onClick={fetchSuccessfulBoxes}
+        onClick={fetchBoxes}
         className={styles.refreshButton}
         disabled={refreshing}
       >
@@ -102,7 +102,7 @@ const BasariliKoliler = () => {
       {error && <p className={styles.error}>{error}</p>}
 
       {/* Toplam Koli Sayısı */}
-      <p>Toplam Başarılı Koli Adedi: {successfulBoxes.length}</p>
+      <p>Toplam Koli Adedi: {boxes.length}</p>
 
       {/* Liste Tablosu */}
       <table className={styles.table}>
@@ -120,7 +120,7 @@ const BasariliKoliler = () => {
           </tr>
         </thead>
         <tbody>
-          {successfulBoxes.map((box, index) => (
+          {boxes.map((box, index) => (
             <tr key={box.box}>
               <td className={styles.td}>{index + 1}</td>
               <td className={styles.td}>{box.shipment_no}</td>
@@ -130,9 +130,7 @@ const BasariliKoliler = () => {
               <td className={styles.td}>{box.to_location}</td>
               <td className={styles.td}>{box.onKabulDurumu || "-"}</td>
               <td className={styles.td}>{box.onKabulYapanKisi || "-"}</td>
-              <td className={styles.td}>
-                {formatDate(box.onKabulSaati)}
-              </td>
+              <td className={styles.td}>{formatDate(box.onKabulSaati)}</td>
             </tr>
           ))}
         </tbody>

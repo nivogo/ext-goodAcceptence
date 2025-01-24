@@ -2,7 +2,7 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { getShipmentsByPAADID } from "../lib/firestore";
+import { getShipmentsByPAADID, getBoxesWithOnKabulDurumu } from "../lib/firestore";
 import BackButton from "../components/BackButton";
 import styles from "../styles/MalKabul.module.css";
 
@@ -14,28 +14,37 @@ const MalKabul = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const [boxInput, setBoxInput] = useState("");
+  const [filterOnKabul, setFilterOnKabul] = useState(false); // Filtre Durumu
 
   /**
-   * Koli listesi çekme ve gruplama fonksiyonu
+   * Koli listesi çekme ve gruplandırma fonksiyonu
    */
   const fetchBoxes = async () => {
     if (user && userData && userData.PAAD_ID) {
       setRefreshing(true);
       setError(null);
       try {
-        const shipments = await getShipmentsByPAADID(userData.PAAD_ID);
-        // Koli numarasına göre gruplandır
-        const grouped = {};
-        shipments.forEach((shipment) => {
-          if (!grouped[shipment.box]) {
-            grouped[shipment.box] = {
-              box: shipment.box,
-              shipment_no: shipment.shipment_no || "-",
-              quantity: shipment.quantityof_product,
-            };
-          }
-        });
-        setBoxes(Object.values(grouped));
+        let fetchedBoxes = [];
+        if (filterOnKabul) {
+          // onKabulDurumu olan kolileri çek
+          fetchedBoxes = await getBoxesWithOnKabulDurumu(userData.PAAD_ID);
+        } else {
+          // Tüm kolileri çek
+          const shipments = await getShipmentsByPAADID(userData.PAAD_ID);
+          // Koli numarasına göre gruplandır
+          const grouped = {};
+          shipments.forEach((shipment) => {
+            if (!grouped[shipment.box]) {
+              grouped[shipment.box] = {
+                box: shipment.box,
+                shipment_no: shipment.shipment_no || "-",
+                quantity: shipment.quantityof_product,
+              };
+            }
+          });
+          fetchedBoxes = Object.values(grouped);
+        }
+        setBoxes(fetchedBoxes);
       } catch (err) {
         console.error("Mal Kabul Kolileri Çekme Hatası:", err);
         setError("Koliler alınırken bir hata oluştu.");
@@ -53,7 +62,7 @@ const MalKabul = () => {
       router.push("/");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, userData, router]);
+  }, [user, userData, filterOnKabul]); // filterOnKabul bağımlılığı eklendi
 
   /**
    * Koli numarası girilip submit edildiğinde detay sayfasına yönlendirme
@@ -68,6 +77,13 @@ const MalKabul = () => {
     } else {
       alert("Girdiğiniz koli numarası mevcut değil.");
     }
+  };
+
+  /**
+   * onKabulDurumu filtreleme değiştiğinde çağrılacak fonksiyon
+   */
+  const handleFilterChange = () => {
+    setFilterOnKabul(!filterOnKabul);
   };
 
   if (loading) {
@@ -89,6 +105,19 @@ const MalKabul = () => {
       <p>
         Mağaza: {userData.storeName} (PAAD ID: {userData.PAAD_ID})
       </p>
+
+      {/* Filtreleme Seçeneği */}
+      <div className={styles.filterContainer}>
+        <input
+          type="checkbox"
+          id="filterOnKabul"
+          checked={filterOnKabul}
+          onChange={handleFilterChange}
+        />
+        <label htmlFor="filterOnKabul" className={styles.filterLabel}>
+          Sadece onKabulDurumu Olanlar
+        </label>
+      </div>
 
       {/* Yenile Butonu */}
       <button

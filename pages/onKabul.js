@@ -22,6 +22,9 @@ export default function OnKabulPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
 
+  // Koli numarasına göre gruplandırılmış gönderileri saklamak için state
+  const [groupedShipments, setGroupedShipments] = useState([]);
+
   // Veri çekme fonksiyonu
   const fetchShipments = async () => {
     if (user && userData && userData.PAAD_ID) {

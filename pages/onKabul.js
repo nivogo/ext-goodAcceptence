@@ -103,30 +103,46 @@ export default function OnKabulPage() {
       const boxShipments = await getShipmentByBox(boxInput);
 
       if (boxShipments.length > 0) {
-        // 2. Eğer herhangi bir gönderi "Okutma Başarılı" ise
-        const alreadyApproved = boxShipments.some(
-          (shipment) => shipment.onKabulDurumu === "Okutma Başarılı"
+        // 2. Koliye ait gönderilerin PAAD_ID'sini kontrol et
+        const isDifferentPAAD = boxShipments.some(
+          (shipment) => shipment.PAAD_ID !== userData.PAAD_ID
         );
 
-        if (alreadyApproved) {
-          alert("Bu koli daha önce okutulmuştur.");
-          setLoading(false);
-          return;
+        if (isDifferentPAAD) {
+          // 3. PAAD_ID farklıysa, koliyi "Fazla Koli-Hatalı Mağaza" olarak işaretle
+          await Promise.all(
+            boxShipments.map((shipment) =>
+              markExtraBox(shipment.id, userData.name)
+            )
+          );
+
+          alert(
+            `Okuttuğunuz koli farklı bir mağazaya ait olduğu için "Fazla Koli-Hatalı Mağaza" olarak işaretlendi. Lütfen Satış Operasyon ile iletişime geçin.`
+          );
+        } else {
+          // 4. PAAD_ID aynıysa, "Okutma Durumu" kontrolü yap
+          const alreadyApproved = boxShipments.some(
+            (shipment) => shipment.onKabulDurumu === "Okutma Başarılı"
+          );
+
+          if (alreadyApproved) {
+            alert("Bu koli daha önce okutulmuştur.");
+          } else {
+            // 5. "Okutma Başarılı" değilse, tüm gönderilerin durumunu güncelle
+            await Promise.all(
+              boxShipments.map((shipment) =>
+                updateOnKabulFields(shipment.id, userData.name)
+              )
+            );
+
+            alert("Koli numarası başarıyla okutuldu!");
+          }
         }
 
-        // 3. Eğer "Okutma Başarılı" değilse, tüm gönderilerin durumunu güncelle
-        await Promise.all(
-          boxShipments.map((shipment) =>
-            updateOnKabulFields(shipment.id, userData.name)
-          )
-        );
-
-        // 4. Güncellenmiş verileri tekrar çekerek arayüzü güncelle
+        // 6. Verileri tekrar çekerek arayüzü güncelle
         await fetchShipments();
-
-        alert("Koli numarası başarıyla okutuldu!");
       } else {
-        // Koli numarasıyla eşleşen gönderi yoksa, başka mağazalarda olup olmadığını kontrol et
+        // 7. Koli numarasıyla eşleşen gönderi yoksa, başka mağazalarda olup olmadığını kontrol et
         const otherShipments = await getShipmentByBox(boxInput);
         if (otherShipments.length > 0) {
           // Hatalı mağazayı belirlemek için ilk bulduğu mağazayı kullan

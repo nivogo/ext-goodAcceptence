@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import {
   getAllShipments,
-  getTop100Shipments,
   searchShipmentsByQR,
 } from "../lib/firestore";
 import BackButton from "../components/BackButton";
@@ -27,7 +26,7 @@ const Rapor = () => {
       setRefreshing(true);
       setError(null);
       try {
-        const topShipments = await gettAllShipments();
+        const topShipments = await getAllShipments();
         setShipments(topShipments);
         const allShipmentsData = await getAllShipments();
         setAllShipments(allShipmentsData);

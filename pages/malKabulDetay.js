@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import {
   getShipmentByBox,
+  getShipmentByQR,
   updateMalKabulFields,
 } from "../lib/firestore";
 import BackButton from "../components/BackButton";
@@ -58,9 +59,7 @@ const MalKabulDetay = () => {
     setError(null);
     try {
       // QR koduna göre gönderiyi bulma
-      const matchedShipments = shipments.filter(
-        (shipment) => shipment.QR === qrInput
-      );
+      const matchedShipments = await getShipmentByQR(qrInput);
 
       if (matchedShipments.length === 0) {
         alert("Girilen QR koduna ait bir gönderi bulunamadı.");

@@ -76,6 +76,23 @@
   margin-top: 1rem;
 }
 
+/* Yeni Buton Stili */
+.successButton {
+  padding: 0.5rem 1rem;
+  margin: 1rem 0;
+  background-color: #17a2b8;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.successButton:hover {
+  background-color: #138496;
+}
+
+/* Responsive Tasarım */
 @media (max-width: 768px) {
   .table {
     font-size: 0.9rem;
@@ -87,5 +104,11 @@
 
   .submitButton {
     padding: 0.4rem 0.8rem;
+  }
+
+  .successButton,
+  .refreshButton {
+    width: 100%;
+    margin: 0.5rem 0;
   }
 }

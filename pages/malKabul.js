@@ -1,30 +1,44 @@
 // pages/malKabul.js
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react"; // useEffect ve useState import edildi
+import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { getMalKabulData, updateMalKabulFields } from "../lib/firestore";
+import { getShipmentsByPAADID } from "../lib/firestore";
 import BackButton from "../components/BackButton";
 import styles from "../styles/MalKabul.module.css";
 
 const MalKabul = () => {
   const router = useRouter();
   const { user, userData } = useAuth();
-  const [malKabulData, setMalKabulData] = useState([]);
+  const [boxes, setBoxes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
+  const [boxInput, setBoxInput] = useState("");
 
-  // Veri çekme fonksiyonu
-  const fetchMalKabulData = async () => {
+  /**
+   * Koli listesi çekme ve gruplama fonksiyonu
+   */
+  const fetchBoxes = async () => {
     if (user && userData && userData.PAAD_ID) {
       setRefreshing(true);
       setError(null);
       try {
-        const data = await getMalKabulData(userData.PAAD_ID);
-        setMalKabulData(data);
+        const shipments = await getShipmentsByPAADID(userData.PAAD_ID);
+        // Koli numarasına göre gruplandır
+        const grouped = {};
+        shipments.forEach((shipment) => {
+          if (!grouped[shipment.box]) {
+            grouped[shipment.box] = {
+              box: shipment.box,
+              shipment_no: shipment.shipment_no || "-",
+              quantity: shipment.quantityof_product,
+            };
+          }
+        });
+        setBoxes(Object.values(grouped));
       } catch (err) {
-        console.error("Mal Kabul Veri Çekme Hatası:", err);
-        setError("Mal kabul verileri alınırken bir hata oluştu.");
+        console.error("Mal Kabul Kolileri Çekme Hatası:", err);
+        setError("Koliler alınırken bir hata oluştu.");
       }
       setRefreshing(false);
       setLoading(false);
@@ -33,21 +47,26 @@ const MalKabul = () => {
 
   useEffect(() => {
     if (user && userData) {
-      fetchMalKabulData();
+      fetchBoxes();
     } else {
       setLoading(false);
       router.push("/");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, userData, router]);
 
-  const handleUpdate = async (docId) => {
-    try {
-      await updateMalKabulFields(docId, userData.name);
-      fetchMalKabulData(); // Güncel verileri tekrar çek
-      alert("Mal kabul başarıyla güncellendi!");
-    } catch (error) {
-      console.error("Mal Kabul Güncelleme Hatası:", error);
-      alert("Mal kabul güncellenirken bir hata oluştu.");
+  /**
+   * Koli numarası girilip submit edildiğinde detay sayfasına yönlendirme
+   */
+  const handleBoxSubmit = (e) => {
+    e.preventDefault();
+    if (!boxInput) return;
+    // Koli numarası mevcut mu kontrol et
+    const exists = boxes.some((box) => box.box === boxInput);
+    if (exists) {
+      router.push(`/malKabulDetay?box=${encodeURIComponent(boxInput)}`);
+    } else {
+      alert("Girdiğiniz koli numarası mevcut değil.");
     }
   };
 
@@ -66,14 +85,14 @@ const MalKabul = () => {
   return (
     <div className={styles.container}>
       <BackButton />
-      <h1>Mal Kabul Sayfası</h1>
+      <h1>Mal Kabul Kolileri</h1>
       <p>
         Mağaza: {userData.storeName} (PAAD ID: {userData.PAAD_ID})
       </p>
 
       {/* Yenile Butonu */}
       <button
-        onClick={fetchMalKabulData}
+        onClick={fetchBoxes}
         className={styles.refreshButton}
         disabled={refreshing}
       >
@@ -83,32 +102,39 @@ const MalKabul = () => {
       {/* Hata Mesajı */}
       {error && <p className={styles.error}>{error}</p>}
 
-      {/* Veri Tablosu */}
+      {/* Koli Arama Formu */}
+      <form onSubmit={handleBoxSubmit} className={styles.form}>
+        <input
+          type="text"
+          placeholder="Koli numarası giriniz"
+          value={boxInput}
+          onChange={(e) => setBoxInput(e.target.value)}
+          required
+          className={styles.input}
+        />
+        <button type="submit" className={styles.submitButton}>
+          Detay Görüntüle
+        </button>
+      </form>
+
+      {/* Toplam Koli Sayısı */}
+      <p>Toplam Koli Sayısı: {boxes.length}</p>
+
+      {/* Koliler Tablosu */}
       <table className={styles.table}>
         <thead>
           <tr>
             <th className={styles.th}>Sıra No</th>
-            <th className={styles.th}>Ürün Adı</th>
-            <th className={styles.th}>Miktar</th>
-            <th className={styles.th}>Durum</th>
-            <th className={styles.th}>Güncelle</th>
+            <th className={styles.th}>Koli Numarası</th>
+            <th className={styles.th}>Ürün Adedi</th>
           </tr>
         </thead>
         <tbody>
-          {malKabulData.map((item, index) => (
-            <tr key={item.id}>
+          {boxes.map((box, index) => (
+            <tr key={box.box}>
               <td className={styles.td}>{index + 1}</td>
-              <td className={styles.td}>{item.urun_adi}</td>
-              <td className={styles.td}>{item.miktar}</td>
-              <td className={styles.td}>{item.malKabulDurumu || "-"}</td>
-              <td className={styles.td}>
-                <button
-                  onClick={() => handleUpdate(item.id)}
-                  className={styles.updateButton}
-                >
-                  Güncelle
-                </button>
-              </td>
+              <td className={styles.td}>{box.box}</td>
+              <td className={styles.td}>{box.quantity}</td>
             </tr>
           ))}
         </tbody>

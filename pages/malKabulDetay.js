@@ -17,6 +17,7 @@ const MalKabulDetay = () => {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState(null);
+  const [qrInput, setQrInput] = useState("");
 
   /**
    * Belirli bir koliye ait gönderileri çekme
@@ -47,26 +48,54 @@ const MalKabulDetay = () => {
   }, [user, userData, box, router]);
 
   /**
-   * Mal Kabul işlemini gerçekleştirme
+   * Mal Kabul işlemini QR kodu ile gerçekleştirme
    */
-  const handleMalKabul = async (shipmentId) => {
+  const handleMalKabulWithQR = async (e) => {
+    e.preventDefault();
+    if (!qrInput) return;
+
     setUpdating(true);
+    setError(null);
     try {
-      await updateMalKabulFields(shipmentId, userData.name);
+      // QR koduna göre gönderiyi bulma
+      const matchedShipments = shipments.filter(
+        (shipment) => shipment.QR === qrInput
+      );
+
+      if (matchedShipments.length === 0) {
+        alert("Girilen QR koduna ait bir gönderi bulunamadı.");
+        setUpdating(false);
+        return;
+      }
+
+      const shipment = matchedShipments[0];
+
+      if (shipment["Mal Kabul Durumu"] === "Onaylandı") {
+        alert("Bu gönderi zaten Mal Kabul edilmiştir.");
+        setUpdating(false);
+        return;
+      }
+
+      // "Mal Kabul" işlemini gerçekleştirme
+      await updateMalKabulFields(shipment.id, userData.name);
       alert("Mal Kabul işlemi başarıyla gerçekleştirildi.");
+
       // Gönderiyi güncelleyerek listede değişiklik yap
       setShipments((prev) =>
-        prev.map((shipment) =>
-          shipment.id === shipmentId
+        prev.map((s) =>
+          s.id === shipment.id
             ? {
-                ...shipment,
+                ...s,
                 "Mal Kabul Durumu": "Onaylandı",
                 "Mal Kabul Yapan Kişi": userData.name,
                 "Mal Kabul Saati": new Date(),
               }
-            : shipment
+            : s
         )
       );
+
+      // Input alanını temizleme
+      setQrInput("");
     } catch (error) {
       console.error("Mal Kabul Güncelleme Hatası:", error);
       alert("Mal Kabul işlemi sırasında bir hata oluştu.");
@@ -118,6 +147,21 @@ const MalKabulDetay = () => {
       {/* Hata Mesajı */}
       {error && <p className={styles.error}>{error}</p>}
 
+      {/* QR Kodu Giriş Formu */}
+      <form onSubmit={handleMalKabulWithQR} className={styles.qrForm}>
+        <input
+          type="text"
+          placeholder="QR kodunu giriniz"
+          value={qrInput}
+          onChange={(e) => setQrInput(e.target.value)}
+          required
+          className={styles.qrInput}
+        />
+        <button type="submit" className={styles.qrSubmitButton} disabled={updating}>
+          {updating ? "İşlem Yapılıyor..." : "Mal Kabul Yap"}
+        </button>
+      </form>
+
       {/* Gönderiler Tablosu */}
       <table className={styles.table}>
         <thead>
@@ -127,16 +171,13 @@ const MalKabulDetay = () => {
             <th className={styles.th}>Mal Kabul Durumu</th>
             <th className={styles.th}>Mal Kabul Yapan Kişi</th>
             <th className={styles.th}>Mal Kabul Saati</th>
-            <th className={styles.th}>İşlem</th>
           </tr>
         </thead>
         <tbody>
           {shipments.map((shipment, index) => (
             <tr key={shipment.id}>
               <td className={styles.td}>{index + 1}</td>
-              <td className={styles.td}>
-                {maskQRCode(shipment.QR, shipment)}
-              </td>
+              <td className={styles.td}>{maskQRCode(shipment.QR, shipment)}</td>
               <td className={styles.td}>
                 {shipment["Mal Kabul Durumu"] || "-"}
               </td>
@@ -147,19 +188,6 @@ const MalKabulDetay = () => {
                 {shipment["Mal Kabul Saati"]
                   ? formatDate(shipment["Mal Kabul Saati"])
                   : "-"}
-              </td>
-              <td className={styles.td}>
-                {shipment["Mal Kabul Durumu"] ? (
-                  "İşlem Yapıldı"
-                ) : (
-                  <button
-                    onClick={() => handleMalKabul(shipment.id)}
-                    className={styles.updateButton}
-                    disabled={updating}
-                  >
-                    {updating ? "Güncelleniyor..." : "Mal Kabul Yap"}
-                  </button>
-                )}
               </td>
             </tr>
           ))}

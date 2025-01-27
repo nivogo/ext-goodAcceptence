@@ -34,11 +34,36 @@ const MalKabul = () => {
           if (!grouped[shipment.box]) {
             grouped[shipment.box] = {
               box: shipment.box,
-              quantity: shipment.quantityof_product,
+              quantity: shipment.quantityof_product, // Mevcut ürün adedi
+              // EKLENDİ: okutulan ürün adedi (malKabulDurumu doluysa)
+              scannedQuantity: shipment.malKabulDurumu
+                ? shipment.quantityof_product
+                : 0,
             };
+          } else {
+            // Mevcut koliye eklemeye devam et
+            grouped[shipment.box].quantity += shipment.quantityof_product || 0;
+            // EKLENDİ: okutulmuş ürün adetini topla
+            if (shipment.malKabulDurumu) {
+              grouped[shipment.box].scannedQuantity +=
+                shipment.quantityof_product || 0;
+            }
           }
         });
-        setBoxes(Object.values(grouped));
+
+        // Objeyi diziye dönüştürüp
+        let boxArray = Object.values(grouped);
+
+        // EKLENDİ: Ürün Adedi != Okutulan Ürünler olanlar en üstte olacak şekilde sırala
+        boxArray.sort((a, b) => {
+          const aComplete = a.quantity === a.scannedQuantity;
+          const bComplete = b.quantity === b.scannedQuantity;
+          if (!aComplete && bComplete) return -1;
+          if (aComplete && !bComplete) return 1;
+          return 0;
+        });
+
+        setBoxes(boxArray);
       } catch (err) {
         console.error("Mal Kabul Kolileri Çekme Hatası:", err);
         setError("Başarılı koliler alınırken bir hata oluştu.");
@@ -124,7 +149,7 @@ const MalKabul = () => {
           className={styles.input}
           autoFocus={true}
           required
-      />
+        />
         <button type="submit" className={styles.submitButton}>
           Detay Görüntüle
         </button>
@@ -140,6 +165,8 @@ const MalKabul = () => {
             <th className={styles.th}>Sıra No</th>
             <th className={styles.th}>Koli Numarası</th>
             <th className={styles.th}>Ürün Adedi</th>
+            {/* EKLENDİ: Okutulan Ürünler sütunu */}
+            <th className={styles.th}>Okutulan Ürünler</th>
           </tr>
         </thead>
         <tbody>
@@ -148,6 +175,8 @@ const MalKabul = () => {
               <td className={styles.td}>{index + 1}</td>
               <td className={styles.td}>{box.box}</td>
               <td className={styles.td}>{box.quantity}</td>
+              {/* EKLENDİ: scannedQuantity değerini gösterme */}
+              <td className={styles.td}>{box.scannedQuantity || 0}</td>
             </tr>
           ))}
         </tbody>

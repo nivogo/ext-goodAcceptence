@@ -1,7 +1,8 @@
 // pages/malKabulDetay.js
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import FocusLockInput from "../components/FocusLockInput"; // Yolunuzu ayarlayın
+import FocusLockInput from "../components/FocusLockInput";
+import { useNotification } from "../context/NotificationContext";
 import { useAuth } from "../context/AuthContext";
 import {
   getShipmentByBox,
@@ -20,6 +21,8 @@ const MalKabulDetay = () => {
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState(null);
   const [qrInput, setQrInput] = useState("");
+
+  const { showNotification } = useNotification();
 
   /**
    * Belirli bir koliye ait gönderileri çekme

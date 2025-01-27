@@ -33,29 +33,25 @@ const MalKabul = () => {
         const grouped = {};
         fetchedBoxes.forEach((shipment) => {
           if (!grouped[shipment.box]) {
-            // [DEĞİŞTİRİLDİ] => İlk dokümanda quantity & scannedQuantity ataması
+            // İlk dokümanda 'Ürün Adedi' olarak quantity'i setliyoruz.
             grouped[shipment.box] = {
               box: shipment.box,
-              quantity: shipment.quantityof_product || 0,
-              // malKabulDurumu varsa okutulan adedi scannedQuantity'ye kaydedelim
-              scannedQuantity: shipment.malKabulDurumu
-                ? shipment.quantityof_product || 0
-                : 0,
+              quantity: shipment.quantityof_product || 0, // Ürün Adedi (ilk doc)
+              scannedQuantity: 0, // Sonraki satırlarda toplanacak
             };
-          } 
-          // [KALDIRILDI] => Tekrarlı dokümanlar için + ekleme yapılmıyor
-          // else {
-          //   grouped[shipment.box].quantity += shipment.quantityof_product || 0;
-          //   if (shipment.malKabulDurumu) {
-          //     grouped[shipment.box].scannedQuantity += shipment.quantityof_product || 0;
-          //   }
-          // }
+          }
+          // 'Okutulan Ürünler' => Aynı box için *tüm dokümanlar* arasından
+          // malKabulDurumu dolu olanların quantityof_product değerini toplayalım.
+          if (shipment.malKabulDurumu) {
+            grouped[shipment.box].scannedQuantity +=
+              shipment.quantityof_product || 0;
+          }
         });
 
         // Objeyi diziye dönüştür
         let boxArray = Object.values(grouped);
 
-        // [EKLENDİ] => Ürün Adedi != Okutulan Ürünler olanlar en üstte olacak şekilde sıralama
+        // Ürün Adedi != Okutulan Ürünler olanları en üstte olacak şekilde sıralama
         boxArray.sort((a, b) => {
           const aComplete = a.quantity === a.scannedQuantity;
           const bComplete = b.quantity === b.scannedQuantity;
@@ -166,7 +162,6 @@ const MalKabul = () => {
             <th className={styles.th}>Sıra No</th>
             <th className={styles.th}>Koli Numarası</th>
             <th className={styles.th}>Ürün Adedi</th>
-            {/* EKLENDİ => Okutulan Ürünler Sütunu */}
             <th className={styles.th}>Okutulan Ürünler</th>
           </tr>
         </thead>
@@ -176,7 +171,6 @@ const MalKabul = () => {
               <td className={styles.td}>{index + 1}</td>
               <td className={styles.td}>{box.box}</td>
               <td className={styles.td}>{box.quantity}</td>
-              {/* EKLENDİ => Okutulan Ürünler Değeri */}
               <td className={styles.td}>{box.scannedQuantity}</td>
             </tr>
           ))}

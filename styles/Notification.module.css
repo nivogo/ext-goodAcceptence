@@ -1,0 +1,48 @@
+/* styles/Notification.module.css */
+
+.notification {
+  position: fixed;
+  bottom: 20px; /* Ekranın altından mesafe */
+  left: 50%;    /* Ortalamak için */
+  transform: translateX(-50%);
+  z-index: 9999; /* Üstte görünmesi için yüksek z-index */
+  min-width: 200px;
+  max-width: 80%;
+  padding: 1rem;
+  border-radius: 4px;
+  color: #fff;
+  text-align: center;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  animation: fadeInOut 0.5s ease;
+}
+
+/* Başarılı durum rengi (yeşil) */
+.success {
+  background-color: #28a745;
+}
+
+/* Hata durumu rengi (kırmızı) */
+.error {
+  background-color: #dc3545;
+}
+
+/* Basit bir animasyon: göründükten sonra kaybolabilir */
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  10% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  90% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+}

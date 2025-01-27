@@ -153,11 +153,11 @@ const MalKabulDetay = () => {
       {/* QR Kodu Giriş Formu */}
       <form onSubmit={handleMalKabulWithQR} className={styles.qrForm}>
         <FocusLockInput
-          value={boxInput}
-          onChange={(e) => setBoxInput(e.target.value)}
+          value={qrInput}
+          onChange={(e) => setQrInput(e.target.value)}
           onEnter={handleMalKabulWithQR}
           placeholder="NVG Kodu Okutunuz"
-          className={styles.input}
+          className={styles.qrInput}
           autoFocus={true}
           required
       />

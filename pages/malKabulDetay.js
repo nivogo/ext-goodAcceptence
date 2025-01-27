@@ -149,14 +149,18 @@ const MalKabulDetay = () => {
 
       {/* QR Kodu Giriş Formu */}
       <form onSubmit={handleMalKabulWithQR} className={styles.qrForm}>
-        <input
-          type="text"
-          placeholder="QR kodunu giriniz"
-          value={qrInput}
-          onChange={(e) => setQrInput(e.target.value)}
-          required
-          className={styles.qrInput}
-        />
+        <FocusLockInput
+          placeholder="Koli numarası giriniz"
+          value={boxInput}
+          onChange={(e) => setBoxInput(e.target.value)}
+          onEnter={() => {
+           // Enter'a basıldığında handleBoxSubmit'i de tetikleyebilirsiniz
+          handleBoxSubmit();
+        }}
+        className={styles.input}
+        autoFocus={true}
+        required
+      />
         <button type="submit" className={styles.qrSubmitButton} disabled={updating}>
           {updating ? "İşlem Yapılıyor..." : "Mal Kabul Yap"}
         </button>

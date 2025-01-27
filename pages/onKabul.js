@@ -2,6 +2,7 @@
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import FocusLockInput from "../components/FocusLockInput"; // Yolunuzu ayarlayın
 import {
   getShipmentsByPAADID,
   getAllShipments,
@@ -230,14 +231,18 @@ export default function OnKabulPage() {
 
       {/* Koli Arama Input */}
       <form onSubmit={handleBoxSubmit} className={styles.form}>
-        <input
-          type="text"
+        <FocusLockInput
           placeholder="Koli numarası giriniz"
           value={boxInput}
           onChange={(e) => setBoxInput(e.target.value)}
-          required
-          className={styles.input}
-        />
+          onEnter={() => {
+           // Enter'a basıldığında handleBoxSubmit'i de tetikleyebilirsiniz
+          handleBoxSubmit();
+        }}
+        className={styles.input}
+        autoFocus={true}
+        required
+      />
         <button type="submit" className={styles.submitButton} disabled={loading}>
           {loading ? "İşlem Yapılıyor..." : "Onayla"}
         </button>

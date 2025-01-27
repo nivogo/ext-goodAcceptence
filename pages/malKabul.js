@@ -28,33 +28,34 @@ const MalKabul = () => {
       setError(null);
       try {
         const fetchedBoxes = await getBoxesForBasariliKoliler(userData.PAAD_ID);
+
         // Koli numarasına göre gruplandırma
         const grouped = {};
         fetchedBoxes.forEach((shipment) => {
           if (!grouped[shipment.box]) {
+            // [DEĞİŞTİRİLDİ] => İlk dokümanda quantity & scannedQuantity ataması
             grouped[shipment.box] = {
               box: shipment.box,
-              quantity: shipment.quantityof_product, // Mevcut ürün adedi
-              // EKLENDİ: okutulan ürün adedi (malKabulDurumu doluysa)
+              quantity: shipment.quantityof_product || 0,
+              // malKabulDurumu varsa okutulan adedi scannedQuantity'ye kaydedelim
               scannedQuantity: shipment.malKabulDurumu
-                ? shipment.quantityof_product
+                ? shipment.quantityof_product || 0
                 : 0,
             };
-          } else {
-            // Mevcut koliye eklemeye devam et
-            grouped[shipment.box].quantity += shipment.quantityof_product || 0;
-            // EKLENDİ: okutulmuş ürün adetini topla
-            if (shipment.malKabulDurumu) {
-              grouped[shipment.box].scannedQuantity +=
-                shipment.quantityof_product || 0;
-            }
-          }
+          } 
+          // [KALDIRILDI] => Tekrarlı dokümanlar için + ekleme yapılmıyor
+          // else {
+          //   grouped[shipment.box].quantity += shipment.quantityof_product || 0;
+          //   if (shipment.malKabulDurumu) {
+          //     grouped[shipment.box].scannedQuantity += shipment.quantityof_product || 0;
+          //   }
+          // }
         });
 
-        // Objeyi diziye dönüştürüp
+        // Objeyi diziye dönüştür
         let boxArray = Object.values(grouped);
 
-        // EKLENDİ: Ürün Adedi != Okutulan Ürünler olanlar en üstte olacak şekilde sırala
+        // [EKLENDİ] => Ürün Adedi != Okutulan Ürünler olanlar en üstte olacak şekilde sıralama
         boxArray.sort((a, b) => {
           const aComplete = a.quantity === a.scannedQuantity;
           const bComplete = b.quantity === b.scannedQuantity;
@@ -165,7 +166,7 @@ const MalKabul = () => {
             <th className={styles.th}>Sıra No</th>
             <th className={styles.th}>Koli Numarası</th>
             <th className={styles.th}>Ürün Adedi</th>
-            {/* EKLENDİ: Okutulan Ürünler sütunu */}
+            {/* EKLENDİ => Okutulan Ürünler Sütunu */}
             <th className={styles.th}>Okutulan Ürünler</th>
           </tr>
         </thead>
@@ -175,8 +176,8 @@ const MalKabul = () => {
               <td className={styles.td}>{index + 1}</td>
               <td className={styles.td}>{box.box}</td>
               <td className={styles.td}>{box.quantity}</td>
-              {/* EKLENDİ: scannedQuantity değerini gösterme */}
-              <td className={styles.td}>{box.scannedQuantity || 0}</td>
+              {/* EKLENDİ => Okutulan Ürünler Değeri */}
+              <td className={styles.td}>{box.scannedQuantity}</td>
             </tr>
           ))}
         </tbody>

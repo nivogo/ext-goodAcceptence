@@ -130,7 +130,7 @@ export default function OnKabulPage() {
           );
 
           if (alreadyApproved) {
-            alert("Bu koli daha önce okutulmuştur.");
+            showNotification("Bu koli daha önce okutulmuştur.", "error");
           } else {
             // 5. "Okutma Başarılı" değilse, tüm gönderilerin durumunu güncelle
             await Promise.all(
@@ -138,8 +138,7 @@ export default function OnKabulPage() {
                 updateOnKabulFields(shipment.id, userData.name)
               )
             );
-
-            alert("Koli numarası başarıyla okutuldu!");
+            showNotification("Koli başarıyla okutuldu!", "success");
           }
         }
 
@@ -169,7 +168,7 @@ export default function OnKabulPage() {
             !boxInput.startsWith("BX")
           ) {
             alert(
-              "Böyle bir koli sevkiyat listelerinde bulunamadı. Lütfen Satış Operasyon ile iletişime geçin."
+              "TR veya BX ile başlayan koli etiketi okutmalısınız. Eğer hata olduğunu düşünüyorsanız Satış Operasyon ile iletişime geçin."
             );
             setLoading(false);
             return;

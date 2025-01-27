@@ -66,7 +66,7 @@ const MalKabulDetay = () => {
       const matchedShipments = await getShipmentByQR(qrInput);
 
       if (matchedShipments.length === 0) {
-        alert("Girilen QR koduna ait bir gönderi bulunamadı.");
+        alert("Okutulan QR koda ait bir ürün bulunamadı. Önce başka bir koliye ait olup olmadığını kontrol edin ardından lütfen Satış Operasyon ile iletişime geçin.");
         setUpdating(false);
         return;
       }
@@ -74,14 +74,14 @@ const MalKabulDetay = () => {
       const shipment = matchedShipments[0];
 
       if (shipment["malKabulDurumu"] === "Onaylandı") {
-        alert("Bu gönderi zaten Mal Kabul edilmiştir.");
+        showNotification("Bu ürüne daha önce Mal Kabul yapılmıştır.", "error");
         setUpdating(false);
         return;
       }
 
       // "Mal Kabul" işlemini gerçekleştirme
       await updateMalKabulFields(shipment.id, userData.name);
-      alert("Mal Kabul işlemi başarıyla gerçekleştirildi.");
+      showNotification("Mal Kabul işlemi başarıyla gerçekleştirildi.", "success");
 
       // Gönderiyi güncelleyerek listede değişiklik yap
       setShipments((prev) =>

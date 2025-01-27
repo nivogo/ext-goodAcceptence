@@ -24,6 +24,8 @@ export default function OnKabulPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
 
+  const { showNotification } = useNotification();
+
   // Koli numarasına göre gruplandırılmış gönderileri saklamak için state
   const [groupedShipments, setGroupedShipments] = useState([]);
 

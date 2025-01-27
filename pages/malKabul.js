@@ -33,18 +33,27 @@ const MalKabul = () => {
         const grouped = {};
         fetchedBoxes.forEach((shipment) => {
           if (!grouped[shipment.box]) {
-            // İlk dokümanda 'Ürün Adedi' olarak quantity'i setliyoruz.
             grouped[shipment.box] = {
               box: shipment.box,
-              quantity: shipment.quantityof_product || 0, // Ürün Adedi (ilk doc)
-              scannedQuantity: 0, // Sonraki satırlarda toplanacak
+              quantity: 0,         // Tüm dokümanların toplamı
+              scannedQuantity: 0,  // Okutulan ürünlerin toplamı
+              docIds: new Set(),   // Aynı doc'un tekrar işlenmesini engellemek için
             };
           }
-          // 'Okutulan Ürünler' => Aynı box için *tüm dokümanlar* arasından
-          // malKabulDurumu dolu olanların quantityof_product değerini toplayalım.
-          if (shipment.malKabulDurumu) {
-            grouped[shipment.box].scannedQuantity +=
-              shipment.quantityof_product || 0;
+
+          // Eğer bu docId zaten işlendiyse tekrar eklemeyelim
+          if (!grouped[shipment.box].docIds.has(shipment.id)) {
+            // Toplam ürün adedi
+            grouped[shipment.box].quantity += shipment.quantityof_product || 0;
+
+            // Okutulan Ürünler => malKabulDurumu doluysa
+            if (shipment.malKabulDurumu) {
+              grouped[shipment.box].scannedQuantity +=
+                shipment.quantityof_product || 0;
+            }
+
+            // Bu docId'yi işlenmiş olarak ekle
+            grouped[shipment.box].docIds.add(shipment.id);
           }
         });
 

@@ -1,6 +1,7 @@
 // pages/malKabul.js
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import FocusLockInput from "../components/FocusLockInput"; // Yolunuzu ayarlayın
 import { useAuth } from "../context/AuthContext";
 import { getBoxesForBasariliKoliler } from "../lib/firestore"; // Fonksiyon import edildi
 import BackButton from "../components/BackButton";

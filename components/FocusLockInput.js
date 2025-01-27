@@ -1,40 +1,42 @@
 // components/FocusLockInput.js
-
 import React, { useRef, useEffect } from "react";
 
 const FocusLockInput = ({
   value,
   onChange,
-  onEnter,
+  onEnter,      // Enter tuşu yakalamak isterseniz
   autoFocus = true,
+  className,
+  style,
   ...props
 }) => {
   const inputRef = useRef(null);
 
+  // Sayfa açıldığında (veya bileşen yüklendiğinde) otomatik odak al
   useEffect(() => {
-    // Bileşen yüklendiğinde (veya istediğiniz zaman) otomatik odak.
     if (autoFocus && inputRef.current) {
       inputRef.current.focus();
     }
   }, [autoFocus]);
 
-  // Enter yakalama
+  // Enter tuşuna basılınca submit veya özel fonksiyon tetikle
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
-      e.preventDefault(); // Form submit vb. engellemek için
-      if (onEnter) onEnter(e); // Enter'a özel işlem varsa
-      // Tekrar odağı sağlama
+      e.preventDefault();
+      if (onEnter) onEnter(e);
+
+      // Enter sonrası yine fokus kaybolmasın
       if (inputRef.current) {
         inputRef.current.focus();
       }
     }
   };
 
-  // Tıklayınca yine odaklanır, ancak klavye açılmayacak
-  const handleFocus = () => {
-    // Örneğin, imleci metnin sonuna getirebiliriz (opsiyonel):
-    const len = value ? value.length : 0;
-    inputRef.current.setSelectionRange(len, len);
+  // Input’a tıklanınca focus ver (klavye yine açılmayacak)
+  const handleClick = () => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
   };
 
   return (
@@ -43,13 +45,16 @@ const FocusLockInput = ({
       value={value}
       onChange={onChange}
       onKeyDown={handleKeyDown}
-      onFocus={handleFocus}
-      // Sanal klavyeyi kapatmak:
-      inputMode="none"
+      onClick={handleClick}
+      // Mobil klavye açılmaması için:
       readOnly
+      inputMode="none"
+      // Otomatik tamamlama ve tavsiyeler kapatmak:
       autoComplete="off"
-      // Varsayılan olarak imleç görünümünü (caret) gizlemek isterseniz:
-      style={{ caretColor: "black" }}
+      // İsterseniz caret rengini belirleyebilirsiniz (bazı tarayıcılarda görünmeyebilir):
+      // style={{ caretColor: "auto" }}
+      className={className}
+      style={style}
       {...props}
     />
   );

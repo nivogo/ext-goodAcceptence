@@ -1,6 +1,7 @@
 // pages/malKabulDetay.js
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import FocusLockInput from "../components/FocusLockInput"; // Yolunuzu ayarlayın
 import { useAuth } from "../context/AuthContext";
 import {
   getShipmentByBox,

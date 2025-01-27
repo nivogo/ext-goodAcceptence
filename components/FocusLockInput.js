@@ -1,63 +1,74 @@
 // components/FocusLockInput.js
+
 import React, { useRef, useEffect } from "react";
 
-const FocusLockInput = ({
+/**
+ * El terminalinde sürekli caret (imleç) görünmesi
+ * ve mobil klavye açılmasını engellemek için:
+ *  - inputMode="none" => Mobil klavye açma ipucunu kapatır
+ *  - readOnly yerine normal "type=text" -> caret görünsün
+ *  - style={{ caretColor: "black" }} => imleç rengi belirgin olsun
+ *  - Enter'a basıldığında focus kaybolmasın => handleKeyDown
+ */
+function FocusLockInput({
   value,
   onChange,
-  onEnter,      // Enter tuşu yakalamak isterseniz
-  autoFocus = true,
-  className,
-  style,
+  onEnter,           // Enter'a basınca yapılacak işlem
+  autoFocus = true,  // Bileşen yüklenince otomatik odak
+  className = "",
+  style = {},
   ...props
-}) => {
+}) {
   const inputRef = useRef(null);
 
-  // Sayfa açıldığında (veya bileşen yüklendiğinde) otomatik odak al
+  // Sayfa/bileşen yüklendiğinde odak ver
   useEffect(() => {
     if (autoFocus && inputRef.current) {
       inputRef.current.focus();
     }
   }, [autoFocus]);
 
-  // Enter tuşuna basılınca submit veya özel fonksiyon tetikle
+  // Enter'a basılınca (cihaz auto enter yapsa bile) fokus koru
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
+      // Form gönderimi vs. engelle
       e.preventDefault();
-      if (onEnter) onEnter(e);
 
-      // Enter sonrası yine fokus kaybolmasın
+      // Dışarıdan bir işlem istiyorsak
+      if (onEnter) {
+        onEnter(e);
+      }
+
+      // Fokus tekrar input'ta kalsın
       if (inputRef.current) {
         inputRef.current.focus();
       }
     }
   };
 
-  // Input’a tıklanınca focus ver (klavye yine açılmayacak)
-  const handleClick = () => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
+  // Stil birleştirmesi (caretColor: black => imleç siyah gözükür)
+  const combinedStyle = {
+    caretColor: "black",
+    ...style,
   };
 
   return (
     <input
       ref={inputRef}
+      type="text"
       value={value}
       onChange={onChange}
       onKeyDown={handleKeyDown}
-      onClick={handleClick}
-      // Mobil klavye açılmaması için:
-      readOnly
+      // Mobil tarayıcıların klavye açmamasını önerir:
       inputMode="none"
-      // Otomatik tamamlama ve tavsiyeler kapatmak:
+      // Otomatik tamamlamaları kapatalım
       autoComplete="off"
-      // İsterseniz caret rengini belirleyebilirsiniz (bazı tarayıcılarda görünmeyebilir):
-      // style={{ caretColor: "auto" }}
+      // Caret gösterirken mobil klavyeyi tetiklememeye çalışır
+      style={combinedStyle}
       className={className}
-      style={style}
       {...props}
     />
   );
-};
+}
 
 export default FocusLockInput;

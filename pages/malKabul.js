@@ -114,16 +114,13 @@ const MalKabul = () => {
       {/* Koli Arama Formu */}
       <form onSubmit={handleBoxSubmit} className={styles.form}>
         <FocusLockInput
-          placeholder="Koli numarası giriniz"
           value={boxInput}
           onChange={(e) => setBoxInput(e.target.value)}
-          onEnter={() => {
-           // Enter'a basıldığında handleBoxSubmit'i de tetikleyebilirsiniz
-          handleBoxSubmit();
-        }}
-        className={styles.input}
-        autoFocus={true}
-        required
+          onEnter={handleBoxSubmit}
+          placeholder="Koli numarası giriniz"
+          className={styles.input}
+          autoFocus={true}
+          required
       />
         <button type="submit" className={styles.submitButton}>
           Detay Görüntüle

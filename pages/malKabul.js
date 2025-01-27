@@ -5,6 +5,7 @@ import FocusLockInput from "../components/FocusLockInput"; // Yolunuzu ayarlayı
 import { useAuth } from "../context/AuthContext";
 import { getBoxesForBasariliKoliler } from "../lib/firestore"; // Fonksiyon import edildi
 import BackButton from "../components/BackButton";
+import { useNotification } from "../context/NotificationContext";
 import styles from "../styles/MalKabul.module.css";
 
 const MalKabul = () => {
@@ -15,6 +16,8 @@ const MalKabul = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const [boxInput, setBoxInput] = useState("");
+
+  const { showNotification } = useNotification();
 
   /**
    * Başarılı kolileri çekme ve gruplandırma fonksiyonu

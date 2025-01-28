@@ -91,15 +91,6 @@ const BasariliKoliler = () => {
         Mağaza: {userData.storeName} (PAAD ID: {userData.PAAD_ID})
       </p>
 
-      {/* Yenile Butonu */}
-      <button
-        onClick={fetchBoxes}
-        className={styles.refreshButton}
-        disabled={refreshing}
-      >
-        {refreshing ? "Yükleniyor..." : "Yenile"}
-      </button>
-
       {/* Hata Mesajı */}
       {error && <p className={styles.error}>{error}</p>}
 

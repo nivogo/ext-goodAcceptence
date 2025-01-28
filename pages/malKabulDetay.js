@@ -167,36 +167,38 @@ const MalKabulDetay = () => {
       </form>
 
       {/* Gönderiler Tablosu */}
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th className={styles.th}>Sıra No</th>
-            <th className={styles.th}>QR</th>
-            <th className={styles.th}>Mal Kabul Durumu</th>
-            <th className={styles.th}>Mal Kabul Yapan Kişi</th>
-            <th className={styles.th}>Mal Kabul Saati</th>
-          </tr>
-        </thead>
-        <tbody>
-          {shipments.map((shipment, index) => (
-            <tr key={shipment.id}>
-              <td className={styles.td}>{index + 1}</td>
-              <td className={styles.td}>{maskQRCode(shipment.QR, shipment)}</td>
-              <td className={styles.td}>
-                {shipment["malKabulDurumu"] || "-"}
-              </td>
-              <td className={styles.td}>
-                {shipment["malKabulYapanKisi"] || "-"}
-              </td>
-              <td className={styles.td}>
-                {shipment["malKabulSaati"]
-                  ? formatDate(shipment["malKabulSaati"])
-                  : "-"}
-              </td>
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th className={styles.th}>Sıra No</th>
+              <th className={styles.th}>QR</th>
+              <th className={styles.th}>Mal Kabul Durumu</th>
+              <th className={styles.th}>Mal Kabul Yapan Kişi</th>
+              <th className={styles.th}>Mal Kabul Saati</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {shipments.map((shipment, index) => (
+              <tr key={shipment.id}>
+                <td className={styles.td}>{index + 1}</td>
+                <td className={styles.td}>{maskQRCode(shipment.QR, shipment)}</td>
+                <td className={styles.td}>
+                  {shipment["malKabulDurumu"] || "-"}
+                </td>
+                <td className={styles.td}>
+                  {shipment["malKabulYapanKisi"] || "-"}
+                </td>
+                <td className={styles.td}>
+                  {shipment["malKabulSaati"]
+                    ? formatDate(shipment["malKabulSaati"])
+                    : "-"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

@@ -32,28 +32,21 @@ const MalKabul = () => {
         // Koli numarasına göre gruplandırma
         const grouped = {};
         fetchedBoxes.forEach((shipment) => {
+          // Eğer bu koli daha önce yoksa ekleyelim
           if (!grouped[shipment.box]) {
             grouped[shipment.box] = {
               box: shipment.box,
-              quantity: 0,         // Tüm dokümanların toplamı
-              scannedQuantity: 0,  // Okutulan ürünlerin toplamı
-              docIds: new Set(),   // Aynı doc'un tekrar işlenmesini engellemek için
+              totalCount: 0,      // Tüm doküman sayısı
+              scannedCount: 0,    // Okutulan (Mal Kabul Durumu dolu) doküman sayısı
             };
           }
 
-          // Eğer bu docId zaten işlendiyse tekrar eklemeyelim
-          if (!grouped[shipment.box].docIds.has(shipment.id)) {
-            // Toplam ürün adedi
-            grouped[shipment.box].quantity += shipment.quantityof_product || 0;
+          // Her doküman 1 adet anlamına geldiği için totalCount++
+          grouped[shipment.box].totalCount++;
 
-            // Okutulan Ürünler => malKabulDurumu doluysa
-            if (shipment.malKabulDurumu) {
-              grouped[shipment.box].scannedQuantity +=
-                shipment.quantityof_product || 0;
-            }
-
-            // Bu docId'yi işlenmiş olarak ekle
-            grouped[shipment.box].docIds.add(shipment.id);
+          // Eğer malKabulDurumu doluysa scannedCount++
+          if (shipment.malKabulDurumu) {
+            grouped[shipment.box].scannedCount++;
           }
         });
 
@@ -62,8 +55,8 @@ const MalKabul = () => {
 
         // Ürün Adedi != Okutulan Ürünler olanları en üstte olacak şekilde sıralama
         boxArray.sort((a, b) => {
-          const aComplete = a.quantity === a.scannedQuantity;
-          const bComplete = b.quantity === b.scannedQuantity;
+          const aComplete = a.totalCount === a.scannedCount;
+          const bComplete = b.totalCount === b.scannedCount;
           if (!aComplete && bComplete) return -1;
           if (aComplete && !bComplete) return 1;
           return 0;
@@ -170,7 +163,9 @@ const MalKabul = () => {
           <tr>
             <th className={styles.th}>Sıra No</th>
             <th className={styles.th}>Koli Numarası</th>
+            {/* Doküman bazlı adet (toplam doküman sayısı) */}
             <th className={styles.th}>Ürün Adedi</th>
+            {/* Doküman bazlı okutulan adet (malKabulDurumu dolu doküman sayısı) */}
             <th className={styles.th}>Okutulan Ürünler</th>
           </tr>
         </thead>
@@ -179,8 +174,10 @@ const MalKabul = () => {
             <tr key={box.box}>
               <td className={styles.td}>{index + 1}</td>
               <td className={styles.td}>{box.box}</td>
-              <td className={styles.td}>{box.quantity}</td>
-              <td className={styles.td}>{box.scannedQuantity}</td>
+              {/* totalCount = doküman sayısı */}
+              <td className={styles.td}>{box.totalCount}</td>
+              {/* scannedCount = malKabulDurumu dolu doküman sayısı */}
+              <td className={styles.td}>{box.scannedCount}</td>
             </tr>
           ))}
         </tbody>

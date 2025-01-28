@@ -24,6 +24,8 @@ const MalKabulDetay = () => {
 
   const { showNotification } = useNotification();
 
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
+
   /**
    * Belirli bir koliye ait gönderileri çekme
    */
@@ -144,6 +146,11 @@ const MalKabulDetay = () => {
   return (
     <div className={styles.container}>
       <BackButton />
+      <div style={{ position: "absolute", top: 10, right: 10 }}>
+        <button onClick={() => setKeyboardOpen(!keyboardOpen)}>
+          {keyboardOpen ? "Kapat" : "Klavye Aç"}
+        </button>
+      </div>
       <h1>Koli Detayları</h1>
       <h2>Koli Numarası: {box}</h2>
 
@@ -160,6 +167,7 @@ const MalKabulDetay = () => {
           className={styles.qrInput}
           autoFocus={true}
           required
+          enableKeyboard={keyboardOpen}
       />
         <button type="submit" className={styles.qrSubmitButton} disabled={updating}>
           {updating ? "İşlem Yapılıyor..." : "Mal Kabul Yap"}

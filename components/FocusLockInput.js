@@ -17,6 +17,7 @@ function FocusLockInput({
   autoFocus = true,  // Bileşen yüklenince otomatik odak
   className = "",
   style = {},
+  enableKeyboard = false,
   ...props
 }) {
   const inputRef = useRef(null);
@@ -60,7 +61,7 @@ function FocusLockInput({
       onChange={onChange}
       onKeyDown={handleKeyDown}
       // Mobil tarayıcıların klavye açmamasını önerir:
-      inputMode="none"
+      inputMode={enableKeyboard ? "text" : "none"}
       // Otomatik tamamlamaları kapatalım
       autoComplete="off"
       // Caret gösterirken mobil klavyeyi tetiklememeye çalışır

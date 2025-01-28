@@ -158,30 +158,32 @@ const MalKabul = () => {
       <p>Toplam Koli Sayısı: {boxes.length}</p>
 
       {/* Koliler Tablosu */}
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th className={styles.th}>Sıra No</th>
-            <th className={styles.th}>Koli Numarası</th>
-            {/* Doküman bazlı adet (toplam doküman sayısı) */}
-            <th className={styles.th}>Ürün Adedi</th>
-            {/* Doküman bazlı okutulan adet (malKabulDurumu dolu doküman sayısı) */}
-            <th className={styles.th}>Okutulan Ürünler</th>
-          </tr>
-        </thead>
-        <tbody>
-          {boxes.map((box, index) => (
-            <tr key={box.box}>
-              <td className={styles.td}>{index + 1}</td>
-              <td className={styles.td}>{box.box}</td>
-              {/* totalCount = doküman sayısı */}
-              <td className={styles.td}>{box.totalCount}</td>
-              {/* scannedCount = malKabulDurumu dolu doküman sayısı */}
-              <td className={styles.td}>{box.scannedCount}</td>
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th className={styles.th}>Sıra No</th>
+              <th className={styles.th}>Koli Numarası</th>
+              {/* Doküman bazlı adet (toplam doküman sayısı) */}
+              <th className={styles.th}>Ürün Adedi</th>
+              {/* Doküman bazlı okutulan adet (malKabulDurumu dolu doküman sayısı) */}
+              <th className={styles.th}>Okutulan Ürünler</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {boxes.map((box, index) => (
+              <tr key={box.box}>
+                <td className={styles.td}>{index + 1}</td>
+                <td className={styles.td}>{box.box}</td>
+                {/* totalCount = doküman sayısı */}
+                <td className={styles.td}>{box.totalCount}</td>
+                {/* scannedCount = malKabulDurumu dolu doküman sayısı */}
+                <td className={styles.td}>{box.scannedCount}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

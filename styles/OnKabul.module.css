@@ -2,7 +2,7 @@
 
 .container {
   margin: 0.5rem;
-  padding: 0.5rem;
+  padding: 1rem;
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -37,6 +37,7 @@
   margin-top: 1rem;
 }
 
+/* INPUT STİLİ (Ortak) */
 .input {
   padding: 0.5rem;
   margin-right: 1rem;
@@ -45,12 +46,13 @@
   width: 200px;
 }
 
+/* BUTON STİLİ (Ortak) */
 .submitButton {
   padding: 0.5rem 1rem;
-  background-color: #007bff;
+  background-color: #007bff; /* Tek tip renk */
   color: #fff;
   border: none;
-  border-radius: 5px;
+  border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }

@@ -219,15 +219,6 @@ export default function OnKabulPage() {
         Başarılı Koliler
       </button>
 
-      {/* Yenile Butonu */}
-      <button
-        onClick={fetchShipments}
-        className={styles.refreshButton}
-        disabled={refreshing}
-      >
-        {refreshing ? "Yükleniyor..." : "Yenile"}
-      </button>
-
       {/* Hata Mesajı */}
       {error && <p className={styles.error}>{error}</p>}
 

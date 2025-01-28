@@ -42,6 +42,11 @@
   margin-top: 1rem;
 }
 
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto; /* Yatay kaydırma için */
+}
+
 /* Responsive Tasarım */
 @media (max-width: 768px) {
   .table {

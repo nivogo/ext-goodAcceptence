@@ -1,16 +1,24 @@
 /* styles/MainPage.module.css */
 
+/* Genel kap / container stili */
 .container {
-  /* Tüm sayfalardaki container yapısını benzer hale getirdik */
-  margin: 0.5rem;
-  padding: 0.5rem;
+  margin: 2rem;
+  padding: 2rem;
   background-color: #fff;
   border-radius: 8px;
   text-align: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  /* İçerikteki tüm öğeleri yatayda ortalamak için */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* Dikeyde ortalamak isterseniz ekleyebilirsiniz */
 }
 
+/* Butonları sarmalayan container */
 .buttonContainer {
+  /* Zaten flex kullanılabilir; altındaki butonları yan yana koymak için */
   display: flex;
   justify-content: center;
   gap: 1rem;
@@ -18,30 +26,42 @@
   flex-wrap: wrap;
 }
 
-.navButton {
-  padding: 0.75rem 1.5rem;
-  background-color: #0070f3;
-  color: #fff;
+/* Ortak buton stili */
+.navButton,
+.signOutButton {
+  /* Sabit boyutlar */
+  width: 120px;
+  height: 50px;
+
+  /* Metin boyutu sabit */
+  font-size: 1rem;
+  font-weight: 600;
+
+  /* Butonun içindeki yazıyı ortalamak için */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 1rem;
   transition: background-color 0.3s ease;
+}
+
+/* Mavi butonlar */
+.navButton {
+  background-color: #0070f3;
+  color: #fff;
 }
 
 .navButton:hover {
   background-color: #005bb5;
 }
 
+/* Kırmızı buton (Çıkış butonu) */
 .signOutButton {
-  padding: 0.75rem 1.5rem;
   background-color: #dc3545;
   color: #fff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.3s ease;
 }
 
 .signOutButton:hover {

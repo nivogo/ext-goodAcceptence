@@ -251,30 +251,32 @@ export default function OnKabulPage() {
       <p>Toplam Koli Adedi: {groupedShipments.length}</p>
 
       {/* Liste Tablosu */}
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th className={styles.th}>Sıra No</th>
-            <th className={styles.th}>Sevk Numarası</th>
-            <th className={styles.th}>Sevk Tarihi</th>
-            <th className={styles.th}>Koli Numarası</th>
-            <th className={styles.th}>Ürün Adedi</th>
-            <th className={styles.th}>Gönderici Lokasyon Adı</th>
-          </tr>
-        </thead>
-        <tbody>
-          {groupedShipments.map((box, index) => (
-            <tr key={box.box}>
-              <td className={styles.td}>{index + 1}</td>
-              <td className={styles.td}>{box.shipment_no}</td>
-              <td className={styles.td}>{formatDate(box.shipment_date)}</td>
-              <td className={styles.td}>****</td> {/* Koli Numarası Maskeli */}
-              <td className={styles.td}>****</td> {/* Ürün Adedi Maskeli */}
-              <td className={styles.td}>{box.from_location}</td>
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th className={styles.th}>Sıra No</th>
+              <th className={styles.th}>Sevk Numarası</th>
+              <th className={styles.th}>Sevk Tarihi</th>
+              <th className={styles.th}>Koli Numarası</th>
+              <th className={styles.th}>Ürün Adedi</th>
+              <th className={styles.th}>Gönderici Lokasyon Adı</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {groupedShipments.map((box, index) => (
+              <tr key={box.box}>
+                <td className={styles.td}>{index + 1}</td>
+                <td className={styles.td}>{box.shipment_no}</td>
+                <td className={styles.td}>{formatDate(box.shipment_date)}</td>
+                <td className={styles.td}>****</td> {/* Koli Numarası Maskeli */}
+                <td className={styles.td}>****</td> {/* Ürün Adedi Maskeli */}
+                <td className={styles.td}>{box.from_location}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

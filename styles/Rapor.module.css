@@ -1,7 +1,11 @@
 /* styles/Rapor.module.css */
 
 .container {
+  margin: 2rem;
   padding: 2rem;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .refreshButton {
@@ -30,14 +34,14 @@
   transition: background-color 0.3s ease;
 }
 
+.excelButton:hover {
+  background-color: #218838;
+}
+
 .tableWrapper {
   width: 100%;
   overflow-x: auto;
-}
-
-
-.excelButton:hover {
-  background-color: #218838;
+  margin-top: 1rem;
 }
 
 .searchContainer {
@@ -55,6 +59,7 @@
 
 .table {
   width: 100%;
+  min-width: 600px;
   border-collapse: collapse;
   margin-top: 1rem;
 }
@@ -71,7 +76,7 @@
 }
 
 .error {
-  color: red;
+  color: #dc3545;
   text-align: center;
   margin-top: 1rem;
 }

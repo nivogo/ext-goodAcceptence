@@ -29,6 +29,8 @@ export default function OnKabulPage() {
   // Koli numarasına göre gruplandırılmış gönderileri saklamak için state
   const [groupedShipments, setGroupedShipments] = useState([]);
 
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
+
   // Veri çekme fonksiyonu
   const fetchShipments = async () => {
     if (user && userData && userData.PAAD_ID) {
@@ -206,6 +208,11 @@ export default function OnKabulPage() {
   return (
     <div className={styles.container}>
       <BackButton />
+      <div style={{ position: "absolute", top: 10, right: 10 }}>
+        <button onClick={() => setKeyboardOpen(!keyboardOpen)}>
+          {keyboardOpen ? "Kapat" : "Klavye Aç"}
+        </button>
+      </div>
       <h1>Hoş Geldiniz, {userData.name}</h1>
       <p>
         Mağaza: {userData.storeName} (PAAD ID: {userData.PAAD_ID})
@@ -232,6 +239,7 @@ export default function OnKabulPage() {
           className={styles.input}
           autoFocus={true}
           required
+          enableKeyboard={keyboardOpen}
         />
         <button type="submit" className={styles.submitButton} disabled={loading}>
           {loading ? "İşlem Yapılıyor..." : "Onayla"}

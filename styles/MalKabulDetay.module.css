@@ -2,7 +2,7 @@
 
 .container {
   margin: 0.5rem;
-  padding: 0.5rem;
+  padding: 1rem;
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -16,30 +16,31 @@
   flex-wrap: wrap;
 }
 
+/* INPUT STİLİ (Ortak) */
 .qrInput {
   padding: 0.5rem;
   margin-right: 1rem;
   border: 1px solid #ccc;
   border-radius: 4px;
-  width: 250px;
+  width: 200px;
   max-width: 100%;
 }
 
+/* BUTON STİLİ (Ortak) */
 .qrSubmitButton {
   padding: 0.5rem 1rem;
-  background-color: #ffc107;
-  color: #000;
+  background-color: #007bff; /* Tek tip renk */
+  color: #fff;
   border: none;
-  border-radius: 5px;
+  border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
 
 .qrSubmitButton:hover {
-  background-color: #e0a800;
+  background-color: #0056b3;
 }
 
-/* Tablonun taşması durumunda yatay kaydırma */
 .tableWrapper {
   width: 100%;
   overflow-x: auto;

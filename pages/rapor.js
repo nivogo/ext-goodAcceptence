@@ -168,60 +168,62 @@ const Rapor = () => {
       </button>
 
       {/* Rapor Tablosu */}
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th className={styles.th}>Sevkiyat Numarası</th>
-            <th className={styles.th}>Sevkiyat Tarihi</th>
-            <th className={styles.th}>Gönderici Lokasyon Adı</th>
-            <th className={styles.th}>Gönderici Lokasyon ID</th>
-            <th className={styles.th}>Alıcı Lokasyon Adı</th>
-            <th className={styles.th}>Alıcı Lokasyon ID</th>
-            <th className={styles.th}>Koli Numarası</th>
-            <th className={styles.th}>QR</th>
-            <th className={styles.th}>Sipariş Tipi</th>
-            <th className={styles.th}>OnKabulDurumu</th>
-            <th className={styles.th}>OnKabulSaati</th>
-            <th className={styles.th}>OnKabulYapanKisi</th>
-            <th className={styles.th}>MalKabulDurumu</th>
-            <th className={styles.th}>MalKabulSaati</th>
-            <th className={styles.th}>MalKabulYapanKisi</th>
-          </tr>
-        </thead>
-        <tbody>
-          {shipments.map((shipment, index) => (
-            <tr key={shipment.id}>
-              <td className={styles.td}>{shipment.shipment_no || "-"}</td>
-              <td className={styles.td}>
-                {shipment.shipment_date
-                  ? new Date(shipment.shipment_date).toLocaleDateString()
-                  : "-"}
-              </td>
-              <td className={styles.td}>{shipment.from_location || "-"}</td>
-              <td className={styles.td}>{shipment.from_locationid || "-"}</td>
-              <td className={styles.td}>{shipment.to_location || "-"}</td>
-              <td className={styles.td}>{shipment.PAAD_ID || "-"}</td>
-              <td className={styles.td}>{shipment.box || "-"}</td>
-              <td className={styles.td}>{shipment.QR || "-"}</td>
-              <td className={styles.td}>{shipment.WAOT_CODE || "-"}</td>
-              <td className={styles.td}>{shipment.onKabulDurumu || "-"}</td>
-              <td className={styles.td}>
-                {shipment.onKabulSaati
-                  ? new Date(shipment.onKabulSaati.seconds * 1000).toLocaleString()
-                  : "-"}
-              </td>
-              <td className={styles.td}>{shipment.onKabulYapanKisi || "-"}</td>
-              <td className={styles.td}>{shipment.malKabulDurumu || "-"}</td>
-              <td className={styles.td}>
-                {shipment.malKabulSaati
-                  ? new Date(shipment.malKabulSaati.seconds * 1000).toLocaleString()
-                  : "-"}
-              </td>
-              <td className={styles.td}>{shipment.malKabulYapanKisi || "-"}</td>
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th className={styles.th}>Sevkiyat Numarası</th>
+              <th className={styles.th}>Sevkiyat Tarihi</th>
+              <th className={styles.th}>Gönderici Lokasyon Adı</th>
+              <th className={styles.th}>Gönderici Lokasyon ID</th>
+              <th className={styles.th}>Alıcı Lokasyon Adı</th>
+              <th className={styles.th}>Alıcı Lokasyon ID</th>
+              <th className={styles.th}>Koli Numarası</th>
+              <th className={styles.th}>QR</th>
+              <th className={styles.th}>Sipariş Tipi</th>
+              <th className={styles.th}>OnKabulDurumu</th>
+              <th className={styles.th}>OnKabulSaati</th>
+              <th className={styles.th}>OnKabulYapanKisi</th>
+              <th className={styles.th}>MalKabulDurumu</th>
+              <th className={styles.th}>MalKabulSaati</th>
+              <th className={styles.th}>MalKabulYapanKisi</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {shipments.map((shipment, index) => (
+              <tr key={shipment.id}>
+                <td className={styles.td}>{shipment.shipment_no || "-"}</td>
+                <td className={styles.td}>
+                  {shipment.shipment_date
+                    ? new Date(shipment.shipment_date).toLocaleDateString()
+                    : "-"}
+                </td>
+                <td className={styles.td}>{shipment.from_location || "-"}</td>
+                <td className={styles.td}>{shipment.from_locationid || "-"}</td>
+                <td className={styles.td}>{shipment.to_location || "-"}</td>
+                <td className={styles.td}>{shipment.PAAD_ID || "-"}</td>
+                <td className={styles.td}>{shipment.box || "-"}</td>
+                <td className={styles.td}>{shipment.QR || "-"}</td>
+                <td className={styles.td}>{shipment.WAOT_CODE || "-"}</td>
+                <td className={styles.td}>{shipment.onKabulDurumu || "-"}</td>
+                <td className={styles.td}>
+                  {shipment.onKabulSaati
+                    ? new Date(shipment.onKabulSaati.seconds * 1000).toLocaleString()
+                    : "-"}
+                </td>
+                <td className={styles.td}>{shipment.onKabulYapanKisi || "-"}</td>
+                <td className={styles.td}>{shipment.malKabulDurumu || "-"}</td>
+                <td className={styles.td}>
+                  {shipment.malKabulSaati
+                    ? new Date(shipment.malKabulSaati.seconds * 1000).toLocaleString()
+                    : "-"}
+                </td>
+                <td className={styles.td}>{shipment.malKabulYapanKisi || "-"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

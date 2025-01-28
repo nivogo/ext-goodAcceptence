@@ -19,6 +19,8 @@ const MalKabul = () => {
 
   const { showNotification } = useNotification();
 
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
+
   /**
    * Başarılı kolileri çekme ve gruplandırma fonksiyonu
    */
@@ -121,6 +123,11 @@ const MalKabul = () => {
   return (
     <div className={styles.container}>
       <BackButton />
+      <div style={{ position: "absolute", top: 10, right: 10 }}>
+        <button onClick={() => setKeyboardOpen(!keyboardOpen)}>
+          {keyboardOpen ? "Kapat" : "Klavye Aç"}
+        </button>
+      </div>
       <h1>Mal Kabul Kolileri</h1>
       <p>
         Mağaza: {userData.storeName} (PAAD ID: {userData.PAAD_ID})
@@ -139,6 +146,7 @@ const MalKabul = () => {
           className={styles.input}
           autoFocus={true}
           required
+          enableKeyboard={keyboardOpen}
         />
         <button type="submit" className={styles.submitButton}>
           Detay Görüntüle

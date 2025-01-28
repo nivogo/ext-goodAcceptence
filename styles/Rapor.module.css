@@ -30,6 +30,12 @@
   transition: background-color 0.3s ease;
 }
 
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+
 .excelButton:hover {
   background-color: #218838;
 }

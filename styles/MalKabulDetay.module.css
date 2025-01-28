@@ -34,6 +34,12 @@
   transition: background-color 0.3s ease;
 }
 
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+
 .qrSubmitButton:hover {
   background-color: #e0a800;
 }

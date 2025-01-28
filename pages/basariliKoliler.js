@@ -107,7 +107,8 @@ const BasariliKoliler = () => {
       <p>Toplam Koli Adedi: {boxes.length}</p>
 
       {/* Liste Tablosu */}
-      <table className={styles.table}>
+      <div className={styles.tableWrapper}>
+       <table className={styles.table}>
         <thead>
           <tr>
             <th className={styles.th}>Sıra No</th>
@@ -135,8 +136,9 @@ const BasariliKoliler = () => {
               <td className={styles.td}>{formatDate(box.onKabulSaati)}</td>
             </tr>
           ))}
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

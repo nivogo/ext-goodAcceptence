@@ -22,6 +22,11 @@
   background-color: #218838;
 }
 
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
 .form {
   display: flex;
   justify-content: center;

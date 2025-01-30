@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useAuth } from "../context/AuthContext";
 import { getShipmentsByAdres } from "../lib/firestore";
+import BackButton from "../components/BackButton";
 import styles from "../styles/Adresleme.module.css";
 
 export default function AdreslemePage() {
@@ -59,6 +60,7 @@ export default function AdreslemePage() {
 
   return (
     <div className={styles.container}>
+      <BackButton />
       <h1>Adresleme</h1>
 
       {/* Dropdown */}

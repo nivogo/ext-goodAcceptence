@@ -1,8 +1,8 @@
 /* styles/Adresleme.module.css */
 
 .container {
-  margin: 1rem;
-  padding: 1rem;
+  margin: 0.5rem;
+  padding: 0.5rem;
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -27,17 +27,32 @@
 
 .table {
   width: 100%;
-  min-width: 400px;
+  min-width: 600px;
   border-collapse: collapse;
+  margin-top: 1rem;
 }
 
-table th,
-table td {
+.th,
+.td {
   border: 1px solid #ddd;
   padding: 8px;
   text-align: center;
 }
 
-table th {
+.th {
   background-color: #f2f2f2;
+}
+
+/* Hata mesajlarının görünümü */
+.error {
+  color: #dc3545; /* Daha tutarlı hata rengi */
+  text-align: center;
+  margin-top: 1rem;
+}
+
+/* Responsive Tasarım */
+@media (max-width: 768px) {
+  .table {
+    font-size: 0.9rem;
+  }
 }

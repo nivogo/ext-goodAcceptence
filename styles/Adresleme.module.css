@@ -2,7 +2,7 @@
 
 .container {
   margin: 0.5rem;
-  padding: 0.5rem;
+  padding: 1rem;
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -19,15 +19,16 @@
   border-radius: 4px;
 }
 
+/* Tablo görünümünü diğer sayfalardaki gibi yapalım */
 .tableWrapper {
   width: 100%;
-  overflow-x: auto;
+  overflow-x: auto; /* Taşma olursa yatay kaydırma */
   margin-top: 1rem;
 }
 
 .table {
   width: 100%;
-  min-width: 600px;
+  min-width: 600px; /* Mobilde yatay kaydırmayı kolaylaştırır */
   border-collapse: collapse;
   margin-top: 1rem;
 }
@@ -41,18 +42,4 @@
 
 .th {
   background-color: #f2f2f2;
-}
-
-/* Hata mesajlarının görünümü */
-.error {
-  color: #dc3545; /* Daha tutarlı hata rengi */
-  text-align: center;
-  margin-top: 1rem;
-}
-
-/* Responsive Tasarım */
-@media (max-width: 768px) {
-  .table {
-    font-size: 0.9rem;
-  }
 }

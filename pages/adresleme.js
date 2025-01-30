@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useAuth } from "../context/AuthContext";
 import { getShipmentsByAdres } from "../lib/firestore";
-import styles from "../styles/Adresleme.module.css"; // Yeni oluşturacağınız CSS dosyası
+import styles from "../styles/Adresleme.module.css";
 
 export default function AdreslemePage() {
   const router = useRouter();
@@ -32,7 +32,7 @@ export default function AdreslemePage() {
       // Seçilen dropdown değerine göre "adres" sorgusu
       const adresValue =
         selectedOption === "Reyondan Depoya" ? "Reyon" : "Depo";
-      
+
       const results = await getShipmentsByAdres(adresValue);
       setShipments(results);
     } catch (error) {
@@ -88,17 +88,17 @@ export default function AdreslemePage() {
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th>Sıra No</th>
-                  <th>QR</th>
-                  <th>Adres</th>
+                  <th className={styles.th}>Sıra No</th>
+                  <th className={styles.th}>QR</th>
+                  <th className={styles.th}>Adres</th>
                 </tr>
               </thead>
               <tbody>
                 {shipments.map((item, index) => (
                   <tr key={item.id}>
-                    <td>{index + 1}</td>
-                    <td>{item.QR || "-"}</td>
-                    <td>{item.adres || "-"}</td>
+                    <td className={styles.td}>{index + 1}</td>
+                    <td className={styles.td}>{item.QR || "-"}</td>
+                    <td className={styles.td}>{item.adres || "-"}</td>
                   </tr>
                 ))}
               </tbody>

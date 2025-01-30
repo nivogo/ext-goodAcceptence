@@ -46,6 +46,9 @@ export default function MainPage() {
         <button onClick={() => router.push("/malKabul")} className={styles.navButton}>
           Mal Kabul
         </button>
+        <button onClick={() => router.push("/adresleme")} className={styles.navButton}>
+          Adresleme
+        </button>
         <button onClick={() => router.push("/rapor")} className={styles.navButton}>
           Rapor
         </button>

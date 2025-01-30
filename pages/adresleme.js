@@ -14,6 +14,8 @@ export default function AdreslemePage() {
   const [shipments, setShipments] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
+
   // Kullanıcı giriş kontrolü + veri çekme
   useEffect(() => {
     if (!user) {

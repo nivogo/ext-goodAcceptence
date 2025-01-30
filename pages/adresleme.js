@@ -91,6 +91,8 @@ export default function AdreslemePage() {
                   <th className={styles.th}>Sıra No</th>
                   <th className={styles.th}>QR</th>
                   <th className={styles.th}>Adres</th>
+                  <th className={styles.th}>Adresleme Yapan Kişi</th>
+                  <th className={styles.th}>Adresleme Saati</th>
                 </tr>
               </thead>
               <tbody>
@@ -99,6 +101,8 @@ export default function AdreslemePage() {
                     <td className={styles.td}>{index + 1}</td>
                     <td className={styles.td}>{item.QR || "-"}</td>
                     <td className={styles.td}>{item.adres || "-"}</td>
+                    <td className={styles.td}>{item.adreslemeYapanKisi || "-"}</td>
+                    <td className={styles.td}> {item["adreslemeSaati"] ? formatDate(item["adreslemeSaati"]) : "-"} </td>
                   </tr>
                 ))}
               </tbody>

@@ -19,16 +19,48 @@
   border-radius: 4px;
 }
 
-/* Tablo görünümünü diğer sayfalardaki gibi yapalım */
+.qrForm {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 1rem 0;
+  flex-wrap: wrap;
+}
+
+/* INPUT STİLİ (Ortak) */
+.qrInput {
+  padding: 0.5rem;
+  margin-right: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 200px;
+  max-width: 100%;
+}
+
+/* BUTON STİLİ (Ortak) */
+.qrSubmitButton {
+  padding: 0.5rem 1rem;
+  background-color: #007bff; /* Tek tip renk */
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.qrSubmitButton:hover {
+  background-color: #0056b3;
+}
+
 .tableWrapper {
   width: 100%;
-  overflow-x: auto; /* Taşma olursa yatay kaydırma */
+  overflow-x: auto;
   margin-top: 1rem;
 }
 
 .table {
   width: 100%;
-  min-width: 600px; /* Mobilde yatay kaydırmayı kolaylaştırır */
+  min-width: 600px;
   border-collapse: collapse;
   margin-top: 1rem;
 }
@@ -42,4 +74,32 @@
 
 .th {
   background-color: #f2f2f2;
+}
+
+.error {
+  color: #dc3545;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+/* Responsive Tasarım */
+@media (max-width: 768px) {
+  .qrForm {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .qrInput {
+    margin-right: 0;
+    margin-bottom: 1rem;
+    width: 100%;
+  }
+
+  .qrSubmitButton {
+    width: 100%;
+  }
+
+  .table {
+    font-size: 0.9rem;
+  }
 }

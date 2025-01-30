@@ -75,7 +75,7 @@ const MalKabulDetay = () => {
 
       const shipment = matchedShipments[0];
 
-      if (shipment["malKabulDurumu"] === "Onaylandı") {
+      if (shipment["malKabulDurumu"] === "Okutma Başarılı") {
         showNotification("Bu ürüne daha önce Mal Kabul yapılmıştır.", "error");
         setUpdating(false);
         return;
@@ -91,7 +91,7 @@ const MalKabulDetay = () => {
           s.id === shipment.id
             ? {
                 ...s,
-                "malKabulDurumu": "Onaylandı",
+                "malKabulDurumu": "Okutma Başarılı",
                 "malKabulYapanKisi": userData.name,
                 "malKabulSaati": new Date(),
               }
@@ -127,8 +127,8 @@ const MalKabulDetay = () => {
    * @returns {string} - Maskelenmiş veya gerçek QR kodu
    */
   const maskQRCode = (qr, shipment) => {
-    // Eğer Mal Kabul Durumu "Onaylandı" ise QR kodunu göster, değilse maskeli göster
-    return shipment["malKabulDurumu"] === "Onaylandı" ? qr : "****";
+    // Eğer Mal Kabul Durumu "Okutma Başarılı" ise QR kodunu göster, değilse maskeli göster
+    return shipment["malKabulDurumu"] === "Okutma Başarılı" ? qr : "****";
   };
 
   if (loading) {

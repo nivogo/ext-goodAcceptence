@@ -61,6 +61,11 @@ export default function AdreslemePage() {
   return (
     <div className={styles.container}>
       <BackButton />
+      <div style={{ position: "absolute", top: 10, right: 10 }}>
+        <button onClick={() => setKeyboardOpen(!keyboardOpen)}>
+          {keyboardOpen ? "Kapat" : "Klavye Aç"}
+        </button>
+      </div>
       <h1>Adresleme</h1>
 
       {/* Dropdown */}

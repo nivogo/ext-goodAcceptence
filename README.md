@@ -35,6 +35,12 @@ Bu proje, **Nivo** bünyesinde **şirket içi** kullanım amacıyla geliştirile
    - `FocusLockInput` bileşeniyle mobil cihazlar veya el terminallerinde sürekli caret (imleç) ve odak yönetimi yapılır.  
    - Dinamik tablo ve formlar sayesinde veri girişi kolaylaşır.
 
+7. **Adresleme**
+   - Kullanıcı, **“Reyondan Depoya”** veya **“Depodan Reyona”** adresleme seçeneklerini kullanarak, Firestore’daki `adres` alanını dinamik olarak güncelleyebilir.  
+   - Bu işlem öncesinde ilgili koli veya ürünün ön kabul (onKabul) ve mal kabul (malKabul) süreçlerinin tamamlanmış olması gerekir.  
+   - Adres güncellemesi yapan kullanıcının bilgisi (`adreslemeYapanKisi`) ve güncelleme zamanı (`adreslemeSaati`), Firestore’da kayıt altına alınır.  
+   - Kullanıcı, mobil/el terminali gibi ortamlarda rahat kullanım için **FocusLockInput** bileşeniyle klavye aç/kapat kontrolüne sahiptir.
+
 ---
 
 ## Teknolojiler

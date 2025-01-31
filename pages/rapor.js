@@ -172,23 +172,22 @@ const Rapor = () => {
               <th className={styles.th}>Koli Numarası</th>
               <th className={styles.th}>QR</th>
               <th className={styles.th}>Sipariş Tipi</th>
-              <th className={styles.th}>OnKabulDurumu</th>
-              <th className={styles.th}>OnKabulSaati</th>
-              <th className={styles.th}>OnKabulYapanKisi</th>
-              <th className={styles.th}>MalKabulDurumu</th>
-              <th className={styles.th}>MalKabulSaati</th>
-              <th className={styles.th}>MalKabulYapanKisi</th>
+              <th className={styles.th}>Ön Kabul Durumu</th>
+              <th className={styles.th}>Ön Kabul Saati</th>
+              <th className={styles.th}>Ön Kabul Yapan Kişi</th>
+              <th className={styles.th}>Mal Kabul Durumu</th>
+              <th className={styles.th}>Mal Kabul Saati</th>
+              <th className={styles.th}>Mal Kabul Yapan Kişi</th>
+              <th className={styles.th}>Adres</th>
+              <th className={styles.th}>Adresleme Saati</th>
+              <th className={styles.th}>Adresleme Yapan Kişi</th>
             </tr>
           </thead>
           <tbody>
             {shipments.map((shipment, index) => (
               <tr key={shipment.id}>
                 <td className={styles.td}>{shipment.shipment_no || "-"}</td>
-                <td className={styles.td}>
-                  {shipment.shipment_date
-                    ? new Date(shipment.shipment_date).toLocaleDateString()
-                    : "-"}
-                </td>
+                <td className={styles.td}>{shipment.shipment_date ? new Date(shipment.shipment_date).toLocaleDateString(): "-"}</td>
                 <td className={styles.td}>{shipment.from_location || "-"}</td>
                 <td className={styles.td}>{shipment.from_locationid || "-"}</td>
                 <td className={styles.td}>{shipment.to_location || "-"}</td>
@@ -197,19 +196,14 @@ const Rapor = () => {
                 <td className={styles.td}>{shipment.QR || "-"}</td>
                 <td className={styles.td}>{shipment.WAOT_CODE || "-"}</td>
                 <td className={styles.td}>{shipment.onKabulDurumu || "-"}</td>
-                <td className={styles.td}>
-                  {shipment.onKabulSaati
-                    ? new Date(shipment.onKabulSaati.seconds * 1000).toLocaleString()
-                    : "-"}
-                </td>
+                <td className={styles.td}>{shipment.onKabulSaati ? new Date(shipment.onKabulSaati.seconds * 1000).toLocaleString(): "-"}</td>
                 <td className={styles.td}>{shipment.onKabulYapanKisi || "-"}</td>
                 <td className={styles.td}>{shipment.malKabulDurumu || "-"}</td>
-                <td className={styles.td}>
-                  {shipment.malKabulSaati
-                    ? new Date(shipment.malKabulSaati.seconds * 1000).toLocaleString()
-                    : "-"}
-                </td>
+                <td className={styles.td}>{shipment.malKabulSaati ? new Date(shipment.malKabulSaati.seconds * 1000).toLocaleString(): "-"}</td>
                 <td className={styles.td}>{shipment.malKabulYapanKisi || "-"}</td>
+                <td className={styles.td}>{shipment.adres || "-"}</td>
+                <td className={styles.td}>{shipment.adreslemeSaati ? new Date(shipment.adreslemeSaati.seconds * 1000).toLocaleString(): "-"}</td>
+                <td className={styles.td}>{shipment.adreslemeYapanKisi || "-"}</td>
               </tr>
             ))}
           </tbody>

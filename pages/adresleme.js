@@ -11,6 +11,7 @@ import { doc, updateDoc, serverTimestamp } from "firebase/firestore"; // <-- Gü
 import { db } from "../firebase/firebaseConfig"; // <-- Firestore referansı
 import BackButton from "../components/BackButton";
 import styles from "../styles/Adresleme.module.css";
+import FocusLockInput from "../components/FocusLockInput";
 
 export default function AdreslemePage() {
   const router = useRouter();
@@ -183,12 +184,15 @@ export default function AdreslemePage() {
 
           {/* QR Input Formu */}
           <form onSubmit={handleQrSubmit} className={styles.qrForm}>
-            <input
-              type="text"
-              className={styles.qrInput}
-              placeholder="QR kodu giriniz"
+            <FocusLockInput
               value={qrInput}
               onChange={(e) => setQrInput(e.target.value)}
+              onEnter={handleQrSubmit}
+              placeholder="QR kodu giriniz"
+              className={styles.qrInput}
+              autoFocus={true}
+              required
+              enableKeyboard={keyboardOpen}
             />
             <button
               type="submit"

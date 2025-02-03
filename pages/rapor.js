@@ -1,8 +1,10 @@
+// pages/rapor.js
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import {
   getAllShipments,
+  getTop100Shipments, // Doğru fonksiyon import edildi
 } from "../lib/firestore";
 import BackButton from "../components/BackButton";
 import styles from "../styles/Rapor.module.css";
@@ -17,21 +19,16 @@ const Rapor = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
-  const [hasMore, setHasMore] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const shipmentsPerPage = 20; // Sayfa başına yüklenecek gönderi sayısı
 
   // Veri çekme fonksiyonu
-  const fetchShipments = async (page = 1) => {
+  const fetchShipments = async () => {
     if (user && userData && userData.PAAD_ID) {
       setRefreshing(true);
       setError(null);
       try {
         const allShipmentsData = await getAllShipments(); // Tüm gönderileri çekiyoruz
         setAllShipments(allShipmentsData);
-        const shipmentsToShow = allShipmentsData.slice(0, page * shipmentsPerPage);
-        setShipments(shipmentsToShow); // Sayfaya göre gönderileri gösteriyoruz
-        setHasMore(allShipmentsData.length > shipmentsToShow.length); // Daha fazla veri olup olmadığını kontrol et
+        setShipments(allShipmentsData); // İlk başta tüm gönderileri gösteriyoruz
       } catch (err) {
         console.error("Rapor Veri Çekme Hatası:", err);
         setError("Veriler alınırken bir hata oluştu.");
@@ -43,13 +40,13 @@ const Rapor = () => {
 
   useEffect(() => {
     if (user && userData) {
-      fetchShipments(currentPage);
+      fetchShipments();
     } else {
       setLoading(false);
       router.push("/");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, userData, router, currentPage]);
+  }, [user, userData, router]);
 
   // Arama Fonksiyonu: Client-Side Filtreleme
   useEffect(() => {
@@ -74,14 +71,6 @@ const Rapor = () => {
 
     performSearch();
   }, [searchInput, allShipments]);
-
-  // Scroll eventi ile daha fazla veri yüklemek için
-  const handleScroll = (e) => {
-    const bottom = e.target.scrollHeight === e.target.scrollTop + e.target.clientHeight;
-    if (bottom && hasMore && !refreshing) {
-      setCurrentPage((prevPage) => prevPage + 1); // Sonraki sayfayı yükle
-    }
-  };
 
   // Excel İndirme Fonksiyonu
   const handleDownloadExcel = () => {
@@ -112,7 +101,7 @@ const Rapor = () => {
       MalKabulSaati: shipment.malKabulSaati
         ? new Date(shipment.malKabulSaati.seconds * 1000).toLocaleString()
         : "-",
-      MalKabulYapanKişi: shipment.malKabulYapanKisi || "-",
+      MalKabulYapanKisi: shipment.malKabulYapanKisi || "-",
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(worksheetData);
@@ -143,7 +132,7 @@ const Rapor = () => {
   }
 
   return (
-    <div className={styles.container} onScroll={handleScroll}>
+    <div className={styles.container}>
       <BackButton />
       <h1>Rapor Sayfası</h1>
       <p>
@@ -214,7 +203,7 @@ const Rapor = () => {
                 <td className={styles.td}>{shipment.malKabulYapanKisi || "-"}</td>
                 <td className={styles.td}>{shipment.adres || "-"}</td>
                 <td className={styles.td}>{shipment.adreslemeSaati ? new Date(shipment.adreslemeSaati.seconds * 1000).toLocaleString(): "-"}</td>
-                <td className={styles.td}>{shipment.adreslemeYapanKişi || "-"}</td>
+                <td className={styles.td}>{shipment.adreslemeYapanKisi || "-"}</td>
               </tr>
             ))}
           </tbody>

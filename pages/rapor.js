@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import {
   getAllShipments,
-  getTop100Shipments,
 } from "../lib/firestore";
 import BackButton from "../components/BackButton";
 import styles from "../styles/Rapor.module.css";
@@ -215,7 +214,7 @@ const Rapor = () => {
                 <td className={styles.td}>{shipment.malKabulYapanKisi || "-"}</td>
                 <td className={styles.td}>{shipment.adres || "-"}</td>
                 <td className={styles.td}>{shipment.adreslemeSaati ? new Date(shipment.adreslemeSaati.seconds * 1000).toLocaleString(): "-"}</td>
-                <td className={styles.td}>{shipment.adreslemeYapanKisi || "-"}</td>
+                <td className={styles.td}>{shipment.adreslemeYapanKişi || "-"}</td>
               </tr>
             ))}
           </tbody>

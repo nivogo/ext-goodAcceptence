@@ -1,12 +1,14 @@
 // pages/index.js
+
 import { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase/firebaseConfig";
 import { useRouter } from "next/router";
+import { loginUser } from "../lib/auth";
+import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [username, setUsername] = useState(""); // email yerine username kullanıyoruz
+  const { login } = useAuth();
+  const [username, setUsername] = useState(""); // Kullanıcı adı (örneğin: "user1")
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -14,10 +16,10 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      // Kullanıcı adına "@nivogo.com" ekleyin
-      const email = `${username}@nivogo.com`;
-      await signInWithEmailAndPassword(auth, email, password);
-      // Giriş başarılı olursa dashboard'a yönlendir
+      // REST API login çağrısı
+      const data = await loginUser(username, password);
+      // data: { token, user: { name, storeName, PAAD_ID, ... } }
+      login(data.token, data.user);
       router.push("/mainPage");
     } catch (error) {
       console.error("Login Error:", error);
@@ -86,11 +88,5 @@ const buttonStyle = {
   color: "#fff",
   border: "none",
   borderRadius: "4px",
-  cursor: "pointer",
-};
-
-const linkStyle = {
-  color: "#0070f3",
-  textDecoration: "underline",
   cursor: "pointer",
 };

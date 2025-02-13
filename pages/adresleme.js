@@ -3,31 +3,23 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useAuth } from "../context/AuthContext";
 import { useNotification } from "../context/NotificationContext";
-import {
-  getShipmentsByAdres,
-  getShipmentByQR
-} from "../lib/firestore"; // <-- getShipmentByQR import eklendi
-import { doc, updateDoc, serverTimestamp } from "firebase/firestore"; // <-- Güncelleme için eklendi
-import { db } from "../firebase/firebaseConfig"; // <-- Firestore referansı
+// REST API üzerinden veri çekecek fonksiyonlar:
+import { getShipmentsByAdres, getShipmentByQR, updateAdres } from "../lib/firestore";
 import BackButton from "../components/BackButton";
 import styles from "../styles/Adresleme.module.css";
 import FocusLockInput from "../components/FocusLockInput";
 
 export default function AdreslemePage() {
   const router = useRouter();
-  const { user, userData } = useAuth(); // <-- userData alındı
-  const { showNotification } = useNotification(); // <-- Bildirim fonksiyonu
+  const { user, userData } = useAuth();
+  const { showNotification } = useNotification();
 
   const [selectedOption, setSelectedOption] = useState("Reyondan Depoya");
   const [shipments, setShipments] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const [keyboardOpen, setKeyboardOpen] = useState(false);
-
-  // **QR girişi için local state**
   const [qrInput, setQrInput] = useState("");
 
-  // Kullanıcı giriş kontrolü + veri çekme
   useEffect(() => {
     if (!user) {
       router.push("/");
@@ -37,16 +29,12 @@ export default function AdreslemePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedOption, user]);
 
-  // Firestore'dan verileri çekme
   const fetchShipments = async () => {
     if (!user) return;
     setLoading(true);
-
     try {
       // Seçilen dropdown değerine göre "adres" sorgusu
-      const adresValue =
-        selectedOption === "Reyondan Depoya" ? "Reyon" : "Depo";
-
+      const adresValue = selectedOption === "Reyondan Depoya" ? "Reyon" : "Depo";
       const results = await getShipmentsByAdres(adresValue);
       setShipments(results);
     } catch (error) {
@@ -55,29 +43,21 @@ export default function AdreslemePage() {
     setLoading(false);
   };
 
-  // Dropdown değiştiğinde state güncelle
   const handleOptionChange = (e) => {
     setSelectedOption(e.target.value);
   };
 
-  // Tablo başlığı için dinamik metin
   const getTitleText = () => {
-    return selectedOption === "Reyondan Depoya"
-      ? "Reyondaki Ürün Adedi"
-      : "Depodaki Ürün Adedi";
+    return selectedOption === "Reyondan Depoya" ? "Reyondaki Ürün Adedi" : "Depodaki Ürün Adedi";
   };
 
-  // **Tarih formatlama (malKabulDetay.js’dekine benzer)**
   const formatDate = (date) => {
     if (!date) return "-";
-    if (date.toDate) {
-      return date.toDate().toLocaleString();
-    }
     const parsedDate = new Date(date);
     return isNaN(parsedDate) ? "-" : parsedDate.toLocaleString();
   };
 
-  // **Yeni fonksiyon: QR okutarak adres güncelleme**
+  // QR okutarak adres güncelleme işlemi
   const handleQrSubmit = async (e) => {
     e.preventDefault();
     if (!qrInput) return;
@@ -106,7 +86,7 @@ export default function AdreslemePage() {
         return;
       }
 
-      // Ön kabul, mal kabul kontrolü (dolu olmaları isteniyor)
+      // Ön kabul, mal kabul kontrolü
       if (!shipment.onKabulDurumu) {
         showNotification("Ön Kabul işlemi yapılmamış!", "error");
         return;
@@ -116,20 +96,14 @@ export default function AdreslemePage() {
         return;
       }
 
-      // Her şey uygunsa -> Adres'i güncelle
+      // Adres güncellemesi: Yeni adres, mevcut seçeneğin tersidir
       const newAdres = selectedOption === "Reyondan Depoya" ? "Depo" : "Reyon";
 
-      const docRef = doc(db, "shipment_data", shipment.id);
-      await updateDoc(docRef, {
-        adres: newAdres,
-        adreslemeSaati: serverTimestamp(),
-        adreslemeYapanKisi: userData.name
-      });
+      // Firebase Firestore yerine REST API çağrısı:
+      await updateAdres(shipment.id, newAdres, userData.name);
 
       showNotification("Adres bilgisi başarıyla güncellendi.", "success");
-      setQrInput(""); // input sıfırlama
-
-      // Listeyi yenile (fetchShipments)
+      setQrInput("");
       fetchShipments();
     } catch (err) {
       console.error("QR ile adres güncelleme hatası:", err);
@@ -143,46 +117,29 @@ export default function AdreslemePage() {
 
   return (
     <div className={styles.container}>
-      {/* Geri butonu */}
       <BackButton />
-
       <div style={{ position: "absolute", top: 10, right: 10 }}>
         <button onClick={() => setKeyboardOpen(!keyboardOpen)}>
           {keyboardOpen ? "Kapat" : "Klavye Aç"}
         </button>
       </div>
-
       <h1>Adresleme</h1>
-      {/* Mağaza - PAAD ID bilgisi */}
       {userData && (
         <p>
           Mağaza: {userData.storeName} (PAAD ID: {userData.PAAD_ID})
         </p>
       )}
-
-      {/* Dropdown */}
       <div className={styles.dropdownWrapper}>
-        <select
-          className={styles.dropdown}
-          value={selectedOption}
-          onChange={handleOptionChange}
-        >
+        <select className={styles.dropdown} value={selectedOption} onChange={handleOptionChange}>
           <option value="Reyondan Depoya">Reyondan Depoya</option>
           <option value="Depodan Reyona">Depodan Reyona</option>
         </select>
       </div>
-
-      {/* Yükleniyor durumu */}
       {loading ? (
         <p>Yükleniyor...</p>
       ) : (
         <>
-          {/* Seçili duruma göre ürün adet bilgisi */}
-          <p>
-            {getTitleText()}: {shipments.length}
-          </p>
-
-          {/* QR Input Formu */}
+          <p>{getTitleText()}: {shipments.length}</p>
           <form onSubmit={handleQrSubmit} className={styles.qrForm}>
             <FocusLockInput
               value={qrInput}
@@ -194,15 +151,10 @@ export default function AdreslemePage() {
               required
               enableKeyboard={keyboardOpen}
             />
-            <button
-              type="submit"
-              className={styles.qrSubmitButton}
-            >
+            <button type="submit" className={styles.qrSubmitButton}>
               Adres Güncelle
             </button>
           </form>
-
-          {/* Liste Tablosu */}
           <div className={styles.tableWrapper}>
             <table className={styles.table}>
               <thead>
@@ -220,13 +172,9 @@ export default function AdreslemePage() {
                     <td className={styles.td}>{index + 1}</td>
                     <td className={styles.td}>{item.QR || "-"}</td>
                     <td className={styles.td}>{item.adres || "-"}</td>
+                    <td className={styles.td}>{item.adreslemeYapanKisi || "-"}</td>
                     <td className={styles.td}>
-                      {item.adreslemeYapanKisi || "-"}
-                    </td>
-                    <td className={styles.td}>
-                      {item.adreslemeSaati
-                        ? formatDate(item.adreslemeSaati)
-                        : "-"}
+                      {item.adreslemeSaati ? formatDate(item.adreslemeSaati) : "-"}
                     </td>
                   </tr>
                 ))}

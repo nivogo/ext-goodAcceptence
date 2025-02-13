@@ -1,5 +1,12 @@
 // next.config.js
 module.exports = {
-  // output: 'export', // Bu satırı kaldırdık
   reactStrictMode: true,
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://21.101.42.160/acceptance/:path*', // HTTP endpoint'iniz
+      },
+    ];
+  },
 };

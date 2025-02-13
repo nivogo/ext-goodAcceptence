@@ -1,25 +1,26 @@
 // pages/mainPage.js
+
 import { useRouter } from "next/router";
-import { useEffect } from "react"; // useEffect import edildi
-import { signOut } from "firebase/auth";
-import { auth } from "../firebase/firebaseConfig";
+import { useEffect } from "react";
+import { logoutUser } from "../lib/auth";
 import { useAuth } from "../context/AuthContext";
 import BackButton from "../components/BackButton";
 import styles from "../styles/MainPage.module.css";
 
 export default function MainPage() {
   const router = useRouter();
-  const { user, userData } = useAuth();
+  const { token, userData, logout } = useAuth();
 
   useEffect(() => {
-    if (!user) {
+    if (!userData) {
       router.push("/");
     }
-  }, [user, router]);
+  }, [userData, router]);
 
   const handleSignOut = async () => {
     try {
-      await signOut(auth);
+      await logoutUser(token);
+      logout();
       router.push("/");
     } catch (error) {
       console.error("Çıkış Hatası:", error);
@@ -27,7 +28,7 @@ export default function MainPage() {
     }
   };
 
-  if (!user || !userData) {
+  if (!userData) {
     return (
       <div style={{ padding: "2rem", textAlign: "center" }}>
         <p>Yükleniyor...</p>

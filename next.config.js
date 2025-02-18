@@ -5,7 +5,7 @@ module.exports = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://21.101.42.160/acceptance/:path*', // HTTP endpoint'iniz
+        destination: 'http://37.75.12.56/acceptance/:path*', // HTTP endpoint'iniz
       },
     ];
   },

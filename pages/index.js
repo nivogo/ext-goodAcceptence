@@ -1,5 +1,4 @@
 // pages/index.js
-
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { loginUser } from "../lib/auth";
@@ -8,7 +7,7 @@ import { useAuth } from "../context/AuthContext";
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
-  const [username, setUsername] = useState(""); // Kullanıcı adı (örneğin: "user1")
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -16,11 +15,22 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      // REST API login çağrısı
       const data = await loginUser(username, password);
-      // data: { token, user: { name, storeName, PAAD_ID, ... } }
-      login(data.token, data.user);
-      router.push("/mainPage");
+      if (data.success) {
+        // API'den gelen user objesini uygulamanızın beklentisine göre dönüştürün
+        const mappedUser = {
+          name: data.user.name,
+          storeName: data.user.store_name,   // "store_name" -> "storeName"
+          PAAD_ID: data.user.paad_id,         // "paad_id" -> "PAAD_ID"
+          username: data.user.username,
+          createdAt: data.user.created_at,
+        };
+        // REST API'de token alanı yoksa boş string ya da API'den alınan token'i kullanın
+        login("", mappedUser);
+        router.push("/mainPage");
+      } else {
+        alert("Giriş başarısız. Lütfen bilgilerinizi kontrol edin.");
+      }
     } catch (error) {
       console.error("Login Error:", error);
       alert("Giriş başarısız. Lütfen bilgilerinizi kontrol edin.");

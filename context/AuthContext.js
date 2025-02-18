@@ -1,5 +1,4 @@
 // context/AuthContext.js
-
 import { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext(null);
@@ -11,13 +10,21 @@ export const AuthProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Oturum açılmış bilgileri localStorage'dan alıyoruz.
+  // Oturum açılmış bilgileri localStorage'dan alırken JSON.parse hatalarını yakalayın
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     const storedUserData = localStorage.getItem("userData");
-    if (storedToken && storedUserData) {
+
+    if (storedToken && storedUserData && storedUserData !== "undefined") {
       setToken(storedToken);
-      setUserData(JSON.parse(storedUserData));
+      try {
+        const parsedData = JSON.parse(storedUserData);
+        setUserData(parsedData);
+      } catch (error) {
+        console.error("Error parsing userData from localStorage:", error);
+        // Hatalı veriyi temizleyin
+        localStorage.removeItem("userData");
+      }
     }
     setLoading(false);
   }, []);
@@ -46,3 +53,5 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
+export default AuthProvider;

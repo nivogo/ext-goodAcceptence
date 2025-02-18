@@ -10,7 +10,6 @@ export const AuthProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Oturum açılmış bilgileri localStorage'dan alırken JSON.parse hatalarını yakalayın
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     const storedUserData = localStorage.getItem("userData");
@@ -22,7 +21,6 @@ export const AuthProvider = ({ children }) => {
         setUserData(parsedData);
       } catch (error) {
         console.error("Error parsing userData from localStorage:", error);
-        // Hatalı veriyi temizleyin
         localStorage.removeItem("userData");
       }
     }

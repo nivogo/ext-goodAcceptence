@@ -15,11 +15,11 @@ const BasariliKoliler = () => {
   const [error, setError] = useState(null);
 
   const fetchBoxes = async () => {
-    if (user && userData && userData.PAAD_ID) {
+    if (user && userData && userData.paad_id) {
       setRefreshing(true);
       setError(null);
       try {
-        const fetchedBoxes = await getBoxesForBasariliKoliler(userData.PAAD_ID);
+        const fetchedBoxes = await getBoxesForBasariliKoliler(userData.paad_id);
         // Koli numarasına göre gruplandır
         const grouped = {};
         fetchedBoxes.forEach((shipment) => {
@@ -88,7 +88,7 @@ const BasariliKoliler = () => {
       <BackButton />
       <h1>Başarılı Koliler</h1>
       <p>
-        Mağaza: {userData.storeName} (PAAD ID: {userData.PAAD_ID})
+        Mağaza: {userData.storeName} (PAAD ID: {userData.paad_id})
       </p>
 
       {/* Hata Mesajı */}

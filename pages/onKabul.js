@@ -33,11 +33,11 @@ export default function OnKabulPage() {
 
   // Veri çekme fonksiyonu
   const fetchShipments = async () => {
-    if (user && userData && userData.PAAD_ID) {
+    if (user && userData && userData.paad_id) {
       setRefreshing(true);
       setError(null);
       try {
-        const shipmentsList = await getShipmentsByPAADID(userData.PAAD_ID);
+        const shipmentsList = await getShipmentsByPAADID(userData.paad_id);
         const allShipmentsList = await getAllShipments();
 
         // Eğer API'den dönen shipmentsList dizi değilse, boş dizi olarak ayarla.
@@ -118,7 +118,7 @@ export default function OnKabulPage() {
       if (boxShipments.length > 0) {
         // 2. Koliye ait gönderilerin PAAD_ID'sini kontrol et
         const isDifferentPAAD = boxShipments.some(
-          (shipment) => shipment.PAAD_ID !== userData.PAAD_ID
+          (shipment) => shipment.paad_id !== userData.paad_id
         );
 
         if (isDifferentPAAD) {
@@ -219,7 +219,7 @@ export default function OnKabulPage() {
       </div>
       <h1>Hoş Geldiniz, {userData.name}</h1>
       <p>
-        Mağaza: {userData.storeName} (PAAD ID: {userData.PAAD_ID})
+        Mağaza: {userData.storeName} (PAAD ID: {userData.paad_id})
       </p>
 
       {/* Başarılı Koliler Butonu */}

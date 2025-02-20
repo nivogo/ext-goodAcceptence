@@ -74,7 +74,7 @@ export default function AdreslemePage() {
       const shipment = matched[0];
 
       // Mağaza kontrolü
-      if (shipment.PAAD_ID !== Number(userData.PAAD_ID)) {
+      if (shipment.paad_id !== Number(userData.paad_id)) {
         showNotification("Bu ürün farklı bir mağazaya ait!", "error");
         return;
       }
@@ -126,7 +126,7 @@ export default function AdreslemePage() {
       <h1>Adresleme</h1>
       {userData && (
         <p>
-          Mağaza: {userData.storeName} (PAAD ID: {userData.PAAD_ID})
+          Mağaza: {userData.storeName} (PAAD ID: {userData.paad_id})
         </p>
       )}
       <div className={styles.dropdownWrapper}>

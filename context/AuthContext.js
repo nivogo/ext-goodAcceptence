@@ -14,31 +14,32 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null); // Eklenen kullanıcı state'i
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const storedUserData = localStorage.getItem("userData");
-    const loginExpiration = localStorage.getItem("loginExpiration");
+useEffect(() => {
+  const storedToken = localStorage.getItem("token");
+  const storedUserData = localStorage.getItem("userData");
+  const loginExpiration = localStorage.getItem("loginExpiration");
 
-    if (storedToken && storedUserData && storedUserData !== "undefined" && loginExpiration) {
-      if (Date.now() < parseInt(loginExpiration, 10)) {
-        setToken(storedToken);
-        try {
-          const parsedData = JSON.parse(storedUserData);
-          setUserData(parsedData);
-          setUser(parsedData);
-        } catch (error) {
-          console.error("Error parsing userData from localStorage:", error);
-          localStorage.removeItem("userData");
-        }
-      } else {
-        // Giriş süresi doldu, localStorage temizlensin
-        localStorage.removeItem("token");
+  // Token kontrolünü kaldırıp, kullanıcı verisini kontrol edelim
+  if (storedUserData && storedUserData !== "undefined" && loginExpiration) {
+    if (Date.now() < parseInt(loginExpiration, 10)) {
+      setToken(storedToken); // token boş olsa bile
+      try {
+        const parsedData = JSON.parse(storedUserData);
+        setUserData(parsedData);
+        setUser(parsedData);
+      } catch (error) {
+        console.error("Error parsing userData from localStorage:", error);
         localStorage.removeItem("userData");
-        localStorage.removeItem("loginExpiration");
       }
+    } else {
+      // Giriş süresi doldu, localStorage temizlensin
+      localStorage.removeItem("token");
+      localStorage.removeItem("userData");
+      localStorage.removeItem("loginExpiration");
     }
-    setLoading(false);
-  }, []);
+  }
+  setLoading(false);
+}, []);
 
   const login = (token, userData) => {
     setToken(token);

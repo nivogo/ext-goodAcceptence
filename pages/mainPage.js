@@ -1,5 +1,3 @@
-// pages/mainPage.js
-
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { logoutUser } from "../lib/auth";
@@ -12,8 +10,8 @@ export default function MainPage() {
   const { token, userData, logout } = useAuth();
 
   useEffect(() => {
-    if (!userData) {
-      router.push("/");
+    if (!userData && router.isReady) {
+      router.push("/").catch(() => {});
     }
   }, [userData, router]);
 
@@ -21,7 +19,7 @@ export default function MainPage() {
     try {
       await logoutUser(token);
       logout();
-      router.push("/");
+      router.push("/").catch(() => {});
     } catch (error) {
       console.error("Çıkış Hatası:", error);
       alert("Çıkış işlemi sırasında bir hata oluştu.");

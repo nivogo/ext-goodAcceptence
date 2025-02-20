@@ -39,6 +39,10 @@ export default function OnKabulPage() {
       try {
         const shipmentsList = await getShipmentsByPAADID(userData.PAAD_ID);
         const allShipmentsList = await getAllShipments();
+
+        // Eğer API'den dönen shipmentsList dizi değilse, boş dizi olarak ayarla.
+        const shipmentsArray = Array.isArray(shipmentsList) ? shipmentsList : [];
+        
         // "Okutma Başarılı" olmayanları filtrele
         const filteredShipments = shipmentsList
           .filter((shipment) => shipment.onKabulDurumu !== "Okutma Başarılı")

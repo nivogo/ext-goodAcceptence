@@ -1,4 +1,3 @@
-// pages/onKabul.js
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
@@ -6,7 +5,6 @@ import { useNotification } from "../context/NotificationContext";
 import FocusLockInput from "../components/FocusLockInput"; // Yolunuzu ayarlayın
 import {
   getShipmentsByPAADID,
-  getAllShipments,
   getShipmentByBox,
   updateOnKabulFields,
   markExtraBox,
@@ -18,43 +16,25 @@ export default function OnKabulPage() {
   const router = useRouter();
   const { user, userData } = useAuth();
   const [shipments, setShipments] = useState([]);
-  const [allShipments, setAllShipments] = useState([]);
   const [boxInput, setBoxInput] = useState("");
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
-
   const { showNotification } = useNotification();
-
-  // Koli numarasına göre gruplandırılmış gönderileri saklamak için state
   const [groupedShipments, setGroupedShipments] = useState([]);
-
   const [keyboardOpen, setKeyboardOpen] = useState(false);
 
-  // Veri çekme fonksiyonu
+  // Sadece kullanıcının paad_id'sine göre gönderileri çekiyoruz.
   const fetchShipments = async () => {
     if (user && userData && userData.paad_id) {
-      setRefreshing(true);
+      setLoading(true);
       setError(null);
       try {
         const shipmentsList = await getShipmentsByPAADID(userData.paad_id);
-        const allShipmentsList = await getAllShipments();
-
-        // Eğer API'den dönen shipmentsList dizi değilse, boş dizi olarak ayarla.
-        const shipmentsArray = Array.isArray(shipmentsList) ? shipmentsList : [];
-        
-        // "Okutma Başarılı" olmayanları filtrele
-        const filteredShipments = shipmentsList
-          .filter((shipment) => shipment.on_Kabul_durumu !== "Okutma Başarılı")
-          .sort((a, b) => {
-            if (!a.on_Kabul_durumu && b.on_Kabul_durumu) return -1;
-            if (a.on_Kabul_durumu && !b.on_Kabul_durumu) return 1;
-            return 0;
-          });
-        setShipments(filteredShipments);
-        setAllShipments(allShipmentsList);
-
-        // Gönderileri koli numarasına göre gruplandır
+        // "Okutma Başarılı" olmayanları filtreleyip koli numarasına göre gruplayalım.
+        const filteredShipments = shipmentsList.filter(
+          (shipment) => shipment.on_kabul_durumu !== "Okutma Başarılı"
+        );
+        // Koli numarasına göre gruplandırma
         const grouped = {};
         filteredShipments.forEach((shipment) => {
           if (!grouped[shipment.box]) {
@@ -62,27 +42,24 @@ export default function OnKabulPage() {
               box: shipment.box,
               shipment_no: shipment.shipment_no || "-", // Sevk Numarası
               shipment_date: shipment.shipment_date || "-", // Sevk Tarihi
-              quantity: shipment.quantity_of_product,
-              on_Kabul_durumu: shipment.on_Kabul_durumu,
+              quantity: shipment.quantity_of_product, // Ürün adedi
+              on_kabul_durumu: shipment.on_kabul_durumu,
               on_kabul_yapan_kisi: shipment.on_kabul_yapan_kisi,
               on_kabul_saati: shipment.on_kabul_saati,
-              from_location: shipment.from_location || "-", // Gönderici Lokasyon Adı
-              isApproved: shipment.isApproved,
-              shipmentIds: [shipment.id], // Aynı koliye ait tüm doküman ID'leri
+              from_location: shipment.from_location || "-", // Gönderici Lokasyon
+              shipmentIds: [shipment.id],
             };
           } else {
-            // Eğer koli zaten varsa, sadece quantity'yi güncelle
             grouped[shipment.box].quantity += shipment.quantity_of_product;
             grouped[shipment.box].shipmentIds.push(shipment.id);
           }
         });
-        // Diziye dönüştür
+        setShipments(filteredShipments);
         setGroupedShipments(Object.values(grouped));
       } catch (err) {
         console.error("Veri Çekme Hatası:", err);
         setError("Veriler alınırken bir hata oluştu.");
       }
-      setRefreshing(false);
       setLoading(false);
     }
   };
@@ -94,14 +71,10 @@ export default function OnKabulPage() {
       setLoading(false);
       router.push("/");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, userData, router]);
 
   const formatDate = (date) => {
     if (!date) return "-";
-    if (date.toDate) {
-      return date.toDate().toLocaleString();
-    }
     const parsedDate = new Date(date);
     return isNaN(parsedDate) ? "-" : parsedDate.toLocaleString();
   };
@@ -109,92 +82,46 @@ export default function OnKabulPage() {
   const handleBoxSubmit = async (e) => {
     e.preventDefault();
     if (!boxInput) return;
-
-    setLoading(true); // Yükleniyor durumunu göstermek için
-    try {
-      // 1. Veritabanından doğrudan girilen koliye ait tüm gönderileri çek
-      const boxShipments = await getShipmentByBox(boxInput);
-
-      if (boxShipments.length > 0) {
-        // 2. Koliye ait gönderilerin PAAD_ID'sini kontrol et
-        const isDifferentPAAD = boxShipments.some(
-          (shipment) => shipment.paad_id !== userData.paad_id
+    // Doğrudan girilen koli numarasına ait gönderileri çekelim
+    const boxShipments = await getShipmentByBox(boxInput);
+    if (boxShipments.length > 0) {
+      // Gönderilerin paad_id'sini kontrol edelim
+      const isDifferentPAAD = boxShipments.some(
+        (shipment) => shipment.paad_id !== userData.paad_id
+      );
+      if (isDifferentPAAD) {
+        // PAAD_ID farklıysa, koli "Fazla Koli-Hatalı Mağaza" olarak işaretlenecek
+        await Promise.all(
+          boxShipments.map((shipment) =>
+            markExtraBox(shipment.id, userData.name)
+          )
         );
-
-        if (isDifferentPAAD) {
-          // 3. PAAD_ID farklıysa, koliyi "Fazla Koli-Hatalı Mağaza" olarak işaretle
+        alert(
+          `Okuttuğunuz koli farklı bir mağazaya ait olduğu için "Fazla Koli-Hatalı Mağaza" olarak işaretlendi. Lütfen Satış Operasyon ile iletişime geçin.`
+        );
+      } else {
+        // PAAD_ID aynıysa, "Okutma Durumu" kontrolü yap
+        const alreadyApproved = boxShipments.some(
+          (shipment) => shipment.on_kabul_durumu === "Okutma Başarılı"
+        );
+        if (alreadyApproved) {
+          showNotification("Bu koli daha önce okutulmuştur.", "error");
+        } else {
+          // Tüm gönderilerin durumunu güncelle
           await Promise.all(
             boxShipments.map((shipment) =>
-              markExtraBox(shipment.id, userData.name)
+              updateOnKabulFields(shipment.id, userData.name)
             )
           );
-
-          alert(
-            `Okuttuğunuz koli farklı bir mağazaya ait olduğu için "Fazla Koli-Hatalı Mağaza" olarak işaretlendi. Lütfen Satış Operasyon ile iletişime geçin.`
-          );
-        } else {
-          // 4. PAAD_ID aynıysa, "Okutma Durumu" kontrolü yap
-          const alreadyApproved = boxShipments.some(
-            (shipment) => shipment.on_Kabul_durumu === "Okutma Başarılı"
-          );
-
-          if (alreadyApproved) {
-            showNotification("Bu koli daha önce okutulmuştur.", "error");
-          } else {
-            // 5. "Okutma Başarılı" değilse, tüm gönderilerin durumunu güncelle
-            await Promise.all(
-              boxShipments.map((shipment) =>
-                updateOnKabulFields(shipment.id, userData.name)
-              )
-            );
-            showNotification("Koli başarıyla okutuldu!", "success");
-          }
-        }
-
-        // 6. Verileri tekrar çekerek arayüzü güncelle
-        await fetchShipments();
-      } else {
-        // 7. Koli numarasıyla eşleşen gönderi yoksa, başka mağazalarda olup olmadığını kontrol et
-        const otherShipments = await getShipmentByBox(boxInput);
-        if (otherShipments.length > 0) {
-          // Hatalı mağazayı belirlemek için ilk bulduğu mağazayı kullan
-          const targetStore = otherShipments[0].storeName || "bilinmeyen";
-
-          // Tüm bulduğu kolileri işaretle
-          await Promise.all(
-            otherShipments.map((shipment) =>
-              markExtraBox(shipment.id, userData.name)
-            )
-          );
-
-          alert(
-            `Okuttuğunuz koli ${targetStore} mağazasına gönderilmiştir ve hatalı bir şekilde size teslim edilmiştir. Lütfen Satış Operasyon ile iletişime geçin.`
-          );
-        } else {
-          // Koli numarası "TR" veya "BX" ile başlamıyor mu kontrol et
-          if (
-            !boxInput.startsWith("TR") &&
-            !boxInput.startsWith("BX")
-          ) {
-            alert(
-              "TR veya BX ile başlayan koli etiketi okutmalısınız. Eğer hata olduğunu düşünüyorsanız Satış Operasyon ile iletişime geçin."
-            );
-            setLoading(false);
-            return;
-          }
-
-          // Eğer "TR" veya "BX" ile başlıyorsa ve listede yoksa
-          alert(
-            "Böyle bir koli sevkiyat listelerinde bulunamadı. Lütfen Satış Operasyon ile iletişime geçin."
-          );
+          showNotification("Koli başarıyla okutuldu!", "success");
         }
       }
-      setBoxInput("");
-    } catch (error) {
-      console.error("Ön Kabul Güncelleme Hatası:", error);
-      alert("Ön kabul işlemi sırasında bir hata oluştu.");
+      // Verileri yeniden çekelim
+      await fetchShipments();
+    } else {
+      alert("Girdiğiniz koli numarası bulunamadı.");
     }
-    setLoading(false); // Yükleniyor durumunu kaldırmak için
+    setBoxInput("");
   };
 
   if (loading) {
@@ -204,7 +131,6 @@ export default function OnKabulPage() {
       </div>
     );
   }
-
   if (!user || !userData) {
     return null;
   }
@@ -217,22 +143,12 @@ export default function OnKabulPage() {
           {keyboardOpen ? "Kapat" : "Klavye Aç"}
         </button>
       </div>
-      <h1>Hoş Geldiniz, {userData.name}</h1>
+      <h1>On Kabul</h1>
       <p>
         Mağaza: {userData.storeName} (PAAD ID: {userData.paad_id})
       </p>
-
-      {/* Başarılı Koliler Butonu */}
-      <button
-        onClick={() => router.push("/basariliKoliler")}
-        className={styles.successButton}
-      >
-        Başarılı Koliler
-      </button>
-
       {/* Hata Mesajı */}
       {error && <p className={styles.error}>{error}</p>}
-
       {/* Koli Arama Input */}
       <form onSubmit={handleBoxSubmit} className={styles.form}>
         <FocusLockInput
@@ -249,11 +165,8 @@ export default function OnKabulPage() {
           {loading ? "İşlem Yapılıyor..." : "Onayla"}
         </button>
       </form>
-
-      {/* Toplam Koli Sayısı */}
+      {/* Grup Halindeki Kolilerin Listesi */}
       <p>Toplam Koli Adedi: {groupedShipments.length}</p>
-
-      {/* Liste Tablosu */}
       <div className={styles.tableWrapper}>
         <table className={styles.table}>
           <thead>
@@ -263,7 +176,7 @@ export default function OnKabulPage() {
               <th className={styles.th}>Sevk Tarihi</th>
               <th className={styles.th}>Koli Numarası</th>
               <th className={styles.th}>Ürün Adedi</th>
-              <th className={styles.th}>Gönderici Lokasyon Adı</th>
+              <th className={styles.th}>Gönderici Lokasyon</th>
             </tr>
           </thead>
           <tbody>
@@ -272,8 +185,8 @@ export default function OnKabulPage() {
                 <td className={styles.td}>{index + 1}</td>
                 <td className={styles.td}>{box.shipment_no}</td>
                 <td className={styles.td}>{formatDate(box.shipment_date)}</td>
-                <td className={styles.td}>****</td> {/* Koli Numarası Maskeli */}
-                <td className={styles.td}>****</td> {/* Ürün Adedi Maskeli */}
+                <td className={styles.td}>****</td> {/* Koli numarası maskeli */}
+                <td className={styles.td}>****</td> {/* Ürün adedi maskeli */}
                 <td className={styles.td}>{box.from_location}</td>
               </tr>
             ))}

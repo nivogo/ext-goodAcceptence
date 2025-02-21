@@ -143,10 +143,18 @@ export default function OnKabulPage() {
           {keyboardOpen ? "Kapat" : "Klavye Aç"}
         </button>
       </div>
-      <h1>On Kabul</h1>
+      <h1>Hoş Geldiniz, {userData.name}</h1>
+      <h1>Ön Kabul</h1>
       <p>
         Mağaza: {userData.storeName} (PAAD ID: {userData.paad_id})
       </p>
+      {/* Başarılı Koliler Butonu */}
+      <button
+        onClick={() => router.push("/basariliKoliler")}
+        className={styles.successButton}
+      >
+        Başarılı Koliler
+      </button>
       {/* Hata Mesajı */}
       {error && <p className={styles.error}>{error}</p>}
       {/* Koli Arama Input */}

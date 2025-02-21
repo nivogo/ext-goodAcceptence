@@ -87,11 +87,11 @@ export default function AdreslemePage() {
       }
 
       // Ön kabul, mal kabul kontrolü
-      if (!shipment.onKabulDurumu) {
+      if (!shipment.on_kabul_durumu) {
         showNotification("Ön Kabul işlemi yapılmamış!", "error");
         return;
       }
-      if (!shipment.malKabulDurumu) {
+      if (!shipment.mal_kabul_durumu) {
         showNotification("Mal Kabul işlemi yapılmamış!", "error");
         return;
       }
@@ -126,7 +126,7 @@ export default function AdreslemePage() {
       <h1>Adresleme</h1>
       {userData && (
         <p>
-          Mağaza: {userData.store_name} (PAAD ID: {userData.paad_id})
+          Mağaza: {userData.storeName} (PAAD ID: {userData.paad_id})
         </p>
       )}
       <div className={styles.dropdownWrapper}>
@@ -170,11 +170,11 @@ export default function AdreslemePage() {
                 {shipments.map((item, index) => (
                   <tr key={item.id}>
                     <td className={styles.td}>{index + 1}</td>
-                    <td className={styles.td}>{item.QR || "-"}</td>
+                    <td className={styles.td}>{item.qr || "-"}</td>
                     <td className={styles.td}>{item.adres || "-"}</td>
-                    <td className={styles.td}>{item.adreslemeYapanKisi || "-"}</td>
+                    <td className={styles.td}>{item.adreslem_yapan_kisi || "-"}</td>
                     <td className={styles.td}>
-                      {item.adreslemeSaati ? formatDate(item.adreslemeSaati) : "-"}
+                      {item.adresleme_saati ? formatDate(item.adresleme_saati) : "-"}
                     </td>
                   </tr>
                 ))}

@@ -126,7 +126,7 @@ export default function AdreslemePage() {
       <h1>Adresleme</h1>
       {userData && (
         <p>
-          Mağaza: {userData.storeName} (PAAD ID: {userData.paad_id})
+          Mağaza: {userData.store_name} (PAAD ID: {userData.paad_id})
         </p>
       )}
       <div className={styles.dropdownWrapper}>

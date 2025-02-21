@@ -45,10 +45,10 @@ export default function OnKabulPage() {
         
         // "Okutma Başarılı" olmayanları filtrele
         const filteredShipments = shipmentsList
-          .filter((shipment) => shipment.onKabulDurumu !== "Okutma Başarılı")
+          .filter((shipment) => shipment.on_Kabul_durumu !== "Okutma Başarılı")
           .sort((a, b) => {
-            if (!a.onKabulDurumu && b.onKabulDurumu) return -1;
-            if (a.onKabulDurumu && !b.onKabulDurumu) return 1;
+            if (!a.on_Kabul_durumu && b.on_Kabul_durumu) return -1;
+            if (a.on_Kabul_durumu && !b.on_Kabul_durumu) return 1;
             return 0;
           });
         setShipments(filteredShipments);
@@ -62,17 +62,17 @@ export default function OnKabulPage() {
               box: shipment.box,
               shipment_no: shipment.shipment_no || "-", // Sevk Numarası
               shipment_date: shipment.shipment_date || "-", // Sevk Tarihi
-              quantity: shipment.quantityof_product,
-              onKabulDurumu: shipment.onKabulDurumu,
-              onKabulYapanKisi: shipment.onKabulYapanKisi,
-              onKabulSaati: shipment.onKabulSaati,
+              quantity: shipment.quantity_of_product,
+              on_Kabul_durumu: shipment.on_Kabul_durumu,
+              on_kabul_yapan_kisi: shipment.on_kabul_yapan_kisi,
+              on_kabul_saati: shipment.on_kabul_saati,
               from_location: shipment.from_location || "-", // Gönderici Lokasyon Adı
               isApproved: shipment.isApproved,
               shipmentIds: [shipment.id], // Aynı koliye ait tüm doküman ID'leri
             };
           } else {
             // Eğer koli zaten varsa, sadece quantity'yi güncelle
-            grouped[shipment.box].quantity += shipment.quantityof_product;
+            grouped[shipment.box].quantity += shipment.quantity_of_product;
             grouped[shipment.box].shipmentIds.push(shipment.id);
           }
         });
@@ -135,7 +135,7 @@ export default function OnKabulPage() {
         } else {
           // 4. PAAD_ID aynıysa, "Okutma Durumu" kontrolü yap
           const alreadyApproved = boxShipments.some(
-            (shipment) => shipment.onKabulDurumu === "Okutma Başarılı"
+            (shipment) => shipment.on_Kabul_durumu === "Okutma Başarılı"
           );
 
           if (alreadyApproved) {

@@ -22,7 +22,7 @@ const Rapor = () => {
 
   // Veri çekme fonksiyonu
   const fetchShipments = async () => {
-    if (user && userData && userData.PAAD_ID) {
+    if (user && userData && userData.paad_id) {
       setRefreshing(true);
       setError(null);
       try {
@@ -88,20 +88,20 @@ const Rapor = () => {
       "Gönderici Lokasyon Adı": shipment.from_location || "-",
       "Gönderici Lokasyon ID": shipment.from_locationid || "-",
       "Alıcı Lokasyon Adı": shipment.to_location || "-",
-      "Alıcı Lokasyon ID": shipment.PAAD_ID || "-",
+      "Alıcı Lokasyon ID": shipment.paad_id || "-",
       "Koli Numarası": shipment.box || "-",
       QR: shipment.QR || "-",
       "Sipariş Tipi": shipment.WAOT_CODE || "-",
-      OnKabulDurumu: shipment.onKabulDurumu || "-",
-      OnKabulSaati: shipment.onKabulSaati
-        ? new Date(shipment.onKabulSaati.seconds * 1000).toLocaleString()
+      on_kabul_durumu: shipment.on_kabul_durumu || "-",
+      on_kabul_saati: shipment.on_kabul_saati
+        ? new Date(shipment.on_kabul_saati.seconds * 1000).toLocaleString()
         : "-",
-      OnKabulYapanKisi: shipment.onKabulYapanKisi || "-",
-      MalKabulDurumu: shipment.malKabulDurumu || "-",
-      MalKabulSaati: shipment.malKabulSaati
-        ? new Date(shipment.malKabulSaati.seconds * 1000).toLocaleString()
+      on_kabul_yapan_kisi: shipment.on_kabul_yapan_kisi || "-",
+      mal_kabul_durumu: shipment.mal_kabul_durumu || "-",
+      mal_kabul_saati: shipment.mal_kabul_saati
+        ? new Date(shipment.mal_kabul_saati.seconds * 1000).toLocaleString()
         : "-",
-      MalKabulYapanKisi: shipment.malKabulYapanKisi || "-",
+      mal_kabul_yapan_kisi: shipment.mal_kabul_yapan_kisi || "-",
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(worksheetData);
@@ -136,7 +136,7 @@ const Rapor = () => {
       <BackButton />
       <h1>Rapor Sayfası</h1>
       <p>
-        Mağaza: {userData.storeName} (PAAD ID: {userData.PAAD_ID})
+        Mağaza: {userData.storeName} (PAAD ID: {userData.paad_id})
       </p>
 
       {/* Hata Mesajı */}
@@ -191,19 +191,19 @@ const Rapor = () => {
                 <td className={styles.td}>{shipment.from_location || "-"}</td>
                 <td className={styles.td}>{shipment.from_locationid || "-"}</td>
                 <td className={styles.td}>{shipment.to_location || "-"}</td>
-                <td className={styles.td}>{shipment.PAAD_ID || "-"}</td>
+                <td className={styles.td}>{shipment.paad_id || "-"}</td>
                 <td className={styles.td}>{shipment.box || "-"}</td>
                 <td className={styles.td}>{shipment.QR || "-"}</td>
                 <td className={styles.td}>{shipment.WAOT_CODE || "-"}</td>
-                <td className={styles.td}>{shipment.onKabulDurumu || "-"}</td>
-                <td className={styles.td}>{shipment.onKabulSaati ? new Date(shipment.onKabulSaati.seconds * 1000).toLocaleString(): "-"}</td>
-                <td className={styles.td}>{shipment.onKabulYapanKisi || "-"}</td>
-                <td className={styles.td}>{shipment.malKabulDurumu || "-"}</td>
-                <td className={styles.td}>{shipment.malKabulSaati ? new Date(shipment.malKabulSaati.seconds * 1000).toLocaleString(): "-"}</td>
-                <td className={styles.td}>{shipment.malKabulYapanKisi || "-"}</td>
+                <td className={styles.td}>{shipment.on_kabul_durumu || "-"}</td>
+                <td className={styles.td}>{shipment.on_kabul_saati ? new Date(shipment.on_kabul_saati.seconds * 1000).toLocaleString(): "-"}</td>
+                <td className={styles.td}>{shipment.on_kabul_yapan_kisi || "-"}</td>
+                <td className={styles.td}>{shipment.mal_kabul_durumu || "-"}</td>
+                <td className={styles.td}>{shipment.mal_kabul_saati ? new Date(shipment.mal_kabul_saati.seconds * 1000).toLocaleString(): "-"}</td>
+                <td className={styles.td}>{shipment.mal_kabul_yapan_kisi || "-"}</td>
                 <td className={styles.td}>{shipment.adres || "-"}</td>
-                <td className={styles.td}>{shipment.adreslemeSaati ? new Date(shipment.adreslemeSaati.seconds * 1000).toLocaleString(): "-"}</td>
-                <td className={styles.td}>{shipment.adreslemeYapanKisi || "-"}</td>
+                <td className={styles.td}>{shipment.adresleme_saati ? new Date(shipment.adresleme_saati.seconds * 1000).toLocaleString(): "-"}</td>
+                <td className={styles.td}>{shipment.adresleme_yapan_kisi || "-"}</td>
               </tr>
             ))}
           </tbody>

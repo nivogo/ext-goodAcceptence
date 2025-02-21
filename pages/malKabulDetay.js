@@ -75,7 +75,7 @@ const MalKabulDetay = () => {
 
       const shipment = matchedShipments[0];
 
-      if (shipment["malKabulDurumu"] === "Okutma Başarılı") {
+      if (shipment["mal_Kabul_durumu"] === "Okutma Başarılı") {
         showNotification("Bu ürüne daha önce Mal Kabul yapılmıştır.", "error");
         setUpdating(false);
         return;
@@ -91,9 +91,9 @@ const MalKabulDetay = () => {
           s.id === shipment.id
             ? {
                 ...s,
-                "malKabulDurumu": "Okutma Başarılı",
-                "malKabulYapanKisi": userData.name,
-                "malKabulSaati": new Date(),
+                "mal_Kabul_durumu": "Okutma Başarılı",
+                "mal_kabul_yapan_kisi": userData.name,
+                "mal_kabul_saati": new Date(),
               }
             : s
         )
@@ -128,7 +128,7 @@ const MalKabulDetay = () => {
    */
   const maskQRCode = (qr, shipment) => {
     // Eğer Mal Kabul Durumu "Okutma Başarılı" ise QR kodunu göster, değilse maskeli göster
-    return shipment["malKabulDurumu"] === "Okutma Başarılı" ? qr : "****";
+    return shipment["mal_kabul_durumu"] === "Okutma Başarılı" ? qr : "****";
   };
 
   if (loading) {
@@ -192,14 +192,14 @@ const MalKabulDetay = () => {
                 <td className={styles.td}>{index + 1}</td>
                 <td className={styles.td}>{maskQRCode(shipment.QR, shipment)}</td>
                 <td className={styles.td}>
-                  {shipment["malKabulDurumu"] || "-"}
+                  {shipment["mal_Kabul_durumu"] || "-"}
                 </td>
                 <td className={styles.td}>
-                  {shipment["malKabulYapanKisi"] || "-"}
+                  {shipment["mal_kabul_yapan_kisi"] || "-"}
                 </td>
                 <td className={styles.td}>
-                  {shipment["malKabulSaati"]
-                    ? formatDate(shipment["malKabulSaati"])
+                  {shipment["mal_kabul_saati"]
+                    ? formatDate(shipment["mal_kabul_saati"])
                     : "-"}
                 </td>
               </tr>

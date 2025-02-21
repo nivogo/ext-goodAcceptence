@@ -28,11 +28,11 @@ const BasariliKoliler = () => {
               box: shipment.box,
               shipment_no: shipment.shipment_no || "-", // Sevk Numarası
               shipment_date: shipment.shipment_date || "-", // Sevk Tarihi
-              quantity: shipment.quantityof_product, // Sadece ilk shipment'tan alınır
+              quantity: shipment.quantity_of_product, // Sadece ilk shipment'tan alınır
               to_location: shipment.to_location || "-", // Alıcı Lokasyon
-              onKabulDurumu: shipment.onKabulDurumu,
-              onKabulYapanKisi: shipment.onKabulYapanKisi,
-              onKabulSaati: shipment.onKabulSaati,
+              onKabulDurumu: shipment.on_kabul_durumu,
+              onKabulYapanKisi: shipment.on_kabul_yapan_kisi,
+              onKabulSaati: shipment.on_kabul_saati,
               shipmentIds: [shipment.id],
             };
           } else {

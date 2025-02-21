@@ -22,21 +22,22 @@ const Rapor = () => {
 
   // Veri çekme fonksiyonu
   const fetchShipments = async () => {
-    if (user && userData && userData.paad_id) {
-      setRefreshing(true);
-      setError(null);
-      try {
-        const allShipmentsData = await getAllShipments(); // Tüm gönderileri çekiyoruz
-        setAllShipments(allShipmentsData);
-        setShipments(allShipmentsData); // İlk başta tüm gönderileri gösteriyoruz
-      } catch (err) {
-        console.error("Rapor Veri Çekme Hatası:", err);
-        setError("Veriler alınırken bir hata oluştu.");
-      }
-      setRefreshing(false);
-      setLoading(false);
+  if (user && userData && userData.paad_id) {
+    setRefreshing(true);
+    setError(null);
+    try {
+      // paad_id parametresini gönderiyoruz
+      const allShipmentsData = await getAllShipments(userData.paad_id);
+      setAllShipments(allShipmentsData);
+      setShipments(allShipmentsData);
+    } catch (err) {
+      console.error("Rapor Veri Çekme Hatası:", err);
+      setError("Veriler alınırken bir hata oluştu.");
     }
-  };
+    setRefreshing(false);
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     if (user && userData) {

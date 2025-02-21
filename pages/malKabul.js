@@ -25,11 +25,11 @@ const MalKabul = () => {
    * Başarılı kolileri çekme ve gruplandırma fonksiyonu
    */
   const fetchBoxes = async () => {
-    if (user && userData && userData.PAAD_ID) {
+    if (user && userData && userData.paad_id) {
       setRefreshing(true);
       setError(null);
       try {
-        const fetchedBoxes = await getBoxesForBasariliKoliler(userData.PAAD_ID);
+        const fetchedBoxes = await getBoxesForBasariliKoliler(userData.paad_id);
 
         // Koli numarasına göre gruplandırma
         const grouped = {};
@@ -47,7 +47,7 @@ const MalKabul = () => {
           grouped[shipment.box].totalCount++;
 
           // Eğer malKabulDurumu doluysa scannedCount++
-          if (shipment.malKabulDurumu) {
+          if (shipment.mal_Kabul_durumu) {
             grouped[shipment.box].scannedCount++;
           }
         });
@@ -130,7 +130,7 @@ const MalKabul = () => {
       </div>
       <h1>Mal Kabul Kolileri</h1>
       <p>
-        Mağaza: {userData.storeName} (PAAD ID: {userData.PAAD_ID})
+        Mağaza: {userData.storeName} (PAAD ID: {userData.paad_id})
       </p>
 
       {/* Hata Mesajı */}

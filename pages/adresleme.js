@@ -172,7 +172,7 @@ export default function AdreslemePage() {
                     <td className={styles.td}>{index + 1}</td>
                     <td className={styles.td}>{item.qr || "-"}</td>
                     <td className={styles.td}>{item.adres || "-"}</td>
-                    <td className={styles.td}>{item.adreslem_yapan_kisi || "-"}</td>
+                    <td className={styles.td}>{item.adresleme_yapan_kisi || "-"}</td>
                     <td className={styles.td}>
                       {item.adresleme_saati ? formatDate(item.adresleme_saati) : "-"}
                     </td>

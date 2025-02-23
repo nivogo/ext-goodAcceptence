@@ -77,70 +77,69 @@ export default function OnKabulPage() {
     return isNaN(parsedDate) ? "-" : parsedDate.toLocaleString();
   };
 
-  const handleBoxSubmit = async (e) => {
-    e.preventDefault();
-    if (!boxInput) return;
+const handleBoxSubmit = async (e) => {
+  e.preventDefault();
+  if (!boxInput) return;
 
-    // İlk olarak, okutulan koli numarası BX veya TR ile başlamalıdır.
-    if (!boxInput.startsWith("BX") && !boxInput.startsWith("TR")) {
-      alert("Okuttuğunuz koli BX veya TR ile başlamalıdır.");
-      return;
-    }
+  // İlk kontrol: Okutulan koli numarası BX veya TR ile başlamalıdır.
+  if (!boxInput.startsWith("BX") && !boxInput.startsWith("TR")) {
+    alert("Okuttuğunuz koli BX veya TR ile başlamalıdır.");
+    return;
+  }
 
-    setLoading(true);
-    try {
-      // Girilen koli numarasına ait gönderileri getir.
-      const boxShipments = await getShipmentByBox(boxInput);
-      if (boxShipments.length === 0) {
-        alert("Böyle bir koli bulunamamaktadır.");
-      } else {
-        // Aynı paad_id’ye sahip gönderileri ve farklı paad_id’ye sahip olanları ayıralım.
-        const samePaad = boxShipments.filter(
-          (shipment) => shipment.paad_id === userData.paad_id
+  setLoading(true);
+  try {
+    // Girilen koli numarasına ait gönderileri getir.
+    const boxShipments = await getShipmentByBox(boxInput);
+    if (boxShipments.length === 0) {
+      showNotification("Böyle bir koli bulunamamaktadır.", "error");
+    } else {
+      // Aynı paad_id'ye ait gönderileri ve farklı paad_id'ye ait gönderileri ayıralım.
+      const samePaad = boxShipments.filter(
+        (shipment) => shipment.paad_id === userData.paad_id
+      );
+      const differentPaad = boxShipments.filter(
+        (shipment) => shipment.paad_id !== userData.paad_id
+      );
+
+      if (samePaad.length > 0) {
+        // Eğer aynı mağazaya ait gönderiler varsa, bunların on_kabul_durumu "0" mı kontrol edelim.
+        const notScanned = samePaad.filter(
+          (shipment) => shipment.on_kabul_durumu === "0"
         );
-        const differentPaad = boxShipments.filter(
-          (shipment) => shipment.paad_id !== userData.paad_id
-        );
-
-        if (samePaad.length > 0) {
-          // Eğer on_kabul_durumu "0" ise, okutma işlemi yapılır.
-          const notScanned = samePaad.filter(
-            (shipment) => shipment.on_kabul_durumu === "0"
-          );
-          const alreadyScanned = samePaad.filter(
-            (shipment) => shipment.on_kabul_durumu === "1"
-          );
-
-          if (notScanned.length > 0) {
-            await Promise.all(
-              notScanned.map((shipment) =>
-                updateOnKabulFields(shipment.id, userData.name)
-              )
-            );
-            showNotification("Koli başarıyla okutuldu!", "success");
-          } else if (alreadyScanned.length > 0) {
-            showNotification("Bu koli daha önce okutulmuştur.", "error");
-          }
-        } else if (differentPaad.length > 0) {
-          // Eğer okutulan koli, farklı paad_id’ye aitse, on_kabul_durumu "2" olarak işaretle.
+        if (notScanned.length === 0) {
+          showNotification("Bu koli daha önce okutulmuştur.", "error");
+        } else {
+          // Henüz okutulmamış olanlar için on_kabul_durumu güncelle.
           await Promise.all(
-            differentPaad.map((shipment) =>
-              markExtraBox(shipment.id, userData.name)
+            notScanned.map((shipment) =>
+              updateOnKabulFields(shipment.id, userData.name)
             )
           );
-          alert("Okuttuğunuz koli farklı bir mağazaya ait olduğu için işaretlendi.");
+          showNotification("Koli başarıyla okutuldu!", "success");
         }
-        // İşlem sonunda, verileri yeniden çek.
-        await fetchShipments();
       }
-    } catch (error) {
-      console.error("Ön Kabul Güncelleme Hatası:", error);
-      alert("Ön kabul işlemi sırasında bir hata oluştu.");
+      if (differentPaad.length > 0) {
+        // Eğer okutulan koli, başka bir mağazaya aitse,
+        // markExtraBox fonksiyonu kullanılarak on_kabul_durumu "2" yapılır.
+        await Promise.all(
+          differentPaad.map((shipment) =>
+            markExtraBox(shipment.id, userData.name)
+          )
+        );
+        showNotification("Koli başarıyla okutuldu!", "success");
+      }
+      // İşlem sonrası verileri güncelle.
       await fetchShipments();
     }
-    setLoading(false);
-    setBoxInput("");
-  };
+  } catch (error) {
+    console.error("Ön Kabul Güncelleme Hatası:", error);
+    showNotification("Ön kabul işlemi sırasında bir hata oluştu.", "error");
+    await fetchShipments();
+  }
+  setLoading(false);
+  setBoxInput("");
+};
 
   if (loading) {
     return (

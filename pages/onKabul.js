@@ -113,7 +113,7 @@ const handleBoxSubmit = async (e) => {
           // Henüz okutulmamış olanlar için on_kabul_durumu güncelle.
           await Promise.all(
             notScanned.map((shipment) =>
-              updateOnKabulFields(shipment.id, userData.name)
+              updateOnKabulFields(shipment.id, userData.name, userData.paad_id)
             )
           );
           showNotification("Koli başarıyla okutuldu!", "success");
@@ -124,7 +124,7 @@ const handleBoxSubmit = async (e) => {
         // markExtraBox fonksiyonu kullanılarak on_kabul_durumu "2" yapılır.
         await Promise.all(
           differentPaad.map((shipment) =>
-            markExtraBox(shipment.id, userData.name)
+            markExtraBox(shipment.id, userData.name, userData.paad_id)
           )
         );
         showNotification("Koli başarıyla okutuldu!", "success");

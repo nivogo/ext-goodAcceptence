@@ -1,17 +1,15 @@
+// pages/basariliKoliler.js
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { 
-  getBoxesForBasariliKoliler, 
-  getBoxesForBasariliKolilerByPreAccept 
-} from "../lib/firestore";
+import { getBoxesForBasariliKoliler, getBoxesForBasariliKolilerByPreAccept } from "../lib/firestore"; // Eğer pre_accept sorgusu ayrıysa ekleyin
 import BackButton from "../components/BackButton";
 import styles from "../styles/BasariliKoliler.module.css";
 
 const BasariliKoliler = () => {
   const router = useRouter();
   const { user, userData } = useAuth();
-  const [groupedShipments, setGroupedShipments] = useState([]);
+  const [boxes, setBoxes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -20,43 +18,35 @@ const BasariliKoliler = () => {
       setLoading(true);
       setError(null);
       try {
-        // İki ayrı sorgu ile verileri çekiyoruz:
-        const boxesByPaad = await getBoxesForBasariliKoliler(userData.paad_id);
-        const boxesByPreAccept = await getBoxesForBasariliKolilerByPreAccept(userData.paad_id);
-        
-        // İki sonucu birleştiriyoruz (çift kayıt varsa kaldırıyoruz):
-        const mergedBoxes = [...boxesByPaad, ...boxesByPreAccept];
-        const uniqueBoxes = mergedBoxes.reduce((acc, curr) => {
-          // Eğer aynı koli numarası zaten eklenmişse, atla.
-          if (!acc.find(item => item.box === curr.box)) {
-            acc.push(curr);
-          }
-          return acc;
-        }, []);
-
-        // Şimdi gruplandırma işlemi: Her koli için istenen sütunlar (maskesiz gösterilecek)
-        // (Listede Sevk Numarası, Sevk Tarihi, Koli Numarası, Ürün Adedi, Gönderici Lokasyon)
+        // Tüm gönderileri paad_id'ye göre çekiyoruz.
+        const fetchedBoxes = await getBoxesForBasariliKoliler(userData.paad_id);
+        // Sadece on_kabul_durumu "1" veya "2" olan gönderileri filtrele
+        const filteredShipments = fetchedBoxes.filter(
+          (shipment) =>
+            (shipment.on_kabul_durumu === "1" || shipment.on_kabul_durumu === "2") &&
+            shipment.paad_id === userData.paad_id
+        );
+        // Koli numarasına göre gruplandırma (sadece filteredShipments üzerinden)
         const grouped = {};
-        uniqueBoxes.forEach((shipment) => {
-          // Eğer aynı koli daha önce eklenmemişse, grup oluştur.
+        filteredShipments.forEach((shipment) => {
           if (!grouped[shipment.box]) {
             grouped[shipment.box] = {
               box: shipment.box,
-              shipment_no: shipment.shipment_no || "-",
-              shipment_date: shipment.shipment_date || "-",
-              quantity: shipment.quantity_of_product,  // Gerçek ürün adedi
-              to_location: shipment.to_location || "-",
-              from_location: shipment.from_location || "-",
+              shipment_no: shipment.shipment_no || "-", // Sevk Numarası
+              shipment_date: shipment.shipment_date || "-", // Sevk Tarihi
+              quantity: shipment.quantity_of_product,         // Ürün adedi
+              to_location: shipment.to_location || "-",         // Alıcı Lokasyon
               onKabulDurumu: shipment.on_kabul_durumu,
               onKabulYapanKisi: shipment.on_kabul_yapan_kisi,
               onKabulSaati: shipment.on_kabul_saati,
+              from_location: shipment.from_location || "-",     // Gönderici Lokasyon
               shipmentIds: [shipment.id],
             };
           } else {
             grouped[shipment.box].shipmentIds.push(shipment.id);
           }
         });
-        setGroupedShipments(Object.values(grouped));
+        setBoxes(Object.values(grouped));
       } catch (err) {
         console.error("Başarılı Koliler Veri Çekme Hatası:", err);
         setError("Başarılı koliler alınırken bir hata oluştu.");
@@ -100,7 +90,7 @@ const BasariliKoliler = () => {
         Mağaza: {userData.storeName} (PAAD ID: {userData.paad_id})
       </p>
       {error && <p className={styles.error}>{error}</p>}
-      <p>Toplam Koli Adedi: {groupedShipments.length}</p>
+      <p>Toplam Koli Adedi: {boxes.length}</p>
       <div className={styles.tableWrapper}>
         <table className={styles.table}>
           <thead>
@@ -117,14 +107,14 @@ const BasariliKoliler = () => {
             </tr>
           </thead>
           <tbody>
-            {groupedShipments.map((box, index) => (
+            {boxes.map((box, index) => (
               <tr key={box.box}>
                 <td className={styles.td}>{index + 1}</td>
                 <td className={styles.td}>{box.shipment_no}</td>
                 <td className={styles.td}>{formatDate(box.shipment_date)}</td>
                 <td className={styles.td}>{box.box}</td>
                 <td className={styles.td}>{box.quantity}</td>
-                <td className={styles.td}>{box.from_location}</td>
+                <td className={styles.td}>{box.to_location}</td>
                 <td className={styles.td}>{box.onKabulDurumu || "-"}</td>
                 <td className={styles.td}>{box.onKabulYapanKisi || "-"}</td>
                 <td className={styles.td}>{formatDate(box.onKabulSaati)}</td>

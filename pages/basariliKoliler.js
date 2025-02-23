@@ -9,9 +9,8 @@ import styles from "../styles/BasariliKoliler.module.css";
 const BasariliKoliler = () => {
   const router = useRouter();
   const { user, userData } = useAuth();
-  const [boxes, setBoxes] = useState([]);
+  const [groupedShipments, setGroupedShipments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
 
   const fetchBoxes = async () => {
@@ -20,39 +19,44 @@ const BasariliKoliler = () => {
       setError(null);
       try {
         const fetchedBoxes = await getBoxesForBasariliKoliler(userData.paad_id);
-        // Filtre: Sadece on_kabul_durumu "1" veya "2" olan ve paad_id eşleşen gönderiler
-        const filteredShipments = fetchedBoxes.filter(
-          (shipment) =>
-            (shipment.on_kabul_durumu === "1" || shipment.on_kabul_durumu === "2") &&
-            shipment.paad_id === userData.paad_id
-        );
-        // Koli numarasına göre gruplandırma; koli numarası ve ürün adedi maskelenerek gösterilecek.
+        // Filtre: 
+        //  - on_kabul_durumu "1" olan ve shipment.paad_id === userData.paad_id
+        //  - veya on_kabul_durumu "2" olan ve pre_accept_wh_id === userData.paad_id
+        const filteredShipments = fetchedBoxes.filter((shipment) => {
+          if (shipment.on_kabul_durumu === "1" && shipment.paad_id === userData.paad_id) {
+            return true;
+          }
+          if (shipment.on_kabul_durumu === "2" && shipment.pre_accept_wh_id === userData.paad_id) {
+            return true;
+          }
+          return false;
+        });
+        // Koli numarasına göre gruplandırma
         const grouped = {};
         filteredShipments.forEach((shipment) => {
           if (!grouped[shipment.box]) {
             grouped[shipment.box] = {
-              box: shipment.box,
-              shipment_no: shipment.shipment_no || "-", // Sevk Numarası
-              shipment_date: shipment.shipment_date || "-", // Sevk Tarihi
-              quantity: "****", // Maskelenmiş ürün adedi
-              to_location: shipment.to_location || "-", // Alıcı Lokasyon
+              box: shipment.box,                         // Koli numarası görünür
+              shipment_no: shipment.shipment_no || "-",  // Sevk Numarası
+              shipment_date: shipment.shipment_date || "-",// Sevk Tarihi
+              quantity: shipment.quantity_of_product,      // Ürün adedi görünür
+              to_location: shipment.to_location || "-",    // Alıcı Lokasyon
               onKabulDurumu: shipment.on_kabul_durumu,
               onKabulYapanKisi: shipment.on_kabul_yapan_kisi,
               onKabulSaati: shipment.on_kabul_saati,
-              from_location: shipment.from_location || "-", // Gönderici Lokasyon
+              from_location: shipment.from_location || "-",// Gönderici Lokasyon
               shipmentIds: [shipment.id],
             };
           } else {
-            // Eğer aynı koli zaten eklenmişse, sadece shipmentIds eklenir.
+            // Aynı koli varsa, sadece shipmentIds eklenir.
             grouped[shipment.box].shipmentIds.push(shipment.id);
           }
         });
-        setBoxes(Object.values(grouped));
+        setGroupedShipments(Object.values(grouped));
       } catch (err) {
         console.error("Başarılı Koliler Veri Çekme Hatası:", err);
         setError("Başarılı koliler alınırken bir hata oluştu.");
       }
-      setRefreshing(false);
       setLoading(false);
     }
   };
@@ -92,7 +96,7 @@ const BasariliKoliler = () => {
         Mağaza: {userData.storeName} (PAAD ID: {userData.paad_id})
       </p>
       {error && <p className={styles.error}>{error}</p>}
-      <p>Toplam Koli Adedi: {boxes.length}</p>
+      <p>Toplam Koli Adedi: {groupedShipments.length}</p>
       <div className={styles.tableWrapper}>
         <table className={styles.table}>
           <thead>
@@ -109,13 +113,13 @@ const BasariliKoliler = () => {
             </tr>
           </thead>
           <tbody>
-            {boxes.map((box, index) => (
+            {groupedShipments.map((box, index) => (
               <tr key={box.box}>
                 <td className={styles.td}>{index + 1}</td>
                 <td className={styles.td}>{box.shipment_no}</td>
                 <td className={styles.td}>{formatDate(box.shipment_date)}</td>
-                <td className={styles.td}>****</td>
-                <td className={styles.td}>****</td>
+                <td className={styles.td}>{box.box}</td>
+                <td className={styles.td}>{box.quantity}</td>
                 <td className={styles.td}>{box.to_location}</td>
                 <td className={styles.td}>{box.onKabulDurumu || "-"}</td>
                 <td className={styles.td}>{box.onKabulYapanKisi || "-"}</td>

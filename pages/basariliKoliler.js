@@ -1,8 +1,10 @@
-// pages/basariliKoliler.js
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { getBoxesForBasariliKoliler } from "../lib/firestore";
+import { 
+  getBoxesForBasariliKoliler, 
+  getBoxesForBasariliKolilerByPreAccept 
+} from "../lib/firestore";
 import BackButton from "../components/BackButton";
 import styles from "../styles/BasariliKoliler.module.css";
 
@@ -18,37 +20,39 @@ const BasariliKoliler = () => {
       setLoading(true);
       setError(null);
       try {
-        const fetchedBoxes = await getBoxesForBasariliKoliler(userData.paad_id);
-        // Filtre: 
-        //  - on_kabul_durumu "1" olan ve shipment.paad_id === userData.paad_id
-        //  - veya on_kabul_durumu "2" olan ve pre_accept_wh_id === userData.paad_id
-        const filteredShipments = fetchedBoxes.filter((shipment) => {
-          if (shipment.on_kabul_durumu === "1" && shipment.paad_id === userData.paad_id) {
-            return true;
+        // İki ayrı sorgu ile verileri çekiyoruz:
+        const boxesByPaad = await getBoxesForBasariliKoliler(userData.paad_id);
+        const boxesByPreAccept = await getBoxesForBasariliKolilerByPreAccept(userData.paad_id);
+        
+        // İki sonucu birleştiriyoruz (çift kayıt varsa kaldırıyoruz):
+        const mergedBoxes = [...boxesByPaad, ...boxesByPreAccept];
+        const uniqueBoxes = mergedBoxes.reduce((acc, curr) => {
+          // Eğer aynı koli numarası zaten eklenmişse, atla.
+          if (!acc.find(item => item.box === curr.box)) {
+            acc.push(curr);
           }
-          if (shipment.on_kabul_durumu === "2" && shipment.pre_accept_wh_id === userData.paad_id) {
-            return true;
-          }
-          return false;
-        });
-        // Koli numarasına göre gruplandırma
+          return acc;
+        }, []);
+
+        // Şimdi gruplandırma işlemi: Her koli için istenen sütunlar (maskesiz gösterilecek)
+        // (Listede Sevk Numarası, Sevk Tarihi, Koli Numarası, Ürün Adedi, Gönderici Lokasyon)
         const grouped = {};
-        filteredShipments.forEach((shipment) => {
+        uniqueBoxes.forEach((shipment) => {
+          // Eğer aynı koli daha önce eklenmemişse, grup oluştur.
           if (!grouped[shipment.box]) {
             grouped[shipment.box] = {
-              box: shipment.box,                         // Koli numarası görünür
-              shipment_no: shipment.shipment_no || "-",  // Sevk Numarası
-              shipment_date: shipment.shipment_date || "-",// Sevk Tarihi
-              quantity: shipment.quantity_of_product,      // Ürün adedi görünür
-              to_location: shipment.to_location || "-",    // Alıcı Lokasyon
+              box: shipment.box,
+              shipment_no: shipment.shipment_no || "-",
+              shipment_date: shipment.shipment_date || "-",
+              quantity: shipment.quantity_of_product,  // Gerçek ürün adedi
+              to_location: shipment.to_location || "-",
+              from_location: shipment.from_location || "-",
               onKabulDurumu: shipment.on_kabul_durumu,
               onKabulYapanKisi: shipment.on_kabul_yapan_kisi,
               onKabulSaati: shipment.on_kabul_saati,
-              from_location: shipment.from_location || "-",// Gönderici Lokasyon
               shipmentIds: [shipment.id],
             };
           } else {
-            // Aynı koli varsa, sadece shipmentIds eklenir.
             grouped[shipment.box].shipmentIds.push(shipment.id);
           }
         });
@@ -120,7 +124,7 @@ const BasariliKoliler = () => {
                 <td className={styles.td}>{formatDate(box.shipment_date)}</td>
                 <td className={styles.td}>{box.box}</td>
                 <td className={styles.td}>{box.quantity}</td>
-                <td className={styles.td}>{box.to_location}</td>
+                <td className={styles.td}>{box.from_location}</td>
                 <td className={styles.td}>{box.onKabulDurumu || "-"}</td>
                 <td className={styles.td}>{box.onKabulYapanKisi || "-"}</td>
                 <td className={styles.td}>{formatDate(box.onKabulSaati)}</td>

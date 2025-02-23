@@ -19,7 +19,14 @@ const BasariliKoliler = () => {
       setRefreshing(true);
       setError(null);
       try {
+        try {
         const fetchedBoxes = await getBoxesForBasariliKoliler(userData.paad_id);
+        // API'den gelen veriler zaten ilgili paad_id'ye göre çağrılıyorsa, ek olarak on_kabul_durumu kontrolü yapalım:
+        const filteredShipments = fetchedBoxes.filter(
+          (shipment) =>
+            (shipment.on_kabul_durumu === "1" || shipment.on_kabul_durumu === "2") &&
+            shipment.paad_id === userData.paad_id
+        );
         // Koli numarasına göre gruplandır
         const grouped = {};
         fetchedBoxes.forEach((shipment) => {

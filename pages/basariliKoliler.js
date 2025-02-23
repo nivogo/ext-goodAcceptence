@@ -1,3 +1,4 @@
+// pages/basariliKoliler.js
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
@@ -27,7 +28,6 @@ const BasariliKoliler = () => {
         // İki sonucu birleştiriyoruz (çift kayıt varsa kaldırıyoruz):
         const mergedBoxes = [...boxesByPaad, ...boxesByPreAccept];
         const uniqueBoxes = mergedBoxes.reduce((acc, curr) => {
-          // Eğer aynı koli numarası zaten eklenmişse, atla.
           if (!acc.find(item => item.box === curr.box)) {
             acc.push(curr);
           }
@@ -35,16 +35,14 @@ const BasariliKoliler = () => {
         }, []);
 
         // Şimdi gruplandırma işlemi: Her koli için istenen sütunlar (maskesiz gösterilecek)
-        // (Listede Sevk Numarası, Sevk Tarihi, Koli Numarası, Ürün Adedi, Gönderici Lokasyon)
         const grouped = {};
         uniqueBoxes.forEach((shipment) => {
-          // Eğer aynı koli daha önce eklenmemişse, grup oluştur.
           if (!grouped[shipment.box]) {
             grouped[shipment.box] = {
               box: shipment.box,
               shipment_no: shipment.shipment_no || "-",
               shipment_date: shipment.shipment_date || "-",
-              quantity: shipment.quantity_of_product,  // Gerçek ürün adedi
+              quantity: shipment.quantity_of_product,
               to_location: shipment.to_location || "-",
               from_location: shipment.from_location || "-",
               onKabulDurumu: shipment.on_kabul_durumu,
@@ -56,7 +54,12 @@ const BasariliKoliler = () => {
             grouped[shipment.box].shipmentIds.push(shipment.id);
           }
         });
-        setGroupedShipments(Object.values(grouped));
+
+        // Sadece on_kabul_durumu "1" veya "2" olanları alıyoruz.
+        const finalGrouped = Object.values(grouped).filter(
+          (item) => item.onKabulDurumu === "1" || item.onKabulDurumu === "2"
+        );
+        setGroupedShipments(finalGrouped);
       } catch (err) {
         console.error("Başarılı Koliler Veri Çekme Hatası:", err);
         setError("Başarılı koliler alınırken bir hata oluştu.");

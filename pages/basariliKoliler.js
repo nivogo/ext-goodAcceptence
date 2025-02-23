@@ -16,10 +16,9 @@ const BasariliKoliler = () => {
 
   const fetchBoxes = async () => {
     if (user && userData && userData.paad_id) {
-      setRefreshing(true);
+      setLoading(true);
       setError(null);
       try {
-        try {
         const fetchedBoxes = await getBoxesForBasariliKoliler(userData.paad_id);
         // API'den gelen veriler zaten ilgili paad_id'ye göre çağrılıyorsa, ek olarak on_kabul_durumu kontrolü yapalım:
         const filteredShipments = fetchedBoxes.filter(

@@ -1,3 +1,4 @@
+// pages/malKabulDetay.js
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import FocusLockInput from "../components/FocusLockInput";
@@ -8,7 +9,7 @@ import {
   getShipmentByQR,
   updateMalKabulFields,
   updateQRForDifferent,
-  addMissingQR
+  addMissingQR,
 } from "../lib/firestore";
 import BackButton from "../components/BackButton";
 import styles from "../styles/MalKabulDetay.module.css";
@@ -56,25 +57,44 @@ const MalKabulDetay = () => {
     setUpdating(true);
     try {
       const existingQR = await getShipmentByQR(qrInput);
+      const currentTime = new Date().toISOString();
+
       if (existingQR.length > 0) {
         const record = existingQR[0];
-        if (record.paad_id === userData.paad_id) {
-          // Aynı mağazaya ait: mal_kabul_durumu 1 güncellemesi
+
+        // 1. Durum: QR listede var mı?
+        const isInCurrentBox = shipments.some((s) => s.qr === qrInput);
+        if (isInCurrentBox) {
+          // Listede bulunan bir QR okutuldu
           await updateMalKabulFields(record.id, userData.name);
           showNotification("QR başarıyla okutuldu.", "success");
-        } else {
-          // Farklı mağazaya ait: updateQRForDifferent fonksiyonu (mal_kabul_durumu 2)
+        } 
+        // 2. Durum: Kullanıcının paad_id'si ile eşleşiyor ama bu kolide değil
+        else if (record.paad_id === userData.paad_id) {
+          await updateMalKabulFields(record.id, userData.name);
+          showNotification(
+            `Bu ürün ${record.box} kolisine aittir. O koli için mal kabul işlemi gerçekleştirilmiştir.`,
+            "warning"
+          );
+        } 
+        // 3. Durum: Farklı paad_id ile eşleşiyor
+        else {
           await updateQRForDifferent(record.id, userData.name, userData.paad_id);
           showNotification(
-            `Bu ürün ${record.box} kolisine ve ${record.to_location} mağazasına aittir. Ancak size gönderildiği için stoğunuza eklenmiştir. Lütfen satış operasyona bildirin.`,
+            `Bu ürün ${record.box} kolisine ve ${record.to_location} mağazasına aittir. Ancak size gönderildiği için sizin stoğunuza eklenmiştir. Lütfen bu ürünü satış operasyona bildirin.`,
             "error"
           );
         }
-      } else {
-        // Eğer QR veritabanında yoksa, addMissingQR ile yeni kayıt ekle.
+      } 
+      // 4. Durum: QR veritabanında yok
+      else {
         await addMissingQR(qrInput, box, userData.paad_id, userData.name);
-        showNotification(`Bu ürün ${box} kolisine ait olarak eklendi.`, "error");
+        showNotification(
+          `Bu ürün ${box} kolisine ait olarak eklendi.`,
+          "error"
+        );
       }
+
       await fetchShipments();
       setQrInput("");
     } catch (error) {
@@ -105,7 +125,7 @@ const MalKabulDetay = () => {
     <div className={styles.container}>
       <BackButton />
       <div style={{ position: "absolute", top: 10, right: 10 }}>
-        <button onClick={() => setKeyboardOpen(prev => !prev)}>
+        <button onClick={() => setKeyboardOpen((prev) => !prev)}>
           {keyboardOpen ? "Kapat" : "Klavye Aç"}
         </button>
       </div>

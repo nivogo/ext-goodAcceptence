@@ -67,7 +67,7 @@ const fetchBoxes = async () => {
         const qty = Number(shipment.quantity_of_product) || 1;
         grouped[boxKey].totalCount += 1; // Her sevkiyat bir ürün, qty toplamı yerine sevkiyat sayısını artırıyoruz
         // mal_kabul_durumu "1" ise okutulmuş ürün adedini artır
-        if (String(shipment.mal_kabul_durumu) === "1") {
+        if (["1", "3"].includes(String(shipment.mal_kabul_durumu))) {
           grouped[boxKey].scannedCount += 1; // Her "1" için bir ürün say
         }
       });

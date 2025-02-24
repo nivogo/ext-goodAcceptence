@@ -26,48 +26,55 @@ const MalKabul = () => {
       setLoading(true);
       setError(null);
       try {
-        // İki farklı sorgudan verileri çekiyoruz
+        // İki kaynaktan veri çekiyoruz
         const boxesByPaad = await getBoxesForBasariliKoliler(userData.paad_id);
         const boxesByPreAccept = await getBoxesForBasariliKolilerByPreAccept(userData.paad_id);
 
-        // İki sonucu birleştirip çift kayıtları kaldırıyoruz
+        // Verileri birleştirip loglayalım
         const mergedBoxes = [...boxesByPaad, ...boxesByPreAccept];
-        const uniqueBoxes = mergedBoxes.reduce((acc, curr) => {
-          if (!acc.find(item => item.box === curr.box)) {
+        console.log("Merged Boxes:", mergedBoxes);
+
+        // Çift kayıtları kaldırmak için unique box'ları alıyoruz
+        const uniqueShipments = mergedBoxes.reduce((acc, curr) => {
+          const existing = acc.find(item => item.id === curr.id);
+          if (!existing) {
             acc.push(curr);
           }
           return acc;
         }, []);
 
-        // Yalnızca on_kabul_durumu "1" veya "2" olanları filtrele
-        const validBoxes = uniqueBoxes.filter((shipment) => {
+        // on_kabul_durumu "1" veya "2" olanları filtrele
+        const validShipments = uniqueShipments.filter((shipment) => {
           const status = String(shipment.on_kabul_durumu);
           return status === "1" || status === "2";
         });
+        console.log("Valid Shipments (on_kabul_durumu 1 veya 2):", validShipments);
 
         // Koli numarasına göre gruplandırma
         const grouped = {};
-        validBoxes.forEach((shipment) => {
+        validShipments.forEach((shipment) => {
           const boxKey = shipment.box;
           if (!grouped[boxKey]) {
             grouped[boxKey] = {
               box: boxKey,
               shipment_no: shipment.shipment_no || "-",
               shipment_date: shipment.shipment_date || "-",
-              totalCount: 0,    // Koli içerisindeki toplam ürün adedi (shipment sayısı)
+              totalCount: 0,    // Toplam ürün adedi (koli içindeki shipment sayısı)
               scannedCount: 0,  // mal_kabul_durumu "1" olanların sayısı
               from_location: shipment.from_location || "-",
             };
           }
           // Her shipment bir ürün olarak sayılır
           grouped[boxKey].totalCount += 1;
-          // mal_kabul_durumu "1" ise okutulmuş kabul edilir
+          // mal_kabul_durumu "1" ise okutulmuş sayılır
           if (String(shipment.mal_kabul_durumu) === "1") {
             grouped[boxKey].scannedCount += 1;
           }
         });
 
-        setBoxes(Object.values(grouped));
+        const groupedBoxes = Object.values(grouped);
+        console.log("Grouped Boxes:", groupedBoxes);
+        setBoxes(groupedBoxes);
       } catch (err) {
         console.error("Mal Kabul Kolileri Çekme Hatası:", err);
         setError("Mal kabul kolileri alınırken bir hata oluştu.");
@@ -94,7 +101,7 @@ const MalKabul = () => {
     } else {
       showNotification("Girdiğiniz koli numarası mevcut değil.", "error");
     }
-    setBoxInput(""); // Input'u temizle
+    setBoxInput("");
   };
 
   const formatDate = (date) => {

@@ -1,4 +1,3 @@
-// pages/malKabulDetay.js
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import FocusLockInput from "../components/FocusLockInput";
@@ -7,9 +6,9 @@ import { useAuth } from "../context/AuthContext";
 import {
   getShipmentByBox,
   getShipmentByQR,
-  updateMalKabulFields,
-  updateQRForDifferent,
-  addMissingQR
+  updateMalKabulFields,  // Güncelleme fonksiyonunu, mal_kabul_durumu'nu 1 olarak ayarlayacak şekilde düzenleyin.
+  updateQRForDifferent,   // Farklı mağazaya ait QR güncellemesi: mal_kabul_durumu 2.
+  addMissingQR           // Veritabanında bulunmayan QR için yeni kayıt ekleyecek.
 } from "../lib/firestore";
 import BackButton from "../components/BackButton";
 import styles from "../styles/MalKabulDetay.module.css";
@@ -25,7 +24,7 @@ const MalKabulDetay = () => {
   const [updating, setUpdating] = useState(false);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
 
-  // Seçilen koliye ait QR kodlarını çekiyoruz
+  // Seçilen koliye ait QR kayıtlarını çekiyoruz.
   const fetchShipments = async () => {
     if (user && userData && box) {
       setLoading(true);
@@ -59,31 +58,25 @@ const MalKabulDetay = () => {
 
     setUpdating(true);
     try {
-      // Öncelikle, o koliye ait tüm QR kayıtlarını getiriyoruz.
-      const boxShipments = await getShipmentByBox(box);
-      const existing = boxShipments.find(item => item.qr === qrInput);
-
-      if (existing) {
-        // Eğer QR kaydı bulunuyorsa:
-        if (existing.paad_id === userData.paad_id) {
-          // Kullanıcının paad_id'si eşleşiyorsa → normal güncelleme (mal_kabul_durumu 1)
-          await updateMalKabulFields(existing.id, userData.name);
+      const existingQR = await getShipmentByQR(qrInput);
+      if (existingQR.length > 0) {
+        const record = existingQR[0];
+        if (record.paad_id === userData.paad_id) {
+          // Güncelle: mal_kabul_durumu 1, diğer alanlar güncellensin.
+          await updateMalKabulFields(record.id, userData.name);
           showNotification("QR başarıyla okutuldu.", "success");
         } else {
-          // Eğer paad_id eşleşmiyorsa → updateQRForDifferent: mal_kabul_durumu 2
-          await updateQRForDifferent(existing.id, userData.name, userData.paad_id);
+          // Farklı mağazaya ait: updateQRForDifferent, mal_kabul_durumu 2
+          await updateQRForDifferent(record.id, userData.name, userData.paad_id);
           showNotification(
-            `Bu ürün ${existing.box} kolisine ve ${existing.to_location} mağazasına aittir. Ancak size gönderildiği için stoğunuza eklenmiştir. Lütfen satış operasyona bildirin.`,
+            `Bu ürün ${record.box} kolisine ve ${record.to_location} mağazasına aittir. Ancak size gönderildiği için stoğunuza eklenmiştir. Lütfen satış operasyona bildirin.`,
             "error"
           );
         }
       } else {
-        // Eğer QR, o koliye ait listede yoksa:
-        showNotification(
-          `Bu ürün ${box} kolisine ait. O koli için mal kabul işlemi gerçekleştirildi.`,
-          "error"
-        );
+        // Eğer QR, o koli için veritabanında yoksa, addMissingQR ile yeni kayıt ekle.
         await addMissingQR(qrInput, box, userData.paad_id, userData.name);
+        showNotification(`Bu ürün ${box} kolisine ait eklenmiştir.`, "error");
       }
       await fetchShipments();
       setQrInput("");
@@ -95,9 +88,9 @@ const MalKabulDetay = () => {
     setUpdating(false);
   };
 
-  // Mask: Eğer mal_kabul_durumu "Okutma Başarılı" değilse QR bilgisi "****" olarak gösterilsin.
+  // QR bilgisi, mal_kabul_durumu 1 ise gerçek, değilse "****" maskesi.
   const maskQRCode = (qr, shipment) => {
-    return shipment.mal_kabul_durumu === "Okutma Başarılı" ? qr : "****";
+    return shipment.mal_kabul_durumu === 1 ? qr : "****";
   };
 
   const formatDate = (date) => {
@@ -151,13 +144,11 @@ const MalKabulDetay = () => {
             {shipments.map((shipment, index) => (
               <tr key={shipment.id}>
                 <td className={styles.td}>{index + 1}</td>
-                <td className={styles.td}>{maskQRCode(shipment.QR, shipment)}</td>
+                <td className={styles.td}>{maskQRCode(shipment.qr, shipment)}</td>
                 <td className={styles.td}>{shipment.mal_kabul_durumu || "-"}</td>
                 <td className={styles.td}>{shipment.mal_kabul_yapan_kisi || "-"}</td>
                 <td className={styles.td}>
-                  {shipment.mal_kabul_saati
-                    ? formatDate(shipment.mal_kabul_saati)
-                    : "-"}
+                  {shipment.mal_kabul_saati ? formatDate(shipment.mal_kabul_saati) : "-"}
                 </td>
               </tr>
             ))}

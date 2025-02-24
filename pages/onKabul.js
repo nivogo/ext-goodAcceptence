@@ -9,6 +9,7 @@ import {
   getShipmentByBox,
   updateOnKabulFields,
   markExtraBox,
+  addMissingBox
 } from "../lib/firestore";
 import BackButton from "../components/BackButton";
 import styles from "../styles/OnKabul.module.css";

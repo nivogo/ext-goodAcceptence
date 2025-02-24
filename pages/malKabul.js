@@ -1,3 +1,4 @@
+// pages/malKabul.js
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import FocusLockInput from "../components/FocusLockInput";
@@ -20,30 +21,32 @@ const MalKabul = () => {
       setLoading(true);
       try {
         const fetchedBoxes = await getBoxesForBasariliKoliler(userData.paad_id);
-        // Filtre: yalnızca on_kabul_durumu 1 veya 2 olan ve pre_accept_wh_id eşleşenler
-        const validShipments = fetchedBoxes.filter(shipment =>
-          (shipment.on_kabul_durumu === 1 || shipment.on_kabul_durumu === 2) &&
-          shipment.pre_accept_wh_id === userData.paad_id
-        );
-        // Grup: Her koli için; ürün adedi, okutulan ürün sayısı (mal_kabul_durumu === 1)
-        // Not: Eğer API aynı koli için birden fazla satır döndürüyorsa, ilk satırdaki ürün adedi kullanılsın.
+        // Grup işlemi: Aynı koli numarasına sahip kayıtları birleştiriyoruz.
+        // Ürün adedi: İlk satırdaki quantity_of_product değeri (örneğin 8),
+        // Okutulan ürün sayısı (scannedCount): o koli içinde mal_kabul_durumu "1" veya "2" olan kayıtların sayısı.
         const grouped = {};
-        validShipments.forEach(shipment => {
-          if (!grouped[shipment.box]) {
-            grouped[shipment.box] = {
-              box: shipment.box,
-              totalCount: Number(shipment.quantity_of_product) || 0,
-              scannedCount: shipment.mal_kabul_durumu === 1 ? 1 : 0,
-              from_location: shipment.from_location || "-"
+        fetchedBoxes.forEach((shipment) => {
+          const boxId = shipment.box;
+          // Eğer daha önce bu koli için kayıt oluşturulmamışsa, ilk satırdaki ürün adedini al.
+          if (!grouped[boxId]) {
+            grouped[boxId] = {
+              box: boxId,
+              totalCount: shipment.quantity_of_product, // İlk kayıttaki ürün adedi (örneğin 8)
+              scannedCount: 0,
+              from_location: shipment.from_location || "-",
+              // "valid" alanı; eğer bu koli içerisinde en az bir satırda mal kabul durumu "1" veya "2" varsa true olacak.
+              valid: false,
             };
-          } else {
-            // Eğer scannedCount henüz 0 ise ve bu satırda mal_kabul_durumu 1 ise, 1 yap.
-            if (grouped[shipment.box].scannedCount === 0 && shipment.mal_kabul_durumu === 1) {
-              grouped[shipment.box].scannedCount = 1;
-            }
+          }
+          // Eğer bu satırda mal kabul durumu "1" veya "2" ise
+          if (shipment.mal_Kabul_durumu === "1" || shipment.mal_Kabul_durumu === "2") {
+            grouped[boxId].scannedCount++;
+            grouped[boxId].valid = true;
           }
         });
-        setGroupedBoxes(Object.values(grouped));
+        // Sadece valid (yani mal kabul durumu 1 veya 2 olan) kayıtları alalım.
+        const finalBoxes = Object.values(grouped).filter(box => box.valid);
+        setGroupedBoxes(finalBoxes);
       } catch (error) {
         console.error("Mal Kabul Kolileri Çekme Hatası:", error);
         showNotification("Mal kabul kolileri alınırken bir hata oluştu.", "error");
@@ -96,6 +99,7 @@ const MalKabul = () => {
           Detay Görüntüle
         </button>
       </form>
+      <p>Toplam Koli Sayısı: {groupedBoxes.length}</p>
       <div className={styles.tableWrapper}>
         <table className={styles.table}>
           <thead>

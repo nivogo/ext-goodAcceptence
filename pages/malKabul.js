@@ -29,45 +29,35 @@ const MalKabul = () => {
       setRefreshing(true);
       setError(null);
       try {
+        // Tüm ilgili kolileri getiriyoruz.
         const fetchedBoxes = await getBoxesForBasariliKoliler(userData.paad_id);
+        // Filtre: yalnızca on_kabul_durumu "1" veya "2" VE pre_accept_wh_id, kullanıcının paad_id’sine eşitse
+        const validShipments = fetchedBoxes.filter((shipment) => {
+          return (
+            (shipment.on_kabul_durumu === "1" || shipment.on_kabul_durumu === "2") &&
+            shipment.pre_accept_wh_id === userData.paad_id
+          );
+        });
 
-        // Koli numarasına göre gruplandırma
+        // Şimdi, validShipments'ı koli numarasına göre gruplandıralım:
         const grouped = {};
-        fetchedBoxes.forEach((shipment) => {
-          // Eğer bu koli daha önce yoksa ekleyelim
+        validShipments.forEach((shipment) => {
           if (!grouped[shipment.box]) {
             grouped[shipment.box] = {
               box: shipment.box,
-              totalCount: 0,      // Tüm doküman sayısı
-              scannedCount: 0,    // Okutulan (Mal Kabul Durumu dolu) doküman sayısı
+              totalCount: 0,
+              scannedCount: 0,
             };
           }
-
-          // Her doküman 1 adet anlamına geldiği için totalCount++
-          grouped[shipment.box].totalCount++;
-
-          // Eğer malKabulDurumu doluysa scannedCount++
-          if (shipment.mal_Kabul_durumu) {
-            grouped[shipment.box].scannedCount++;
-          }
+          grouped[shipment.box].totalCount++; // Her shipment 1 adet ürün olarak kabul ediliyor
+          // Burada scannedCount da shipment sayısı olarak artıyor.
+          grouped[shipment.box].scannedCount++;
         });
 
-        // Objeyi diziye dönüştür
-        let boxArray = Object.values(grouped);
-
-        // Ürün Adedi != Okutulan Ürünler olanları en üstte olacak şekilde sıralama
-        boxArray.sort((a, b) => {
-          const aComplete = a.totalCount === a.scannedCount;
-          const bComplete = b.totalCount === b.scannedCount;
-          if (!aComplete && bComplete) return -1;
-          if (aComplete && !bComplete) return 1;
-          return 0;
-        });
-
-        setBoxes(boxArray);
+        setBoxes(Object.values(grouped));
       } catch (err) {
         console.error("Mal Kabul Kolileri Çekme Hatası:", err);
-        setError("Başarılı koliler alınırken bir hata oluştu.");
+        setError("Mal kabul kolileri alınırken bir hata oluştu.");
       }
       setRefreshing(false);
       setLoading(false);
@@ -83,7 +73,7 @@ const MalKabul = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, userData]);
-
+  
   /**
    * Koli numarası girilip submit edildiğinde detay sayfasına yönlendirme
    */

@@ -71,17 +71,25 @@ const MalKabulDetay = () => {
       if (existingQR.length > 0) {
         const record = existingQR[0];
 
+        // Daha önce okutulmuş mu kontrolü
+        if (String(record.mal_kabul_durumu) === "1") {
+          showNotification("Bu NVG daha önce okutulmuştur.", "warning");
+          setQrInput("");
+          setUpdating(false);
+          return; // İşlemi durdur, veritabanında değişiklik yapma
+        }
+
         // 1. Durum: QR listede var mı?
         const isInCurrentBox = shipments.some((s) => s.qr === qrInput);
         if (isInCurrentBox) {
           console.log("Listede bulunan QR güncelleniyor:", qrInput);
-          await updateMalKabulFields(record.id, userData.name);
+          await updateMalKabulFields(record.id, userData.name, userData.paad_id);
           showNotification("QR başarıyla okutuldu.", "success");
         } 
         // 2. Durum: Kullanıcının paad_id'si ile eşleşiyor ama bu kolide değil
         else if (record.paad_id === userData.paad_id) {
           console.log("Farklı koliye ait QR güncelleniyor:", qrInput);
-          await updateMalKabulFields(record.id, userData.name);
+          await updateMalKabulFields(record.id, userData.name, userData.paad_id);
           showNotification(
             `Bu ürün ${record.box} kolisine aittir. O koli için mal kabul işlemi gerçekleştirilmiştir.`,
             "warning"

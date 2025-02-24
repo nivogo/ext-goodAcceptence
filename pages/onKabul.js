@@ -92,7 +92,8 @@ const handleBoxSubmit = async (e) => {
     // Girilen koli numarasına ait gönderileri getir.
     const boxShipments = await getShipmentByBox(boxInput);
     if (boxShipments.length === 0) {
-      showNotification("Böyle bir koli bulunamamaktadır.", "error");
+      await addMissingBox(boxInput, userData.paad_id, userData.name);
+      showNotification("Bu koli için lütfen satış ekibi ile iletişime geçin.", "error");
     } else {
       // Aynı paad_id'ye ait gönderileri ve farklı paad_id'ye ait gönderileri ayıralım.
       const samePaad = boxShipments.filter(

@@ -34,10 +34,9 @@ const MalKabul = () => {
         const mergedBoxes = [...boxesByPaad, ...boxesByPreAccept];
         console.log("Merged Boxes:", mergedBoxes);
 
-        // Çift kayıtları kaldırmak için unique box'ları alıyoruz
+        // Çift kayıtları kaldırmak için unique sevkiyatları alıyoruz (id bazında)
         const uniqueShipments = mergedBoxes.reduce((acc, curr) => {
-          const existing = acc.find(item => item.id === curr.id);
-          if (!existing) {
+          if (!acc.some(item => item.id === curr.id)) {
             acc.push(curr);
           }
           return acc;
@@ -53,22 +52,23 @@ const MalKabul = () => {
         // Koli numarasına göre gruplandırma
         const grouped = {};
         validShipments.forEach((shipment) => {
-          const boxKey = shipment.box;
+          const boxKey = shipment.box || "Bilinmeyen Koli"; // box yoksa varsayılan değer
           if (!grouped[boxKey]) {
             grouped[boxKey] = {
               box: boxKey,
               shipment_no: shipment.shipment_no || "-",
               shipment_date: shipment.shipment_date || "-",
-              totalCount: 0,    // Toplam ürün adedi (koli içindeki shipment sayısı)
-              scannedCount: 0,  // mal_kabul_durumu "1" olanların sayısı
+              totalCount: 0,    // Toplam ürün adedi
+              scannedCount: 0,  // Mal kabulü yapılmış ürün adedi
               from_location: shipment.from_location || "-",
             };
           }
-          // Her shipment bir ürün olarak sayılır
-          grouped[boxKey].totalCount += 1;
-          // mal_kabul_durumu "1" ise okutulmuş sayılır
+          // quantity_of_product'ı toplama (varsayılan 1, eğer yoksa)
+          const qty = Number(shipment.quantity_of_product) || 1;
+          grouped[boxKey].totalCount += qty;
+          // mal_kabul_durumu "1" ise okutulmuş ürün adedini artır
           if (String(shipment.mal_kabul_durumu) === "1") {
-            grouped[boxKey].scannedCount += 1;
+            grouped[boxKey].scannedCount += qty;
           }
         });
 

@@ -1,12 +1,12 @@
 // pages/malKabul.js
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import FocusLockInput from "../components/FocusLockInput"; // Yolunuzu ayarlayın
+import FocusLockInput from "../components/FocusLockInput";
 import { useAuth } from "../context/AuthContext";
 import { 
   getBoxesForBasariliKoliler, 
   getBoxesForBasariliKolilerByPreAccept 
-} from "../lib/firestore"; // Her iki fonksiyonu da import ediyoruz.
+} from "../lib/firestore";
 import BackButton from "../components/BackButton";
 import { useNotification } from "../context/NotificationContext";
 import styles from "../styles/MalKabul.module.css";
@@ -21,55 +21,52 @@ const MalKabul = () => {
   const { showNotification } = useNotification();
   const [keyboardOpen, setKeyboardOpen] = useState(false);
 
-  /**
-   * Mal Kabul için kolileri çekme:
-   * - Hem getBoxesForBasariliKoliler (sorgu: paad_id) hem
-   * - getBoxesForBasariliKolilerByPreAccept (sorgu: pre_accept_wh_id)
-   * fonksiyonlarından gelen sonuçları birleştirip,
-   * on_kabul_durumu "1" veya "2" olanları alır.
-   * Sonrasında aynı koli numarası için kayıtları gruplandırır.
-   */
   const fetchBoxes = async () => {
     if (user && userData && userData.paad_id) {
       setLoading(true);
       setError(null);
       try {
-        // İki farklı sorgudan verileri çekiyoruz:
+        // İki farklı sorgudan verileri çekiyoruz
         const boxesByPaad = await getBoxesForBasariliKoliler(userData.paad_id);
         const boxesByPreAccept = await getBoxesForBasariliKolilerByPreAccept(userData.paad_id);
-        // İki sonucu birleştiriyoruz:
+
+        // İki sonucu birleştirip çift kayıtları kaldırıyoruz
         const mergedBoxes = [...boxesByPaad, ...boxesByPreAccept];
-        // Aynı koli numarasına sahip çift kayıtları kaldırıyoruz:
         const uniqueBoxes = mergedBoxes.reduce((acc, curr) => {
           if (!acc.find(item => item.box === curr.box)) {
             acc.push(curr);
           }
           return acc;
         }, []);
-        // Şimdi, yalnızca on_kabul_durumu "1" veya "2" olanları alıyoruz.
+
+        // Yalnızca on_kabul_durumu "1" veya "2" olanları filtrele
         const validBoxes = uniqueBoxes.filter((shipment) => {
           const status = String(shipment.on_kabul_durumu);
           return status === "1" || status === "2";
         });
-        // Grup oluşturma: Aynı koli numarasına göre, toplam ürün adedi (totalCount) 
-        // ve okutulan ürün adedi (scannedCount) hesaplanıyor.
+
+        // Koli numarasına göre gruplandırma
         const grouped = {};
         validBoxes.forEach((shipment) => {
-          if (!grouped[shipment.box]) {
-            grouped[shipment.box] = {
-              box: shipment.box,
+          const boxKey = shipment.box;
+          if (!grouped[boxKey]) {
+            grouped[boxKey] = {
+              box: boxKey,
               shipment_no: shipment.shipment_no || "-",
               shipment_date: shipment.shipment_date || "-",
-              totalCount: 0,    // Koli içerisindeki toplam shipment sayısı
-              scannedCount: 0,  // Yalnızca mal_kabul_durumu "1" olanların sayısı
+              totalCount: 0,    // Koli içerisindeki toplam ürün adedi (shipment sayısı)
+              scannedCount: 0,  // mal_kabul_durumu "1" olanların sayısı
               from_location: shipment.from_location || "-",
             };
           }
-          grouped[shipment.box].totalCount++;
+          // Her shipment bir ürün olarak sayılır
+          grouped[boxKey].totalCount += 1;
+          // mal_kabul_durumu "1" ise okutulmuş kabul edilir
           if (String(shipment.mal_kabul_durumu) === "1") {
-            grouped[shipment.box].scannedCount++;
+            grouped[boxKey].scannedCount += 1;
           }
         });
+
         setBoxes(Object.values(grouped));
       } catch (err) {
         console.error("Mal Kabul Kolileri Çekme Hatası:", err);
@@ -88,9 +85,6 @@ const MalKabul = () => {
     }
   }, [user, userData, router]);
 
-  /**
-   * Koli numarası girildiğinde, eğer o koli listede varsa detay sayfasına yönlendirme.
-   */
   const handleBoxSubmit = (e) => {
     e.preventDefault();
     if (!boxInput) return;
@@ -98,8 +92,9 @@ const MalKabul = () => {
     if (exists) {
       router.push(`/malKabulDetay?box=${encodeURIComponent(boxInput)}`);
     } else {
-      alert("Girdiğiniz koli numarası mevcut değil.");
+      showNotification("Girdiğiniz koli numarası mevcut değil.", "error");
     }
+    setBoxInput(""); // Input'u temizle
   };
 
   const formatDate = (date) => {

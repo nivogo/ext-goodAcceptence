@@ -16,21 +16,23 @@ const MalKabul = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const [boxInput, setBoxInput] = useState("");
-
   const { showNotification } = useNotification();
   const [keyboardOpen, setKeyboardOpen] = useState(false);
 
   /**
    * Başarılı kolileri çekme ve gruplandırma fonksiyonu
+   * Sadece on_kabul_durumu değeri 1 veya 2 olan ve pre_accept_wh_id değeri 
+   * giriş yapan kullanıcının paad_id’si ile eşleşen shipment'lar işleme alınır.
    */
   const fetchBoxes = async () => {
     if (user && userData && userData.paad_id) {
       setRefreshing(true);
       setError(null);
       try {
-        // Tüm ilgili kolileri getiriyoruz.
+        // İlgili paad_id'ye göre kolileri getiriyoruz.
         const fetchedBoxes = await getBoxesForBasariliKoliler(userData.paad_id);
-        // Filtre: yalnızca on_kabul_durumu 1 veya 2 olan ve pre_accept_wh_id, kullanıcının paad_id'sine eşit olanları alalım.
+        // Filtre: yalnızca on_kabul_durumu 1 veya 2 olan ve pre_accept_wh_id,
+        // giriş yapan kullanıcının paad_id'sine eşit olan shipment'ları alıyoruz.
         const validShipments = fetchedBoxes.filter((shipment) => {
           const status = Number(shipment.on_kabul_durumu);
           const preAccept = Number(shipment.pre_accept_wh_id);
@@ -38,20 +40,21 @@ const MalKabul = () => {
           return (status === 1 || status === 2) && (preAccept === userPaad);
         });
 
-        // Şimdi, validShipments'ı koli numarasına göre gruplandıralım:
+        // Gruplama: Aynı koli numarasına sahip kayıtları birleştiriyoruz.
         const grouped = {};
         validShipments.forEach((shipment) => {
           if (!grouped[shipment.box]) {
             grouped[shipment.box] = {
               box: shipment.box,
-              totalCount: 0,
-              scannedCount: 0,
+              shipment_no: shipment.shipment_no || "-",
+              shipment_date: shipment.shipment_date || "-",
+              totalCount: 0, // Toplam ürün adedi (koli içindeki toplam shipment sayısı)
+              scannedCount: 0, // Sadece mal_kabul_durumu "1" olanların sayısı
+              from_location: shipment.from_location || "-",
             };
           }
-          // Her shipment 1 adet ürün olarak kabul ediliyor:
           grouped[shipment.box].totalCount++;
-          // scannedCount: mal_kabul_durumu 1 olanları sayıyoruz
-          if (Number(shipment.mal_kabul_durumu) === 1) {
+          if (String(shipment.mal_kabul_durumu) === "1") {
             grouped[shipment.box].scannedCount++;
           }
         });
@@ -73,8 +76,7 @@ const MalKabul = () => {
       setLoading(false);
       router.push("/");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, userData]);
+  }, [user, userData, router]);
 
   /**
    * Koli numarası girilip submit edildiğinde detay sayfasına yönlendirme
@@ -124,7 +126,6 @@ const MalKabul = () => {
       <p>
         Mağaza: {userData.storeName} (PAAD ID: {userData.paad_id})
       </p>
-      {/* Hata Mesajı */}
       {error && <p className={styles.error}>{error}</p>}
       {/* Koli Arama Formu */}
       <form onSubmit={handleBoxSubmit} className={styles.form}>
@@ -138,11 +139,10 @@ const MalKabul = () => {
           required
           enableKeyboard={keyboardOpen}
         />
-        <button type="submit" className={styles.submitButton}>
+        <button type="submit" className={styles.submitButton} disabled={loading}>
           Detay Görüntüle
         </button>
       </form>
-      {/* Toplam Koli Sayısı */}
       <p>Toplam Koli Sayısı: {boxes.length}</p>
       {/* Koliler Tablosu */}
       <div className={styles.tableWrapper}>

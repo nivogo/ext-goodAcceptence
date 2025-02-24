@@ -3,10 +3,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import FocusLockInput from "../components/FocusLockInput"; // Yolunuzu ayarlayın
 import { useAuth } from "../context/AuthContext";
-import { 
-  getBoxesForBasariliKoliler, 
-  getBoxesForBasariliKolilerByPreAccept 
-} from "../lib/firestore"; // Her iki fonksiyonu da import ediyoruz.
+import { getBoxesForBasariliKoliler } from "../lib/firestore"; // Fonksiyon import edildi
 import BackButton from "../components/BackButton";
 import { useNotification } from "../context/NotificationContext";
 import styles from "../styles/MalKabul.module.css";
@@ -22,52 +19,45 @@ const MalKabul = () => {
   const [keyboardOpen, setKeyboardOpen] = useState(false);
 
   /**
-   * Mal Kabul için kolileri çekme:
-   * - Hem getBoxesForBasariliKoliler (sorgu: paad_id) hem
-   * - getBoxesForBasariliKolilerByPreAccept (sorgu: pre_accept_wh_id)
-   * fonksiyonlarından gelen sonuçları birleştirip,
-   * on_kabul_durumu "1" veya "2" olanları alır.
-   * Sonrasında aynı koli numarası için kayıtları gruplandırır.
+   * Başarılı kolileri çekme ve gruplandırma fonksiyonu:
+   * - getBoxesForBasariliKoliler fonksiyonundan gelen shipment’lar arasında
+   *   yalnızca on_kabul_durumu "1" veya "2" olanları alıyoruz.
+   * - Her koli için toplam ürün adedi (totalCount) olarak, ilgili
+   *   shipment'ların quantity_of_product değerlerinin toplamı hesaplanır.
+   * - Okutulan ürün sayısı (scannedCount) olarak ise yalnızca mal_kabul_durumu "1"
+   *   olan shipment’ların quantity_of_product değerlerinin toplamı hesaplanır.
    */
   const fetchBoxes = async () => {
     if (user && userData && userData.paad_id) {
       setLoading(true);
       setError(null);
       try {
-        // İki farklı sorgudan verileri çekiyoruz:
-        const boxesByPaad = await getBoxesForBasariliKoliler(userData.paad_id);
-        const boxesByPreAccept = await getBoxesForBasariliKolilerByPreAccept(userData.paad_id);
-        // İki sonucu birleştiriyoruz:
-        const mergedBoxes = [...boxesByPaad, ...boxesByPreAccept];
-        // Aynı koli numarasına sahip çift kayıtları kaldırıyoruz:
-        const uniqueBoxes = mergedBoxes.reduce((acc, curr) => {
-          if (!acc.find(item => item.box === curr.box)) {
-            acc.push(curr);
-          }
-          return acc;
-        }, []);
-        // Şimdi, yalnızca on_kabul_durumu "1" veya "2" olanları alıyoruz.
-        const validBoxes = uniqueBoxes.filter((shipment) => {
-          const status = String(shipment.on_kabul_durumu);
-          return status === "1" || status === "2";
-        });
-        // Grup oluşturma: Aynı koli numarasına göre, toplam ürün adedi (totalCount) 
-        // ve okutulan ürün adedi (scannedCount) hesaplanıyor.
+        const fetchedBoxes = await getBoxesForBasariliKoliler(userData.paad_id);
+        // Sadece on_kabul_durumu "1" veya "2" olan shipment’ları alalım.
+        const validShipments = fetchedBoxes.filter(
+          (shipment) =>
+            String(shipment.on_kabul_durumu) === "1" ||
+            String(shipment.on_kabul_durumu) === "2"
+        );
+        // Gruplandırma: Her koli için toplam ve okutulan ürün miktarlarını hesaplıyoruz.
         const grouped = {};
-        validBoxes.forEach((shipment) => {
-          if (!grouped[shipment.box]) {
-            grouped[shipment.box] = {
-              box: shipment.box,
+        validShipments.forEach((shipment) => {
+          const boxKey = shipment.box;
+          // quantity_of_product sayısal değere çevriliyor:
+          const quantity = Number(shipment.quantity_of_product) || 0;
+          if (!grouped[boxKey]) {
+            grouped[boxKey] = {
+              box: boxKey,
               shipment_no: shipment.shipment_no || "-",
               shipment_date: shipment.shipment_date || "-",
-              totalCount: 0,    // Koli içerisindeki toplam shipment sayısı
-              scannedCount: 0,  // Yalnızca mal_kabul_durumu "1" olanların sayısı
+              totalCount: 0,    // Tüm shipment'ların quantity toplamı
+              scannedCount: 0,  // Sadece mal_kabul_durumu "1" olanların quantity toplamı
               from_location: shipment.from_location || "-",
             };
           }
-          grouped[shipment.box].totalCount++;
+          grouped[boxKey].totalCount += quantity;
           if (String(shipment.mal_kabul_durumu) === "1") {
-            grouped[shipment.box].scannedCount++;
+            grouped[boxKey].scannedCount += quantity;
           }
         });
         setBoxes(Object.values(grouped));
@@ -89,7 +79,7 @@ const MalKabul = () => {
   }, [user, userData, router]);
 
   /**
-   * Koli numarası girildiğinde, eğer o koli listede varsa detay sayfasına yönlendirme.
+   * Koli numarası girilip submit edildiğinde detay sayfasına yönlendirme
    */
   const handleBoxSubmit = (e) => {
     e.preventDefault();
@@ -104,6 +94,9 @@ const MalKabul = () => {
 
   const formatDate = (date) => {
     if (!date) return "-";
+    if (date.toDate) {
+      return date.toDate().toLocaleString();
+    }
     const parsedDate = new Date(date);
     return isNaN(parsedDate) ? "-" : parsedDate.toLocaleString();
   };

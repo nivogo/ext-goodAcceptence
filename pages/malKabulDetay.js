@@ -6,9 +6,9 @@ import { useAuth } from "../context/AuthContext";
 import {
   getShipmentByBox,
   getShipmentByQR,
-  updateMalKabulFields,  // Güncelleme fonksiyonunu, mal_kabul_durumu'nu 1 olarak ayarlayacak şekilde düzenleyin.
-  updateQRForDifferent,   // Farklı mağazaya ait QR güncellemesi: mal_kabul_durumu 2.
-  addMissingQR           // Veritabanında bulunmayan QR için yeni kayıt ekleyecek.
+  updateMalKabulFields,
+  updateQRForDifferent,
+  addMissingQR
 } from "../lib/firestore";
 import BackButton from "../components/BackButton";
 import styles from "../styles/MalKabulDetay.module.css";
@@ -24,7 +24,6 @@ const MalKabulDetay = () => {
   const [updating, setUpdating] = useState(false);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
 
-  // Seçilen koliye ait QR kayıtlarını çekiyoruz.
   const fetchShipments = async () => {
     if (user && userData && box) {
       setLoading(true);
@@ -49,24 +48,22 @@ const MalKabulDetay = () => {
   const handleQRSubmit = async (e) => {
     e.preventDefault();
     if (!qrInput) return;
-
-    // QR kontrolü: Girilen QR kodu "NVG" ile başlamalı
+    // Kontrol: QR kodu "NVG" ile başlamalı
     if (!qrInput.startsWith("NVG")) {
       alert("Okuttuğunuz ürün NVG ile başlamalı.");
       return;
     }
-
     setUpdating(true);
     try {
       const existingQR = await getShipmentByQR(qrInput);
       if (existingQR.length > 0) {
         const record = existingQR[0];
         if (record.paad_id === userData.paad_id) {
-          // Güncelle: mal_kabul_durumu 1, diğer alanlar güncellensin.
+          // Aynı mağazaya ait: mal_kabul_durumu 1 güncellemesi
           await updateMalKabulFields(record.id, userData.name);
           showNotification("QR başarıyla okutuldu.", "success");
         } else {
-          // Farklı mağazaya ait: updateQRForDifferent, mal_kabul_durumu 2
+          // Farklı mağazaya ait: updateQRForDifferent fonksiyonu (mal_kabul_durumu 2)
           await updateQRForDifferent(record.id, userData.name, userData.paad_id);
           showNotification(
             `Bu ürün ${record.box} kolisine ve ${record.to_location} mağazasına aittir. Ancak size gönderildiği için stoğunuza eklenmiştir. Lütfen satış operasyona bildirin.`,
@@ -74,9 +71,9 @@ const MalKabulDetay = () => {
           );
         }
       } else {
-        // Eğer QR, o koli için veritabanında yoksa, addMissingQR ile yeni kayıt ekle.
+        // Eğer QR veritabanında yoksa, addMissingQR ile yeni kayıt ekle.
         await addMissingQR(qrInput, box, userData.paad_id, userData.name);
-        showNotification(`Bu ürün ${box} kolisine ait eklenmiştir.`, "error");
+        showNotification(`Bu ürün ${box} kolisine ait olarak eklendi.`, "error");
       }
       await fetchShipments();
       setQrInput("");
@@ -88,9 +85,9 @@ const MalKabulDetay = () => {
     setUpdating(false);
   };
 
-  // QR bilgisi, mal_kabul_durumu 1 ise gerçek, değilse "****" maskesi.
+  // Eğer mal_kabul_durumu 1 ise QR gerçek, değilse "****" maskesi.
   const maskQRCode = (qr, shipment) => {
-    return shipment.mal_kabul_durumu === 1 ? qr : "****";
+    return shipment.mal_kabul_durumu === "1" ? qr : "****";
   };
 
   const formatDate = (date) => {

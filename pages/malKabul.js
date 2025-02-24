@@ -1,4 +1,3 @@
-// pages/malKabul.js
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import FocusLockInput from "../components/FocusLockInput";
@@ -16,33 +15,31 @@ const MalKabul = () => {
   const [loading, setLoading] = useState(true);
   const [boxInput, setBoxInput] = useState("");
 
-  // Verileri çekip, yalnızca on_kabul_durumu 1 veya 2 ve pre_accept_wh_id 
-  // kullanıcının paad_id’sine eşit olan kayıtları gruplandırıyoruz.
   const fetchBoxes = async () => {
     if (user && userData && userData.paad_id) {
       setLoading(true);
       try {
-        const shipments = await getBoxesForBasariliKoliler(userData.paad_id);
-        // Sadece on_kabul_durumu 1 veya 2 ve pre_accept_wh_id === userData.paad_id olan kayıtlar
-        const validShipments = shipments.filter(shipment => 
-          (shipment.on_kabul_durumu === "1" || shipment.on_kabul_durumu === "2") &&
+        const fetchedBoxes = await getBoxesForBasariliKoliler(userData.paad_id);
+        // Filtre: yalnızca on_kabul_durumu 1 veya 2 olan ve pre_accept_wh_id eşleşenler
+        const validShipments = fetchedBoxes.filter(shipment =>
+          (shipment.on_kabul_durumu === 1 || shipment.on_kabul_durumu === 2) &&
           shipment.pre_accept_wh_id === userData.paad_id
         );
-        // Grup: Her box (koli) için toplam ürün adedi ve okutulan (mal_kabul_durumu === "1") adet
+        // Grup: Her koli için; ürün adedi, okutulan ürün sayısı (mal_kabul_durumu === 1)
+        // Not: Eğer API aynı koli için birden fazla satır döndürüyorsa, ilk satırdaki ürün adedi kullanılsın.
         const grouped = {};
         validShipments.forEach(shipment => {
-          // Eğer quantity_of_product varsa (örneğin string sayıysa, Number() ile toplayın)
-          const qty = shipment.quantity_of_product ? Number(shipment.quantity_of_product) : 1;
           if (!grouped[shipment.box]) {
             grouped[shipment.box] = {
               box: shipment.box,
-              totalCount: qty,
-              scannedCount: shipment.mal_kabul_durumu === "1" ? qty : 0
+              totalCount: Number(shipment.quantity_of_product) || 0,
+              scannedCount: shipment.mal_kabul_durumu === 1 ? 1 : 0,
+              from_location: shipment.from_location || "-"
             };
           } else {
-            grouped[shipment.box].totalCount += qty;
-            if (shipment.mal_kabul_durumu === "1") {
-              grouped[shipment.box].scannedCount += qty;
+            // Eğer scannedCount henüz 0 ise ve bu satırda mal_kabul_durumu 1 ise, 1 yap.
+            if (grouped[shipment.box].scannedCount === 0 && shipment.mal_kabul_durumu === 1) {
+              grouped[shipment.box].scannedCount = 1;
             }
           }
         });
@@ -67,7 +64,6 @@ const MalKabul = () => {
   const handleBoxSubmit = (e) => {
     e.preventDefault();
     if (!boxInput) return;
-    // Girilen koli numarası listedeyse detay sayfasına yönlendir.
     const exists = groupedBoxes.find(box => box.box === boxInput);
     if (exists) {
       router.push(`/malKabulDetay?box=${encodeURIComponent(boxInput)}`);
@@ -85,9 +81,7 @@ const MalKabul = () => {
     <div className={styles.container}>
       <BackButton />
       <h1>Mal Kabul Kolileri</h1>
-      <p>
-        Mağaza: {userData.storeName} (PAAD ID: {userData.paad_id})
-      </p>
+      <p>Mağaza: {userData.storeName} (PAAD ID: {userData.paad_id})</p>
       <form onSubmit={handleBoxSubmit} className={styles.form}>
         <FocusLockInput
           value={boxInput}

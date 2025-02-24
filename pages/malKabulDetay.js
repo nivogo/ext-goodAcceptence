@@ -32,7 +32,8 @@ const MalKabulDetay = () => {
         const boxShipments = await getShipmentByBox(box);
         setShipments(boxShipments);
       } catch (error) {
-        console.error("Mal Kabul Detay Veri Çekme Hatası:", error);
+        console.error("Mal Kabul Detay Veri Çekme Hatası:", error.message, error.stack);
+        showNotification("Veriler yüklenirken bir hata oluştu.", "error");
       }
       setLoading(false);
     }
@@ -49,14 +50,22 @@ const MalKabulDetay = () => {
   const handleQRSubmit = async (e) => {
     e.preventDefault();
     if (!qrInput) return;
+
     // Kontrol: QR kodu "NVG" ile başlamalı
     if (!qrInput.startsWith("NVG")) {
       alert("Okuttuğunuz ürün NVG ile başlamalı.");
       return;
     }
+
     setUpdating(true);
     try {
+      // Kullanıcı verisi kontrolü
+      if (!userData || !userData.paad_id || !userData.name) {
+        throw new Error("Kullanıcı bilgileri eksik. Lütfen tekrar giriş yapın.");
+      }
+
       const existingQR = await getShipmentByQR(qrInput);
+      console.log("getShipmentByQR sonucu:", existingQR);
       const currentTime = new Date().toISOString();
 
       if (existingQR.length > 0) {
@@ -65,12 +74,13 @@ const MalKabulDetay = () => {
         // 1. Durum: QR listede var mı?
         const isInCurrentBox = shipments.some((s) => s.qr === qrInput);
         if (isInCurrentBox) {
-          // Listede bulunan bir QR okutuldu
+          console.log("Listede bulunan QR güncelleniyor:", qrInput);
           await updateMalKabulFields(record.id, userData.name);
           showNotification("QR başarıyla okutuldu.", "success");
         } 
         // 2. Durum: Kullanıcının paad_id'si ile eşleşiyor ama bu kolide değil
         else if (record.paad_id === userData.paad_id) {
+          console.log("Farklı koliye ait QR güncelleniyor:", qrInput);
           await updateMalKabulFields(record.id, userData.name);
           showNotification(
             `Bu ürün ${record.box} kolisine aittir. O koli için mal kabul işlemi gerçekleştirilmiştir.`,
@@ -79,6 +89,7 @@ const MalKabulDetay = () => {
         } 
         // 3. Durum: Farklı paad_id ile eşleşiyor
         else {
+          console.log("Farklı mağazaya ait QR güncelleniyor:", qrInput);
           await updateQRForDifferent(record.id, userData.name, userData.paad_id);
           showNotification(
             `Bu ürün ${record.box} kolisine ve ${record.to_location} mağazasına aittir. Ancak size gönderildiği için sizin stoğunuza eklenmiştir. Lütfen bu ürünü satış operasyona bildirin.`,
@@ -88,6 +99,7 @@ const MalKabulDetay = () => {
       } 
       // 4. Durum: QR veritabanında yok
       else {
+        console.log("Yeni QR ekleniyor:", qrInput);
         await addMissingQR(qrInput, box, userData.paad_id, userData.name);
         showNotification(
           `Bu ürün ${box} kolisine ait olarak eklendi.`,
@@ -98,9 +110,12 @@ const MalKabulDetay = () => {
       await fetchShipments();
       setQrInput("");
     } catch (error) {
-      console.error("Mal Kabul QR Güncelleme Hatası:", error);
-      showNotification("Mal kabul işlemi sırasında bir hata oluştu.", "error");
-      await fetchShipments();
+      console.error("Mal Kabul QR Güncelleme Hatası Detayı:", error.message, error.stack);
+      showNotification(
+        `Mal kabul işlemi sırasında bir hata oluştu: ${error.message}`,
+        "error"
+      );
+      await fetchShipments(); // Hata olsa bile verileri güncelle
     }
     setUpdating(false);
   };

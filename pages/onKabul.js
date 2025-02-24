@@ -94,7 +94,7 @@ const handleBoxSubmit = async (e) => {
     const boxShipments = await getShipmentByBox(boxInput);
     if (boxShipments.length === 0) {
       await addMissingBox(boxInput, userData.paad_id, userData.name);
-      showNotification("Bu koli için lütfen satış ekibi ile iletişime geçin.", "error");
+      alert("Bu koli için lütfen satış ekibi ile iletişime geçin.");
     } else {
       // Aynı paad_id'ye ait gönderileri ve farklı paad_id'ye ait gönderileri ayıralım.
       const samePaad = boxShipments.filter(

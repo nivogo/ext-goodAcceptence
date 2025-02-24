@@ -1,9 +1,9 @@
 // pages/malKabul.js
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import FocusLockInput from "../components/FocusLockInput"; // Yolunuzu ayarlayın
+import FocusLockInput from "../components/FocusLockInput";
 import { useAuth } from "../context/AuthContext";
-import { getBoxesForBasariliKoliler } from "../lib/firestore"; // Fonksiyon import edildi
+import { getBoxesForBasariliKoliler } from "../lib/firestore";
 import BackButton from "../components/BackButton";
 import { useNotification } from "../context/NotificationContext";
 import styles from "../styles/MalKabul.module.css";
@@ -11,55 +11,46 @@ import styles from "../styles/MalKabul.module.css";
 const MalKabul = () => {
   const router = useRouter();
   const { user, userData } = useAuth();
-  const [boxes, setBoxes] = useState([]);
+  const { showNotification } = useNotification();
+  const [groupedBoxes, setGroupedBoxes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState(null);
   const [boxInput, setBoxInput] = useState("");
 
-  const { showNotification } = useNotification();
-
-  const [keyboardOpen, setKeyboardOpen] = useState(false);
-
-  /**
-   * Başarılı kolileri çekme ve gruplandırma fonksiyonu
-   */
+  // Verileri çekip, yalnızca on_kabul_durumu 1 veya 2 ve pre_accept_wh_id 
+  // kullanıcının paad_id’sine eşit olan kayıtları gruplandırıyoruz.
   const fetchBoxes = async () => {
     if (user && userData && userData.paad_id) {
-      setRefreshing(true);
-      setError(null);
+      setLoading(true);
       try {
-        // Tüm ilgili kolileri getiriyoruz.
-        const fetchedBoxes = await getBoxesForBasariliKoliler(userData.paad_id);
-        // Filtre: yalnızca on_kabul_durumu "1" veya "2" VE pre_accept_wh_id, kullanıcının paad_id’sine eşitse
-        const validShipments = fetchedBoxes.filter((shipment) => {
-          return (
-            (shipment.on_kabul_durumu === "1" || shipment.on_kabul_durumu === "2") &&
-            shipment.pre_accept_wh_id === userData.paad_id
-          );
-        });
-
-        // Şimdi, validShipments'ı koli numarasına göre gruplandıralım:
+        const shipments = await getBoxesForBasariliKoliler(userData.paad_id);
+        // Sadece on_kabul_durumu 1 veya 2 ve pre_accept_wh_id === userData.paad_id olan kayıtlar
+        const validShipments = shipments.filter(shipment => 
+          (shipment.on_kabul_durumu === "1" || shipment.on_kabul_durumu === "2") &&
+          shipment.pre_accept_wh_id === userData.paad_id
+        );
+        // Grup: Her box (koli) için toplam ürün adedi ve okutulan (mal_kabul_durumu === "1") adet
         const grouped = {};
-        validShipments.forEach((shipment) => {
+        validShipments.forEach(shipment => {
+          // Eğer quantity_of_product varsa (örneğin string sayıysa, Number() ile toplayın)
+          const qty = shipment.quantity_of_product ? Number(shipment.quantity_of_product) : 1;
           if (!grouped[shipment.box]) {
             grouped[shipment.box] = {
               box: shipment.box,
-              totalCount: 0,
-              scannedCount: 0,
+              totalCount: qty,
+              scannedCount: shipment.mal_kabul_durumu === "1" ? qty : 0
             };
+          } else {
+            grouped[shipment.box].totalCount += qty;
+            if (shipment.mal_kabul_durumu === "1") {
+              grouped[shipment.box].scannedCount += qty;
+            }
           }
-          grouped[shipment.box].totalCount++; // Her shipment 1 adet ürün olarak kabul ediliyor
-          // Burada scannedCount da shipment sayısı olarak artıyor.
-          grouped[shipment.box].scannedCount++;
         });
-
-        setBoxes(Object.values(grouped));
-      } catch (err) {
-        console.error("Mal Kabul Kolileri Çekme Hatası:", err);
-        setError("Mal kabul kolileri alınırken bir hata oluştu.");
+        setGroupedBoxes(Object.values(grouped));
+      } catch (error) {
+        console.error("Mal Kabul Kolileri Çekme Hatası:", error);
+        showNotification("Mal kabul kolileri alınırken bir hata oluştu.", "error");
       }
-      setRefreshing(false);
       setLoading(false);
     }
   };
@@ -71,17 +62,13 @@ const MalKabul = () => {
       setLoading(false);
       router.push("/");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, userData]);
-  
-  /**
-   * Koli numarası girilip submit edildiğinde detay sayfasına yönlendirme
-   */
+  }, [user, userData, router]);
+
   const handleBoxSubmit = (e) => {
     e.preventDefault();
     if (!boxInput) return;
-    // Koli numarası mevcut mu kontrol et
-    const exists = boxes.some((box) => box.box === boxInput);
+    // Girilen koli numarası listedeyse detay sayfasına yönlendir.
+    const exists = groupedBoxes.find(box => box.box === boxInput);
     if (exists) {
       router.push(`/malKabulDetay?box=${encodeURIComponent(boxInput)}`);
     } else {
@@ -89,44 +76,18 @@ const MalKabul = () => {
     }
   };
 
-  const formatDate = (date) => {
-    if (!date) return "-";
-    if (date.toDate) {
-      return date.toDate().toLocaleString();
-    }
-    const parsedDate = new Date(date);
-    return isNaN(parsedDate) ? "-" : parsedDate.toLocaleString();
-  };
-
   if (loading) {
-    return (
-      <div style={{ padding: "2rem", textAlign: "center" }}>
-        <p>Yükleniyor...</p>
-      </div>
-    );
+    return <div style={{ padding: "2rem", textAlign: "center" }}>Yükleniyor...</div>;
   }
-
-  if (!user || !userData) {
-    return null;
-  }
+  if (!user || !userData) return null;
 
   return (
     <div className={styles.container}>
       <BackButton />
-      <div style={{ position: "absolute", top: 10, right: 10 }}>
-        <button onClick={() => setKeyboardOpen(!keyboardOpen)}>
-          {keyboardOpen ? "Kapat" : "Klavye Aç"}
-        </button>
-      </div>
       <h1>Mal Kabul Kolileri</h1>
       <p>
         Mağaza: {userData.storeName} (PAAD ID: {userData.paad_id})
       </p>
-
-      {/* Hata Mesajı */}
-      {error && <p className={styles.error}>{error}</p>}
-
-      {/* Koli Arama Formu */}
       <form onSubmit={handleBoxSubmit} className={styles.form}>
         <FocusLockInput
           value={boxInput}
@@ -136,37 +97,27 @@ const MalKabul = () => {
           className={styles.input}
           autoFocus={true}
           required
-          enableKeyboard={keyboardOpen}
         />
         <button type="submit" className={styles.submitButton}>
           Detay Görüntüle
         </button>
       </form>
-
-      {/* Toplam Koli Sayısı */}
-      <p>Toplam Koli Sayısı: {boxes.length}</p>
-
-      {/* Koliler Tablosu */}
       <div className={styles.tableWrapper}>
         <table className={styles.table}>
           <thead>
             <tr>
               <th className={styles.th}>Sıra No</th>
               <th className={styles.th}>Koli Numarası</th>
-              {/* Doküman bazlı adet (toplam doküman sayısı) */}
               <th className={styles.th}>Ürün Adedi</th>
-              {/* Doküman bazlı okutulan adet (malKabulDurumu dolu doküman sayısı) */}
               <th className={styles.th}>Okutulan Ürünler</th>
             </tr>
           </thead>
           <tbody>
-            {boxes.map((box, index) => (
+            {groupedBoxes.map((box, index) => (
               <tr key={box.box}>
                 <td className={styles.td}>{index + 1}</td>
                 <td className={styles.td}>{box.box}</td>
-                {/* totalCount = doküman sayısı */}
                 <td className={styles.td}>{box.totalCount}</td>
-                {/* scannedCount = malKabulDurumu dolu doküman sayısı */}
                 <td className={styles.td}>{box.scannedCount}</td>
               </tr>
             ))}

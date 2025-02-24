@@ -128,10 +128,10 @@ const MalKabulDetay = () => {
     setUpdating(false);
   };
 
-  // Eğer mal_kabul_durumu 1 ise QR gerçek, değilse "****" maskesi.
+  // Eğer mal_kabul_durumu 1, 2 veya 3 ise QR gerçek, değilse "****" maskesi.
   const maskQRCode = (qr, shipment) => {
-    return shipment.mal_kabul_durumu === "1" ? qr : "****";
-  };
+  return ["1", "2", "3"].includes(String(shipment.mal_kabul_durumu)) ? qr : "****";
+};
 
   const formatDate = (date) => {
     if (!date) return "-";

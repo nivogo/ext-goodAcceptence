@@ -41,9 +41,11 @@ const MalKabulDetay = () => {
   };
 
   useEffect(() => {
+    // Kullanıcı ve veri hazır olduğunda yalnızca veriyi çek
     if (user && userData && box) {
       fetchShipments();
-    } else {
+    } else if (!loading && (!user || !userData)) {
+      // Yükleme bittiyse ve hala kullanıcı yoksa giriş sayfasına yönlendir
       router.push("/");
     }
   }, [user, userData, box, router]);

@@ -24,6 +24,7 @@ const MalKabulDetay = () => {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false); // Popup için state
 
   const fetchShipments = async () => {
     if (user && userData && box) {
@@ -51,7 +52,6 @@ const MalKabulDetay = () => {
     e.preventDefault();
     if (!qrInput) return;
 
-    // Kontrol: QR kodu "NVG" ile başlamalı
     if (!qrInput.startsWith("NVG")) {
       alert("Okuttuğunuz ürün NVG ile başlamalı.");
       return;
@@ -59,7 +59,6 @@ const MalKabulDetay = () => {
 
     setUpdating(true);
     try {
-      // Kullanıcı verisi kontrolü
       if (!userData || !userData.paad_id || !userData.name) {
         throw new Error("Kullanıcı bilgileri eksik. Lütfen tekrar giriş yapın.");
       }
@@ -71,32 +70,26 @@ const MalKabulDetay = () => {
       if (existingQR.length > 0) {
         const record = existingQR[0];
 
-        // Daha önce okutulmuş mu kontrolü
         if (String(record.mal_kabul_durumu) === "1") {
           showNotification("Bu NVG daha önce okutulmuştur.", "warning");
           setQrInput("");
           setUpdating(false);
-          return; // İşlemi durdur, veritabanında değişiklik yapma
+          return;
         }
 
-        // 1. Durum: QR listede var mı?
         const isInCurrentBox = shipments.some((s) => s.qr === qrInput);
         if (isInCurrentBox) {
           console.log("Listede bulunan QR güncelleniyor:", qrInput);
           await updateMalKabulFields(record.id, userData.name, userData.paad_id);
           showNotification("QR başarıyla okutuldu.", "success");
-        } 
-        // 2. Durum: Kullanıcının paad_id'si ile eşleşiyor ama bu kolide değil
-        else if (record.paad_id === userData.paad_id) {
+        } else if (record.paad_id === userData.paad_id) {
           console.log("Farklı koliye ait QR güncelleniyor:", qrInput);
           await updateMalKabulFields(record.id, userData.name, userData.paad_id);
           showNotification(
             `Bu ürün ${record.box} kolisine aittir. O koli için mal kabul işlemi gerçekleştirilmiştir.`,
             "warning"
           );
-        } 
-        // 3. Durum: Farklı paad_id ile eşleşiyor
-        else {
+        } else {
           console.log("Farklı mağazaya ait QR güncelleniyor:", qrInput);
           await updateQRForDifferent(record.id, userData.name, userData.paad_id);
           showNotification(
@@ -104,9 +97,7 @@ const MalKabulDetay = () => {
             "error"
           );
         }
-      } 
-      // 4. Durum: QR veritabanında yok
-      else {
+      } else {
         console.log("Yeni QR ekleniyor:", qrInput);
         await addMissingQR(qrInput, box, userData.paad_id, userData.name);
         showNotification(
@@ -123,15 +114,71 @@ const MalKabulDetay = () => {
         `Mal kabul işlemi sırasında bir hata oluştu: ${error.message}`,
         "error"
       );
-      await fetchShipments(); // Hata olsa bile verileri güncelle
+      await fetchShipments();
     }
     setUpdating(false);
   };
 
-  // Eğer mal_kabul_durumu 1, 2 veya 3 ise QR gerçek, değilse "****" maskesi.
+  // Koli kapatma işlemi
+  const handleCloseBox = async () => {
+    setShowCloseConfirm(false); // Popup'u kapat
+    setUpdating(true);
+    try {
+      if (!userData || !userData.paad_id || !userData.name) {
+        throw new Error("Kullanıcı bilgileri eksik. Lütfen tekrar giriş yapın.");
+      }
+
+      const currentTime = new Date().toISOString();
+
+      // Tüm sevkiyatların güncellenmesi için Promise.all
+      await Promise.all(
+        shipments.map(async (shipment) => {
+          const bodyData = {
+            where: { id: shipment.id },
+            data: {
+              box_closed: true,
+              box_closed_datetime: currentTime,
+              ...(shipment.mal_kabul_durumu === "Baslanmadi" && {
+                mal_kabul_durumu: "4",
+                mal_kabul_yapan_kisi: userData.name,
+                mal_kabul_saati: currentTime,
+                accept_wh_id: userData.paad_id,
+                accept_datetime: currentTime,
+                adres: "FARK",
+                adresleme_yapan_kisi: userData.name,
+                adresleme_saati: currentTime,
+              }),
+            },
+          };
+
+          const response = await fetch("https://accept.hayatadondur.com/acceptance/index.php", {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Basic ${localStorage.getItem("basicAuth")}`,
+            },
+            body: JSON.stringify(bodyData),
+          });
+
+          if (!response.ok) {
+            throw new Error(`Koli kapatma işlemi başarısız: Sevkiyat ID ${shipment.id}`);
+          }
+        })
+      );
+
+      showNotification("Koli başarıyla kapatıldı.", "success");
+      await fetchShipments(); // Verileri güncelle
+    } catch (error) {
+      console.error("Koli Kapatma Hatası:", error.message, error.stack);
+      showNotification(`Koli kapatma sırasında bir hata oluştu: ${error.message}`, "error");
+      await fetchShipments();
+    }
+    setUpdating(false);
+  };
+
   const maskQRCode = (qr, shipment) => {
-  return ["1", "2", "3"].includes(String(shipment.mal_kabul_durumu)) ? qr : "****";
-};
+    return ["1", "2", "3"].includes(String(shipment.mal_kabul_durumu)) ? qr : "****";
+  };
 
   const formatDate = (date) => {
     if (!date) return "-";
@@ -169,6 +216,22 @@ const MalKabulDetay = () => {
           {updating ? "İşlem Yapılıyor..." : "Mal Kabul Yap"}
         </button>
       </form>
+      {/* Koli Kapat Butonu */}
+      <button
+        onClick={() => setShowCloseConfirm(true)}
+        style={{
+          padding: "0.5rem 1rem",
+          backgroundColor: "#dc3545",
+          color: "#fff",
+          border: "none",
+          borderRadius: "4px",
+          cursor: "pointer",
+          margin: "1rem 0",
+        }}
+        disabled={updating}
+      >
+        Koli Kapat
+      </button>
       <div className={styles.tableWrapper}>
         <table className={styles.table}>
           <thead>
@@ -195,6 +258,66 @@ const MalKabulDetay = () => {
           </tbody>
         </table>
       </div>
+      {/* Koli Kapat Onay Popup */}
+      {showCloseConfirm && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 10000,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "#fff",
+              padding: "2rem",
+              borderRadius: "8px",
+              textAlign: "center",
+              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.3)",
+            }}
+          >
+            <p>
+              Kapatılan koli işlemi geri alınamaz. Devam etmek istediğinize emin misiniz?
+            </p>
+            <div style={{ marginTop: "1rem" }}>
+              <button
+                onClick={handleCloseBox}
+                style={{
+                  padding: "0.5rem 1rem",
+                  backgroundColor: "#dc3545",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  marginRight: "1rem",
+                }}
+              >
+                Koliyi Kapat
+              </button>
+              <button
+                onClick={() => setShowCloseConfirm(false)}
+                style={{
+                  padding: "0.5rem 1rem",
+                  backgroundColor: "#6c757d",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                Vazgeç
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

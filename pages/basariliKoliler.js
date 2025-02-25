@@ -82,7 +82,20 @@ const BasariliKoliler = () => {
     const parsedDate = new Date(date);
     return isNaN(parsedDate) ? "-" : parsedDate.toLocaleString();
   };
-
+  
+  const formatOnKabulDurumu = (status) => {
+  switch (status) {
+    case "1":
+      return "Okutma Başarılı";
+    case "2":
+      return "Okutma Başarılı (Fazla Koli)";
+    case "3":
+      return "Okutma Başarılı (Sistem Dışı Koli)";
+    default:
+      return status || "-";
+  }
+};
+  
   if (loading) {
     return (
       <div style={{ padding: "2rem", textAlign: "center" }}>
@@ -128,7 +141,7 @@ const BasariliKoliler = () => {
                 <td className={styles.td}>{box.box}</td>
                 <td className={styles.td}>{box.quantity}</td>
                 <td className={styles.td}>{box.from_location}</td>
-                <td className={styles.td}>{box.onKabulDurumu || "-"}</td>
+                <td className={styles.td}>{formatOnKabulDurumu(box.onKabulDurumu) || "-"}</td>
                 <td className={styles.td}>{box.onKabulYapanKisi || "-"}</td>
                 <td className={styles.td}>{formatDate(box.onKabulSaati)}</td>
               </tr>

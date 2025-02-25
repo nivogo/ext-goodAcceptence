@@ -168,6 +168,7 @@ const MalKabulDetay = () => {
 
       showNotification("Koli başarıyla kapatıldı.", "success");
       await fetchShipments(); // Verileri güncelle
+      router.push("/malKabul"); // Koli kapandıktan sonra MalKabul sayfasına yönlendir
     } catch (error) {
       console.error("Koli Kapatma Hatası:", error.message, error.stack);
       showNotification(`Koli kapatma sırasında bir hata oluştu: ${error.message}`, "error");

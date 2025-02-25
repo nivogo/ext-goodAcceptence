@@ -135,7 +135,7 @@ Ensure the API supports PUT requests with id: -1 and paad_id: -1 for session ref
 
 Usage
 
-
+```bash
 npm run dev
 
 Open http://localhost:3000 in your browser.
@@ -164,7 +164,7 @@ Each request precedes with a refresh call (refreshAuthorization).
 Example Payloads
 Update Goods Acceptance:
 
-
+```bash
 {
   "where": { "id": "123" },
   "data": {
@@ -184,7 +184,7 @@ The project is deployed on Vercel:
 
 Push to GitLab:
 
-
+```bash
 git push origin main
 
 Vercel Setup:

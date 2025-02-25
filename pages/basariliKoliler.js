@@ -57,7 +57,7 @@ const BasariliKoliler = () => {
 
         // Sadece on_kabul_durumu "1" veya "2" olanları alıyoruz.
         const finalGrouped = Object.values(grouped).filter(
-          (item) => item.onKabulDurumu === "1" || item.onKabulDurumu === "2"
+          (item) => item.onKabulDurumu === "1" || item.onKabulDurumu === "2" || item.onKabulDurumu === "3"
         );
         setGroupedShipments(finalGrouped);
       } catch (err) {

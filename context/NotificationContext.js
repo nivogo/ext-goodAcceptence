@@ -15,10 +15,10 @@ export const NotificationProvider = ({ children }) => {
    */
   const showNotification = (message, type = "success") => {
     setNotification({ message, type });
-    // 3 saniye sonra bildirimi kapatalım
+    // 7 saniye sonra bildirimi kapatalım
     setTimeout(() => {
       setNotification({ message: "", type: "" });
-    }, 3000);
+    }, 7000);
   };
 
   return (

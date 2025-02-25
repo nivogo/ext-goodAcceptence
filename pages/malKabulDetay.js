@@ -183,6 +183,20 @@ const MalKabulDetay = () => {
     return ["1", "2", "3"].includes(String(shipment.mal_kabul_durumu)) ? qr : "****";
   };
 
+  // Mal Kabul Durumu için metin dönüşüm fonksiyonu
+  const formatMalKabulDurumu = (status) => {
+    switch (status) {
+      case "1":
+        return "Okutma Başarılı";
+      case "2":
+        return "Okutma Başarılı (Hatalı Mağaza)";
+      case "3":
+        return "Okutma Başarılı (Sistem Dışı Ürün)";
+      default:
+        return status || "-";
+    }
+  };
+  
   const formatDate = (date) => {
     if (!date) return "-";
     const parsedDate = new Date(date);
@@ -251,7 +265,7 @@ const MalKabulDetay = () => {
               <tr key={shipment.id}>
                 <td className={styles.td}>{index + 1}</td>
                 <td className={styles.td}>{maskQRCode(shipment.qr, shipment)}</td>
-                <td className={styles.td}>{shipment.mal_kabul_durumu || "-"}</td>
+                <td className={styles.td}>{formatMalKabulDurumu(shipment.mal_kabul_durumu) || "-"}</td>
                 <td className={styles.td}>{shipment.mal_kabul_yapan_kisi || "-"}</td>
                 <td className={styles.td}>
                   {shipment.mal_kabul_saati ? formatDate(shipment.mal_kabul_saati) : "-"}

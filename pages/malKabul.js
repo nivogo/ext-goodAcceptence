@@ -46,7 +46,7 @@ const fetchBoxes = async () => {
       const validShipments = uniqueShipments.filter((shipment) => {
         const status = String(shipment.on_kabul_durumu);
         const isClosed = shipment.box_closed === true; // true ise kapalı
-        return (status === "1" || status === "2") && !isClosed;
+        return (status === "1" || status === "2" || status === "3") && !isClosed;
       });
       console.log("Valid Shipments (on_kabul_durumu 1 veya 2):", validShipments);
 

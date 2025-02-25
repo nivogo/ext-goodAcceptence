@@ -93,7 +93,7 @@ const MalKabulDetay = () => {
           console.log("Farklı mağazaya ait QR güncelleniyor:", qrInput);
           await updateQRForDifferent(record.id, userData.name, userData.paad_id);
           showNotification(
-            `Bu ürün ${record.box} kolisine ve ${record.to_location} mağazasına aittir. Ancak size gönderildiği için sizin stoğunuza eklenmiştir. Lütfen bu ürünü satış operasyona bildirin.`,
+            `Bu ürün ${record.box} kolisine ve ${record.to_location} mağazasına aittir. Ancak size gönderildiği için sizin stoğunuza eklenmiştir.`,
             "error"
           );
         }

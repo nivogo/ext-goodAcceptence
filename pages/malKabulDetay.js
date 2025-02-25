@@ -192,6 +192,8 @@ const MalKabulDetay = () => {
         return "Okutma Başarılı (Hatalı Mağaza)";
       case "3":
         return "Okutma Başarılı (Sistem Dışı Ürün)";
+      case "4":
+      return "Eksik Ürün (Göndericinin Fark Deposunda)";
       default:
         return status || "-";
     }

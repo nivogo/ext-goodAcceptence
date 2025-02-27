@@ -8,7 +8,7 @@ import styles from "../styles/MainPage.module.css";
 export default function MainPage() {
   const router = useRouter();
   const { token, userData, logout } = useAuth();
-
+  console.log("to location sap id:", userData.to_sap_location_id);
   useEffect(() => {
     if (!userData && router.isReady) {
       router.push("/").catch(() => {});

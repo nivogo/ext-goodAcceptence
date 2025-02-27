@@ -14,6 +14,8 @@ import {
 import BackButton from "../components/BackButton";
 import styles from "../styles/OnKabul.module.css";
 
+const API_BASE = "https://accept.hayatadondur.com/acceptance/index.php";
+
 export default function OnKabulPage() {
   const router = useRouter();
   const { user, userData } = useAuth();

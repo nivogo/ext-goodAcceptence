@@ -22,13 +22,13 @@ const MalKabul = () => {
   const [keyboardOpen, setKeyboardOpen] = useState(false);
 
 const fetchBoxes = async () => {
-  if (user && userData && userData.paad_id) {
+  if (user && userData && userData.to_sap_location_id) {
     setLoading(true);
     setError(null);
     try {
       // İki kaynaktan veri çekiyoruz
-      const boxesByPaad = await getBoxesForBasariliKoliler(userData.paad_id);
-      const boxesByPreAccept = await getBoxesForBasariliKolilerByPreAccept(userData.paad_id);
+      const boxesByPaad = await getBoxesForBasariliKoliler(userData.to_sap_location_id);
+      const boxesByPreAccept = await getBoxesForBasariliKolilerByPreAccept(userData.to_sap_location_id);
 
       // Verileri birleştirip loglayalım
       const mergedBoxes = [...boxesByPaad, ...boxesByPreAccept];
@@ -132,7 +132,7 @@ const fetchBoxes = async () => {
       </div>
       <h1>Mal Kabul Kolileri</h1>
       <p>
-        Mağaza: {userData.storeName} (PAAD ID: {userData.paad_id})
+        Mağaza: {userData.storeName} (PAAD ID: {userData.to_sap_location_id})
       </p>
       {error && <p className={styles.error}>{error}</p>}
       {/* Koli Arama Formu */}

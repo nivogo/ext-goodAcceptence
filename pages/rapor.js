@@ -22,12 +22,12 @@ const Rapor = () => {
 
   // Veri çekme fonksiyonu
   const fetchShipments = async () => {
-  if (user && userData && userData.paad_id) {
+  if (user && userData && userData.to_sap_location_id) {
     setRefreshing(true);
     setError(null);
     try {
-      // paad_id parametresini gönderiyoruz
-      const allShipmentsData = await getAllShipments(userData.paad_id);
+      // to_sap_location_id parametresini gönderiyoruz
+      const allShipmentsData = await getAllShipments(userData.to_sap_location_id);
       setAllShipments(allShipmentsData);
       setShipments(allShipmentsData);
     } catch (err) {
@@ -89,7 +89,7 @@ const Rapor = () => {
       "Gönderici Lokasyon Adı": shipment.from_location || "-",
       "Gönderici Lokasyon ID": shipment.from_locationid || "-",
       "Alıcı Lokasyon Adı": shipment.to_location || "-",
-      "Alıcı Lokasyon ID": shipment.paad_id || "-",
+      "Alıcı Lokasyon ID": shipment.to_sap_location_id || "-",
       "Koli Numarası": shipment.box || "-",
       QR: shipment.QR || "-",
       "Sipariş Tipi": shipment.WAOT_CODE || "-",
@@ -137,7 +137,7 @@ const Rapor = () => {
       <BackButton />
       <h1>Rapor Sayfası</h1>
       <p>
-        Mağaza: {userData.storeName} (PAAD ID: {userData.paad_id})
+        Mağaza: {userData.storeName} (PAAD ID: {userData.to_sap_location_id})
       </p>
 
       {/* Hata Mesajı */}
@@ -192,7 +192,7 @@ const Rapor = () => {
                 <td className={styles.td}>{shipment.from_location || "-"}</td>
                 <td className={styles.td}>{shipment.from_locationid || "-"}</td>
                 <td className={styles.td}>{shipment.to_location || "-"}</td>
-                <td className={styles.td}>{shipment.paad_id || "-"}</td>
+                <td className={styles.td}>{shipment.to_sap_location_id || "-"}</td>
                 <td className={styles.td}>{shipment.box || "-"}</td>
                 <td className={styles.td}>{shipment.QR || "-"}</td>
                 <td className={styles.td}>{shipment.WAOT_CODE || "-"}</td>

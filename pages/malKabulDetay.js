@@ -140,7 +140,7 @@ const MalKabulDetay = () => {
             data: {
               box_closed: true,
               box_closed_datetime: currentTime,
-              ...(shipment.mal_kabul_durumu === "Baslanmadi" && {
+              ...(shipment.mal_kabul_durumu === null && {
                 mal_kabul_durumu: "4",
                 mal_kabul_yapan_kisi: userData.name,
                 mal_kabul_saati: currentTime,

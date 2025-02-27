@@ -67,7 +67,7 @@ const MalKabulDetay = () => {
 
       const existingQR = await getShipmentByQR(qrInput);
       console.log("getShipmentByQR sonucu:", existingQR);
-      const currentTime = new Date().toISOString();
+      const currentTime = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString();
 
       if (existingQR.length > 0) {
         const record = existingQR[0];
@@ -130,7 +130,7 @@ const MalKabulDetay = () => {
         throw new Error("Kullanıcı bilgileri eksik. Lütfen tekrar giriş yapın.");
       }
 
-      const currentTime = new Date().toISOString();
+      const currentTime = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString();
 
       // Tüm sevkiyatların güncellenmesi için Promise.all
       await Promise.all(

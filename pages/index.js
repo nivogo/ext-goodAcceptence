@@ -21,7 +21,7 @@ export default function LoginPage() {
         const mappedUser = {
           name: data.user.name,
           storeName: data.user.store_name,   // "store_name" -> "storeName"
-          paad_id: data.user.paad_id,         // "paad_id" -> "PAAD_ID"
+          to_sap_location_id: data.user.to_sap_location_id,         // "to_sap_location_id" -> "to_sap_location_id"
           username: data.user.username,
           createdAt: data.user.created_at,
         };

@@ -232,6 +232,15 @@ const handleBoxSubmit = async (e) => {
       >
         Başarılı Koliler
       </button>
+      
+       <button
+        onClick={() => setShowCompleteConfirm(true)}
+        className={styles.submitButton}
+        style={{ marginTop: "1rem", backgroundColor: "#6f42c1" }}
+      >
+        Sevkiyatları Tamamla
+      </button>
+
       {/* Hata Mesajı */}
       {error && <p className={styles.error}>{error}</p>}
       {/* Koli Arama Input */}
@@ -278,6 +287,69 @@ const handleBoxSubmit = async (e) => {
           </tbody>
         </table>
       </div>
+        
+      {/* Onay Popup'ı */}
+      {showCompleteConfirm && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 10000,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "#fff",
+              padding: "2rem",
+              borderRadius: "8px",
+              textAlign: "center",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+            }}
+          >
+            <p>
+              Sevkiyatı tamamlama işlemi geri alınamaz. Sevkiyatı tamamlamak
+              istediğinize emin misiniz?
+            </p>
+            <div style={{ marginTop: "1rem" }}>
+              <button
+                onClick={handleCompleteShipments}
+                style={{
+                  padding: "0.5rem 1rem",
+                  backgroundColor: "#28a745",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  marginRight: "1rem",
+                }}
+              >
+                Sevkiyatı Tamamla
+              </button>
+              <button
+                onClick={() => setShowCompleteConfirm(false)}
+                style={{
+                  padding: "0.5rem 1rem",
+                  backgroundColor: "#6c757d",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                Vazgeç
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+            
     </div>
   );
 }

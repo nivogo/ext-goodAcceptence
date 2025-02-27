@@ -143,6 +143,64 @@ const handleBoxSubmit = async (e) => {
   setBoxInput("");
 };
 
+// Yeni: Belirtilen shipment id için tamamlama güncellemesi yapan fonksiyon.
+  const completeShipment = async (shipmentId) => {
+    const currentTime = new Date().toISOString();
+    const bodyData = {
+      where: { id: shipmentId },
+      data: {
+        mal_kabul_durumu: 4,
+        mal_kabul_yapan_kisi: userData.name,
+        mal_kabul_saati: currentTime,
+        adres: "FARK",
+        adresleme_yapan_kisi: userData.name,
+        adresleme_saati: currentTime,
+        on_kabul_durumu: 4,
+        on_kabul_yapan_kisi: userData.name,
+        on_kabul_saati: currentTime,
+        accept_wh_id: userData.paad_id,
+        accept_datetime: currentTime,
+        pre_accept_wh_id: userData.paad_id,
+        pre_accept_datetime: currentTime,
+        box_closed: true,
+        box_closed_datetime: currentTime,
+        shipment_closed: true,
+        shipment_closed_datetime: currentTime,
+      },
+    };
+
+    const response = await fetch(API_BASE, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Basic ${localStorage.getItem("basicAuth")}`,
+      },
+      body: JSON.stringify(bodyData),
+    });
+    if (!response.ok) {
+      throw new Error(`Güncelleme başarısız oldu (ID: ${shipmentId})`);
+    }
+  };
+
+  // Yeni: Tüm listede bulunan gönderiler için tamamlama işlemini yapan fonksiyon.
+  const handleCompleteShipments = async () => {
+    setLoading(true);
+    try {
+      await Promise.all(
+        shipments.map((shipment) => completeShipment(shipment.id))
+      );
+      showNotification("Tüm sevkiyatlar başarıyla tamamlandı.", "success");
+      setShowCompleteConfirm(false);
+      await fetchShipments();
+    } catch (error) {
+      console.error("Tamamlama Hatası:", error);
+      showNotification(`Sevkiyat tamamlama hatası: ${error.message}`, "error");
+    }
+    setLoading(false);
+  };
+
+
+  
   if (loading) {
     return (
       <div style={{ padding: "2rem", textAlign: "center" }}>

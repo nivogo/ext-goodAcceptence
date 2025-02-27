@@ -35,10 +35,10 @@ The project is built as a single-page application (SPA) using Next.js, with serv
 1. **User Authentication (`AuthContext`)**
    - Secure login with username/password via Basic Authentication.
    - Persistent session management using `localStorage` with a 7-day expiration.
-   - User data includes `name`, `storeName`, `paad_id`, and `username`.
+   - User data includes `name`, `storeName`, `to_sap_location_id`, and `username`.
 
 2. **Pre-Acceptance (`onKabul`)**
-   - Scans shipment boxes (starting with "BX" or "TR") to validate against the user's `paad_id`.
+   - Scans shipment boxes (starting with "BX" or "TR") to validate against the user's `to_sap_location_id`.
    - Marks shipments as "Okutma Başarılı" (`on_kabul_durumu: 1`), "Fazla Koli" (`2`), or "Sistem Dışı Koli" (`3`).
 
 3. **Goods Acceptance (`malKabul`)**
@@ -55,7 +55,7 @@ The project is built as a single-page application (SPA) using Next.js, with serv
    - Requires pre-acceptance and goods acceptance completion.
 
 6. **Reporting (`rapor`)**
-   - Lists all shipments for the user's `paad_id` with searchable fields.
+   - Lists all shipments for the user's `to_sap_location_id` with searchable fields.
    - Exports data to Excel using the `xlsx` library.
 
 7. **Notification System (`NotificationContext`)**
@@ -131,7 +131,7 @@ NEXT_PUBLIC_API_BASE=https://accept.hayatadondur.com/acceptance/index.php
 NEXT_PUBLIC_API_BASE: The REST API endpoint (already hardcoded in firestore.js, but can be externalized).
 Authentication
 The app uses Basic Authentication. Credentials are stored in localStorage as basicAuth after login.
-Ensure the API supports PUT requests with id: -1 and paad_id: -1 for session refresh.
+Ensure the API supports PUT requests with id: -1 and to_sap_location_id: -1 for session refresh.
 
 Usage
 
@@ -155,7 +155,7 @@ Click "Çıkış Yap" on /mainPage to clear session data.
 API Integration
 The app integrates with a REST API at https://accept.hayatadondur.com/acceptance/index.php. Key endpoints:
 
-GET: Fetch shipments by paad_id, box, qr, or adres.
+GET: Fetch shipments by to_sap_location_id, box, qr, or adres.
 PUT: Update shipment fields (e.g., mal_kabul_durumu, box_closed).
 POST: Add new shipments for missing boxes or QR codes.
 Authentication

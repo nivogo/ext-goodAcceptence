@@ -18,6 +18,7 @@ export default function OnKabulPage() {
   const router = useRouter();
   const { user, userData } = useAuth();
   const { showNotification } = useNotification();
+  const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
   const [shipments, setShipments] = useState([]);
   const [groupedShipments, setGroupedShipments] = useState([]);
   const [boxInput, setBoxInput] = useState("");

@@ -28,13 +28,13 @@ export default function OnKabulPage() {
   const [error, setError] = useState(null);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
 
-  // Sadece kullanıcının paad_id’sine ve on_kabul_durumu "0" olan gönderileri çekiyoruz.
+  // Sadece kullanıcının to_sap_location_id’sine ve on_kabul_durumu "0" olan gönderileri çekiyoruz.
   const fetchShipments = async () => {
-    if (user && userData && userData.paad_id) {
+    if (user && userData && userData.to_sap_location_id) {
       setLoading(true);
       setError(null);
       try {
-        const shipmentsList = await getShipmentsByPAADID(userData.paad_id);
+        const shipmentsList = await getShipmentsByPAADID(userData.to_sap_location_id);
         // Yalnızca on_kabul_durumu "0" olanları filtrele
         const filteredShipments = shipmentsList.filter(
           (shipment) => shipment.on_kabul_durumu === "0"
@@ -96,15 +96,15 @@ const handleBoxSubmit = async (e) => {
     // Girilen koli numarasına ait gönderileri getir.
     const boxShipments = await getShipmentByBox(boxInput);
     if (boxShipments.length === 0) {
-      await addMissingBox(boxInput, userData.paad_id, userData.name);
+      await addMissingBox(boxInput, userData.to_sap_location_id, userData.name);
       alert("Bu koli için lütfen satış ekibi ile iletişime geçin.");
     } else {
-      // Aynı paad_id'ye ait gönderileri ve farklı paad_id'ye ait gönderileri ayıralım.
+      // Aynı to_sap_location_id'ye ait gönderileri ve farklı to_sap_location_id'ye ait gönderileri ayıralım.
       const samePaad = boxShipments.filter(
-        (shipment) => shipment.paad_id === userData.paad_id
+        (shipment) => shipment.to_sap_location_id === userData.to_sap_location_id
       );
       const differentPaad = boxShipments.filter(
-        (shipment) => shipment.paad_id !== userData.paad_id
+        (shipment) => shipment.to_sap_location_id !== userData.to_sap_location_id
       );
 
       if (samePaad.length > 0) {
@@ -118,7 +118,7 @@ const handleBoxSubmit = async (e) => {
           // Henüz okutulmamış olanlar için on_kabul_durumu güncelle.
           await Promise.all(
             notScanned.map((shipment) =>
-              updateOnKabulFields(shipment.id, userData.name, userData.paad_id)
+              updateOnKabulFields(shipment.id, userData.name, userData.to_sap_location_id)
             )
           );
           showNotification("Koli başarıyla okutuldu!", "success");
@@ -129,7 +129,7 @@ const handleBoxSubmit = async (e) => {
         // markExtraBox fonksiyonu kullanılarak on_kabul_durumu "2" yapılır.
         await Promise.all(
           differentPaad.map((shipment) =>
-            markExtraBox(shipment.id, userData.name, userData.paad_id)
+            markExtraBox(shipment.id, userData.name, userData.to_sap_location_id)
           )
         );
         showNotification("Koli başarıyla okutuldu!", "success");
@@ -161,9 +161,9 @@ const handleBoxSubmit = async (e) => {
         on_kabul_durumu: 4,
         on_kabul_yapan_kisi: userData.name,
         on_kabul_saati: currentTime,
-        accept_wh_id: userData.paad_id,
+        accept_wh_id: userData.to_sap_location_id,
         accept_datetime: currentTime,
-        pre_accept_wh_id: userData.paad_id,
+        pre_accept_wh_id: userData.to_sap_location_id,
         pre_accept_datetime: currentTime,
         box_closed: true,
         box_closed_datetime: currentTime,
@@ -226,7 +226,7 @@ const handleBoxSubmit = async (e) => {
       <h1>Hoş Geldiniz, {userData.name}</h1>
       <h1>Ön Kabul</h1>
       <p>
-        Mağaza: {userData.storeName} (PAAD ID: {userData.paad_id})
+        Mağaza: {userData.storeName} (PAAD ID: {userData.to_sap_location_id})
       </p>
       {/* Başarılı Koliler Butonu */}
       <button

@@ -17,13 +17,13 @@ const BasariliKoliler = () => {
   const [error, setError] = useState(null);
 
   const fetchBoxes = async () => {
-    if (user && userData && userData.paad_id) {
+    if (user && userData && userData.to_sap_location_id) {
       setLoading(true);
       setError(null);
       try {
         // İki ayrı sorgu ile verileri çekiyoruz:
-        const boxesByPaad = await getBoxesForBasariliKoliler(userData.paad_id);
-        const boxesByPreAccept = await getBoxesForBasariliKolilerByPreAccept(userData.paad_id);
+        const boxesByPaad = await getBoxesForBasariliKoliler(userData.to_sap_location_id);
+        const boxesByPreAccept = await getBoxesForBasariliKolilerByPreAccept(userData.to_sap_location_id);
         
         // İki sonucu birleştiriyoruz (çift kayıt varsa kaldırıyoruz):
         const mergedBoxes = [...boxesByPaad, ...boxesByPreAccept];
@@ -113,7 +113,7 @@ const BasariliKoliler = () => {
       <BackButton />
       <h1>Başarılı Koliler</h1>
       <p>
-        Mağaza: {userData.storeName} (PAAD ID: {userData.paad_id})
+        Mağaza: {userData.storeName} (PAAD ID: {userData.to_sap_location_id})
       </p>
       {error && <p className={styles.error}>{error}</p>}
       <p>Toplam Koli Adedi: {groupedShipments.length}</p>

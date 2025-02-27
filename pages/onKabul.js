@@ -148,7 +148,7 @@ const handleBoxSubmit = async (e) => {
 
 // Yeni: Belirtilen shipment id için tamamlama güncellemesi yapan fonksiyon.
   const completeShipment = async (shipmentId) => {
-    const currentTime = new Date().toISOString();
+    const currentTime = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString();
     const bodyData = {
       where: { id: shipmentId },
       data: {

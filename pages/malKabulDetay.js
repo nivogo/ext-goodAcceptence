@@ -61,7 +61,7 @@ const MalKabulDetay = () => {
 
     setUpdating(true);
     try {
-      if (!userData || !userData.paad_id || !userData.name) {
+      if (!userData || !userData.to_sap_location_id || !userData.name) {
         throw new Error("Kullanıcı bilgileri eksik. Lütfen tekrar giriş yapın.");
       }
 
@@ -82,18 +82,18 @@ const MalKabulDetay = () => {
         const isInCurrentBox = shipments.some((s) => s.qr === qrInput);
         if (isInCurrentBox) {
           console.log("Listede bulunan QR güncelleniyor:", qrInput);
-          await updateMalKabulFields(record.id, userData.name, userData.paad_id);
+          await updateMalKabulFields(record.id, userData.name, userData.to_sap_location_id);
           showNotification("QR başarıyla okutuldu.", "success");
-        } else if (record.paad_id === userData.paad_id) {
+        } else if (record.to_sap_location_id === userData.to_sap_location_id) {
           console.log("Farklı koliye ait QR güncelleniyor:", qrInput);
-          await updateMalKabulFields(record.id, userData.name, userData.paad_id);
+          await updateMalKabulFields(record.id, userData.name, userData.to_sap_location_id);
           showNotification(
             `Bu ürün ${record.box} kolisine aittir. O koli için mal kabul işlemi gerçekleştirilmiştir.`,
             "warning"
           );
         } else {
           console.log("Farklı mağazaya ait QR güncelleniyor:", qrInput);
-          await updateQRForDifferent(record.id, userData.name, userData.paad_id);
+          await updateQRForDifferent(record.id, userData.name, userData.to_sap_location_id);
           showNotification(
             `Bu ürün ${record.box} kolisine ve ${record.to_location} mağazasına aittir. Ancak size gönderildiği için sizin stoğunuza eklenmiştir.`,
             "error"
@@ -101,7 +101,7 @@ const MalKabulDetay = () => {
         }
       } else {
         console.log("Yeni QR ekleniyor:", qrInput);
-        await addMissingQR(qrInput, box, userData.paad_id, userData.name);
+        await addMissingQR(qrInput, box, userData.to_sap_location_id, userData.name);
         showNotification(
           `Bu ürün ${box} kolisine ait olarak eklendi.`,
           "error"
@@ -126,7 +126,7 @@ const MalKabulDetay = () => {
     setShowCloseConfirm(false); // Popup'u kapat
     setUpdating(true);
     try {
-      if (!userData || !userData.paad_id || !userData.name) {
+      if (!userData || !userData.to_sap_location_id || !userData.name) {
         throw new Error("Kullanıcı bilgileri eksik. Lütfen tekrar giriş yapın.");
       }
 
@@ -144,7 +144,7 @@ const MalKabulDetay = () => {
                 mal_kabul_durumu: "4",
                 mal_kabul_yapan_kisi: userData.name,
                 mal_kabul_saati: currentTime,
-                accept_wh_id: userData.paad_id,
+                accept_wh_id: userData.to_sap_location_id,
                 accept_datetime: currentTime,
                 adres: "FARK",
                 adresleme_yapan_kisi: userData.name,
